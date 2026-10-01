@@ -56,6 +56,10 @@
         "女"
       ]
     },
+    "姓名": {
+      "default": "",
+      "type": "string"
+    },
     "_先天": {
       "default": {},
       "type": "object",

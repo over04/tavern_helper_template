@@ -1,0 +1,115 @@
+<template>
+  <div class="age" :title="`${phaseName} ${phaseFrom}~${phaseTo} 岁`">
+    <div class="age-dial">
+      <svg class="age-svg" :viewBox="`0 0 ${SIZE} ${SIZE}`" role="img" :aria-label="`${phaseName} 阶段进度`">
+        <circle :cx="CENTER" :cy="CENTER" :r="RADIUS" class="age-track" />
+        <circle
+          :cx="CENTER"
+          :cy="CENTER"
+          :r="RADIUS"
+          class="age-fill"
+          :stroke-dasharray="CIRCUMFERENCE"
+          :stroke-dashoffset="dashOffset"
+        />
+      </svg>
+      <span class="age-center">{{ phaseName }}</span>
+    </div>
+    <span class="age-range">{{ phaseFrom }}~{{ phaseTo }} 岁</span>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { computed } from 'vue';
+
+const props = defineProps<{
+  ageYear: number;
+  ageMonth: number;
+}>();
+
+const PHASES: { name: string; from: number; to: number }[] = [
+  { name: '新生儿', from: 0, to: 2 },
+  { name: '幼年', from: 3, to: 6 },
+  { name: '童年', from: 7, to: 12 },
+  { name: '少年', from: 13, to: 17 },
+  { name: '青年', from: 18, to: 29 },
+  { name: '成年', from: 30, to: 44 },
+  { name: '中年', from: 45, to: 54 },
+  { name: '壮年', from: 55, to: 64 },
+  { name: '老年', from: 65, to: 79 },
+  { name: '暮年', from: 80, to: 100 },
+];
+
+const SIZE = 62;
+const CENTER = SIZE / 2;
+const RADIUS = 24;
+const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
+
+const current = computed(
+  () => PHASES.find(item => props.ageYear >= item.from && props.ageYear <= item.to) ?? PHASES[PHASES.length - 1]!,
+);
+
+const phaseName = computed(() => current.value.name);
+const phaseFrom = computed(() => current.value.from);
+const phaseTo = computed(() => current.value.to);
+
+const dashOffset = computed(() => {
+  const exact = props.ageYear + props.ageMonth / 12;
+  const span = current.value.to - current.value.from + 1;
+  const ratio = Math.max(0, Math.min(1, (exact - current.value.from) / span));
+  return CIRCUMFERENCE * (1 - ratio);
+});
+</script>
+
+<style lang="scss" scoped>
+.age {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.age-dial {
+  position: relative;
+  width: 62px;
+  height: 62px;
+}
+
+.age-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.age-track {
+  fill: none;
+  stroke: var(--c-border);
+  stroke-width: 4;
+}
+
+.age-fill {
+  fill: none;
+  stroke: var(--c-accent);
+  stroke-width: 4;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.55s var(--ease-out);
+}
+
+.age-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--c-accent-hover);
+  letter-spacing: -0.01em;
+}
+
+.age-range {
+  font-size: 10.5px;
+  color: var(--c-text-faint);
+  font-variant-numeric: tabular-nums;
+}
+</style>

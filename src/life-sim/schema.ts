@@ -46,6 +46,9 @@ export const Schema = z.object({
   // _性别：出生即定，AI 可见不可改
   _性别: z.enum(['男', '女']).prefault('男'),
 
+  // 姓名：玩家姓名，AI 可见可改（改名、取字、用别名时更新）
+  姓名: z.string().prefault(''),
+
   // _先天：六维天赋，出生即定终身不变，AI 可见不可改
   _先天: z
     .object({

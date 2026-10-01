@@ -6,13 +6,17 @@
         <span class="readout-age-unit">岁</span>
         <span v-if="time.年龄月 > 0" class="readout-age-month">{{ time.年龄月 }} 个月</span>
       </div>
-      <span class="readout-phase">{{ time.阶段 }}</span>
+      <AgeRing :age-year="time.年龄岁" :age-month="time.年龄月" />
     </div>
 
     <div class="readout-meta">
+      <template v-if="displayName">
+        <span class="readout-name">{{ displayName }}</span>
+        <span class="readout-sep">·</span>
+      </template>
       <span>第 {{ time.回合 }} 回合</span>
       <span class="readout-sep">·</span>
-      <span>{{ time.年 }} 年 {{ time.月 }} 月</span>
+      <span>{{ spanLabel }}</span>
       <span class="readout-sep">·</span>
       <span>{{ sex }}</span>
     </div>
@@ -27,15 +31,57 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue';
-import { injectInput } from '../inject';
+import { computed, onMounted, ref, watch } from 'vue';
+import { useDataStore } from '../store';
+import AgeRing from './AgeRing.vue';
+
+const store = useDataStore();
 
 const props = defineProps<{
   time: { 回合: number; 年: number; 月: number; 跨度: number; 年龄岁: number; 年龄月: number; 阶段: string };
   sex: string;
+  name: string;
 }>();
 
+// 变量 `姓名` 为空时，退回酒馆 persona 名（{{user}} 宏）
+const personaName = ref('');
+
+onMounted(() => {
+  try {
+    const api = (globalThis as { SillyTavern?: { substituteParams?: (text: string) => unknown } }).SillyTavern;
+    const value = api?.substituteParams?.('{{user}}');
+    if (typeof value === 'string' && value && value !== '{{user}}') {
+      personaName.value = value;
+    }
+  } catch {
+    personaName.value = '';
+  }
+});
+
+const displayName = computed(() => props.name?.trim() || personaName.value);
+
 const span = ref(props.time.跨度);
+
+// 年/月 是回合结束时的读数，往前推 (跨度 - 1) 个月得到起点
+function shiftMonth(year: number, month: number, delta: number) {
+  const total = year * 12 + (month - 1) + delta;
+  if (total < 12) {
+    return { year: 1, month: 1 };
+  }
+  return { year: Math.floor(total / 12), month: (total % 12) + 1 };
+}
+
+const spanLabel = computed(() => {
+  const { 年, 月, 跨度 } = props.time;
+  if (跨度 <= 1) {
+    return `${年} 年 ${月} 月`;
+  }
+  const start = shiftMonth(年, 月, -(跨度 - 1));
+  if (start.year === 年) {
+    return `${年} 年 ${start.month} 月～${月} 月`;
+  }
+  return `${start.year} 年 ${start.month} 月～${年} 年 ${月} 月`;
+});
 
 watch(
   () => props.time.跨度,
@@ -45,7 +91,7 @@ watch(
 );
 
 function applySpan() {
-  injectInput(`跨度：${span.value}月`);
+  store.data.时间.跨度 = span.value;
 }
 </script>
 
@@ -91,15 +137,6 @@ function applySpan() {
   font-variant-numeric: tabular-nums;
 }
 
-.readout-phase {
-  padding: 3px 10px;
-  border-radius: 999px;
-  background: var(--c-accent-soft);
-  color: var(--c-accent-hover);
-  font-size: 12px;
-  font-weight: 500;
-}
-
 .readout-meta {
   display: flex;
   align-items: center;
@@ -107,6 +144,11 @@ function applySpan() {
   font-size: 13px;
   color: var(--c-text-muted);
   font-variant-numeric: tabular-nums;
+}
+
+.readout-name {
+  font-weight: 600;
+  color: var(--c-text);
 }
 
 .readout-sep {
