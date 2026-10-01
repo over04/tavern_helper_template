@@ -22,11 +22,11 @@
 
     <div class="ls-opening-body">
       <template v-if="page === 'tpl'">
-        <button v-for="tpl in templates" :key="tpl.key" class="ls-tpl" type="button" @click="useTemplate(tpl)">
+        <button v-for="tpl in TEMPLATES" :key="tpl.key" class="ls-tpl" type="button" @click="useTemplate(tpl)">
           <span class="ls-tpl-index">{{ tpl.index }}</span>
           <span class="ls-tpl-title">{{ tpl.title }}</span>
           <span class="ls-tpl-meta">{{ tpl.meta }}</span>
-          <span class="ls-tpl-desc">{{ tpl.desc }}</span>
+          <span class="ls-tpl-desc">{{ substituteUser(tpl.form.bg) }}</span>
           <span class="ls-tpl-cast">
             <span v-for="person in tpl.cast" :key="person" class="ls-tpl-person">{{ person }}</span>
           </span>
@@ -106,7 +106,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from 'vue';
+import { onMounted, reactive, ref } from 'vue';
 import { injectInput } from '../inject';
 import { useDataStore } from '../store';
 import ClaudeMark from './ClaudeMark.vue';
@@ -134,7 +134,6 @@ interface Template {
   index: string;
   title: string;
   meta: string;
-  desc: string;
   cast: string[];
   form: Omit<Form, 'dd'>;
 }
@@ -164,10 +163,9 @@ const TEMPLATES: Template[] = [
     index: '壹',
     title: '现代都市 · 2003',
     meta: '杭州 · 工薪家庭 · 每回合 6 个月',
-    desc: '父亲陈建国在轴承厂做车工，母亲周敏在巷口经营一间小卖部，外婆王彩凤从绍兴赶来照看月子。家里只有一套两室一厅的老公房，存款三万元出头，{{user}}是家中的第一个孩子。',
     cast: ['陈建国 · 父亲', '周敏 · 母亲', '王彩凤 · 外婆'],
     form: {
-      bg: '家在杭州城北的轴承厂家属区，一套两室一厅的老公房。父亲陈建国在厂里做车工，母亲周敏在巷口守着一间小卖部，外婆王彩凤特意从绍兴赶来照顾月子。家里存款三万出头，日子不宽裕，却也安稳。',
+      bg: '父亲陈建国在轴承厂做车工，母亲周敏在巷口经营一间小卖部，外婆王彩凤从绍兴赶来照看月子。家里只有一套两室一厅的老公房，存款三万元出头，{{user}}是家中的第一个孩子。',
       yy: 2003,
       mm: 9,
       sex: '女',
@@ -185,10 +183,9 @@ const TEMPLATES: Template[] = [
     index: '贰',
     title: '小镇一九八五',
     meta: '湘南青溪 · 教师家庭 · 每回合 6 个月',
-    desc: '父亲林守拙在镇中学做民办教师，母亲王秀兰在供销社当营业员，外公王德厚在十里外的村子里种田。家里住镇上的教工宿舍，存款不过八百元，{{user}}是家中的第一个孩子。',
     cast: ['林守拙 · 父亲', '王秀兰 · 母亲', '王德厚 · 外公'],
     form: {
-      bg: '家在湘南青溪镇上的教工宿舍，堂屋里摆着一台红灯牌收音机。父亲林守拙在镇中学做民办教师，母亲王秀兰在供销社当营业员，外公王德厚在十里外的村子里种田。家中存款不过八百元，日子过得紧，书香气却重。',
+      bg: '父亲林守拙在镇中学做民办教师，母亲王秀兰在供销社当营业员，外公王德厚在十里外的村子里种田。家里住镇上的教工宿舍，存款不过八百元，{{user}}是家中的第一个孩子。',
       yy: 1985,
       mm: 4,
       sex: '男',
@@ -206,10 +203,9 @@ const TEMPLATES: Template[] = [
     index: '叁',
     title: '架空古代 · 大衍',
     meta: '京城商户 · 每回合 6 个月',
-    desc: '父亲裴远山经营城南的一间绸缎庄，母亲沈静姝主持中馈，上头有长兄裴铭和次兄裴钰，另有奶娘周嬷嬷照看起居。家中有三进宅院，在行市里数得上名号，{{user}}是家中的第三个孩子。',
     cast: ['裴远山 · 父亲', '沈静姝 · 母亲', '裴铭 · 长兄', '裴钰 · 次兄', '周嬷嬷 · 奶娘'],
     form: {
-      bg: '家在架空王朝大衍的京城，城南有一间绸缎庄，城东有一座三进宅院。父亲裴远山是绸缎庄东主，母亲沈静姝主持中馈，上头有七岁的长兄裴铭和四岁的次兄裴钰，另有奶娘周嬷嬷照看起居。家中殷实，在行市里数得上名号。',
+      bg: '父亲裴远山经营城南的一间绸缎庄，母亲沈静姝主持中馈，上头有长兄裴铭和次兄裴钰，另有奶娘周嬷嬷照看起居。家中有三进宅院，在行市里数得上名号，{{user}}是家中的第三个孩子。',
       yy: 1017,
       mm: 2,
       sex: '男',
@@ -246,9 +242,10 @@ onMounted(() => {
   }
 });
 
-const templates = computed(() =>
-  TEMPLATES.map(tpl => ({ ...tpl, desc: tpl.desc.replace(/\{\{user\}\}/g, () => userName.value || '你') })),
-);
+// 模板简介与填入表单的背景设定同源，只在这里做一次 {{user}} 替换
+function substituteUser(text: string): string {
+  return text.replace(/\{\{user\}\}/g, () => userName.value || '你');
+}
 
 const page = ref<(typeof TABS)[number]['key']>('tpl');
 const hint = ref('');
@@ -274,6 +271,7 @@ function pick<T>(list: T[]): T {
 
 function useTemplate(tpl: Template) {
   Object.assign(form, tpl.form);
+  form.bg = substituteUser(form.bg);
   page.value = 'custom';
 }
 
