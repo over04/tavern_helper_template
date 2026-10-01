@@ -1,13 +1,13 @@
 <template>
-  <div class="rel">
-    <div class="rel-head">
-      <span class="rel-name">{{ name }}</span>
-      <span class="rel-tag">{{ identity }} · {{ stage }}</span>
-      <span class="rel-value" :class="{ 'is-neg': value < 0 }">{{ value }}</span>
+  <div class="ls-rel">
+    <div class="ls-rel-head">
+      <span class="ls-rel-name">{{ name }}</span>
+      <span class="ls-rel-tag">{{ identity }} · {{ stage }}</span>
+      <span class="ls-rel-value" :class="{ 'ls-is-neg': value < 0 }">{{ value }}</span>
     </div>
-    <div class="rel-track">
-      <span class="rel-axis" />
-      <span class="rel-fill" :class="{ 'is-neg': value < 0 }" :style="fillStyle" />
+    <div class="ls-rel-track">
+      <span class="ls-rel-axis" />
+      <span class="ls-rel-fill" :class="{ 'ls-is-neg': value < 0 }" :style="fillStyle" />
     </div>
   </div>
 </template>
@@ -30,67 +30,67 @@ const fillStyle = computed(() => {
 </script>
 
 <style lang="scss" scoped>
-.rel {
+.ls-rel {
   display: flex;
   flex-direction: column;
   gap: 6px;
 }
 
-.rel-head {
+.ls-rel-head {
   display: flex;
   align-items: baseline;
   gap: 7px;
 }
 
-.rel-name {
+.ls-rel-name {
   font-size: 13px;
-  color: var(--c-text);
+  color: var(--ls-text);
 }
 
-.rel-tag {
+.ls-rel-tag {
   font-size: 11.5px;
-  color: var(--c-text-faint);
+  color: var(--ls-text-faint);
 }
 
-.rel-value {
+.ls-rel-value {
   margin-left: auto;
   font-size: 12.5px;
   font-weight: 600;
-  color: var(--c-accent-hover);
+  color: var(--ls-accent-hover);
   font-variant-numeric: tabular-nums;
 }
 
-.rel-value.is-neg {
-  color: var(--c-alarm);
+.ls-rel-value.ls-is-neg {
+  color: var(--ls-alarm);
 }
 
-.rel-track {
+.ls-rel-track {
   position: relative;
   height: 6px;
   border-radius: 999px;
-  background: var(--c-border);
+  background: var(--ls-border);
   overflow: hidden;
 }
 
-.rel-axis {
+.ls-rel-axis {
   position: absolute;
   left: 50%;
   top: 0;
   bottom: 0;
   width: 1px;
-  background: var(--c-border-strong);
+  background: var(--ls-border-strong);
 }
 
-.rel-fill {
+.ls-rel-fill {
   position: absolute;
   top: 0;
   bottom: 0;
   border-radius: 999px;
-  background: var(--c-accent);
-  transition: width 0.45s var(--ease-out), left 0.45s var(--ease-out), right 0.45s var(--ease-out);
+  background: var(--ls-accent);
+  transition: width 0.45s var(--ls-ease-out), left 0.45s var(--ls-ease-out), right 0.45s var(--ls-ease-out);
 }
 
-.rel-fill.is-neg {
-  background: var(--c-alarm);
+.ls-rel-fill.ls-is-neg {
+  background: var(--ls-alarm);
 }
 </style>

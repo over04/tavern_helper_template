@@ -1,5 +1,5 @@
 <template>
-  <div class="talent">
+  <div class="ls-talent">
     <RadarChart :values="entries" />
   </div>
 </template>
@@ -18,7 +18,7 @@ const entries = computed(() =>
 </script>
 
 <style lang="scss" scoped>
-.talent {
+.ls-talent {
   display: flex;
   flex-direction: column;
 }

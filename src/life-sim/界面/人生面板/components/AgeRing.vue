@@ -1,20 +1,20 @@
 <template>
-  <div class="age" :title="`${phaseName} ${phaseFrom}~${phaseTo} 岁`">
-    <div class="age-dial">
-      <svg class="age-svg" :viewBox="`0 0 ${SIZE} ${SIZE}`" role="img" :aria-label="`${phaseName} 阶段进度`">
-        <circle :cx="CENTER" :cy="CENTER" :r="RADIUS" class="age-track" />
+  <div class="ls-age" :title="`${phaseName} ${phaseFrom}~${phaseTo} 岁`">
+    <div class="ls-age-dial">
+      <svg class="ls-age-svg" :viewBox="`0 0 ${SIZE} ${SIZE}`" role="img" :aria-label="`${phaseName} 阶段进度`">
+        <circle :cx="CENTER" :cy="CENTER" :r="RADIUS" class="ls-age-track" />
         <circle
           :cx="CENTER"
           :cy="CENTER"
           :r="RADIUS"
-          class="age-fill"
+          class="ls-age-fill"
           :stroke-dasharray="CIRCUMFERENCE"
           :stroke-dashoffset="dashOffset"
         />
       </svg>
-      <span class="age-center">{{ phaseName }}</span>
+      <span class="ls-age-center">{{ phaseName }}</span>
     </div>
-    <span class="age-range">{{ phaseFrom }}~{{ phaseTo }} 岁</span>
+    <span class="ls-age-range">{{ phaseFrom }}~{{ phaseTo }} 岁</span>
   </div>
 </template>
 
@@ -61,41 +61,41 @@ const dashOffset = computed(() => {
 </script>
 
 <style lang="scss" scoped>
-.age {
+.ls-age {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 4px;
 }
 
-.age-dial {
+.ls-age-dial {
   position: relative;
   width: 62px;
   height: 62px;
 }
 
-.age-svg {
+.ls-age-svg {
   display: block;
   width: 100%;
   height: 100%;
   transform: rotate(-90deg);
 }
 
-.age-track {
+.ls-age-track {
   fill: none;
-  stroke: var(--c-border);
+  stroke: var(--ls-border);
   stroke-width: 4;
 }
 
-.age-fill {
+.ls-age-fill {
   fill: none;
-  stroke: var(--c-accent);
+  stroke: var(--ls-accent);
   stroke-width: 4;
   stroke-linecap: round;
-  transition: stroke-dashoffset 0.55s var(--ease-out);
+  transition: stroke-dashoffset 0.55s var(--ls-ease-out);
 }
 
-.age-center {
+.ls-age-center {
   position: absolute;
   inset: 0;
   display: flex;
@@ -103,13 +103,13 @@ const dashOffset = computed(() => {
   justify-content: center;
   font-size: 11px;
   font-weight: 500;
-  color: var(--c-accent-hover);
+  color: var(--ls-accent-hover);
   letter-spacing: -0.01em;
 }
 
-.age-range {
+.ls-age-range {
   font-size: 10.5px;
-  color: var(--c-text-faint);
+  color: var(--ls-text-faint);
   font-variant-numeric: tabular-nums;
 }
 </style>

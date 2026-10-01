@@ -1,21 +1,21 @@
 <template>
-  <div class="ring">
-    <div class="ring-dial">
-      <svg class="ring-svg" :viewBox="`0 0 ${SIZE} ${SIZE}`" role="img" :aria-label="`${label} ${value}`">
-        <circle :cx="CENTER" :cy="CENTER" :r="RADIUS" class="ring-track" />
+  <div class="ls-ring">
+    <div class="ls-ring-dial">
+      <svg class="ls-ring-svg" :viewBox="`0 0 ${SIZE} ${SIZE}`" role="img" :aria-label="`${label} ${value}`">
+        <circle :cx="CENTER" :cy="CENTER" :r="RADIUS" class="ls-ring-track" />
         <circle
           :cx="CENTER"
           :cy="CENTER"
           :r="RADIUS"
-          class="ring-fill"
+          class="ls-ring-fill"
           :stroke="strokeColor"
           :stroke-dasharray="CIRCUMFERENCE"
           :stroke-dashoffset="dashOffset"
         />
       </svg>
-      <span class="ring-value">{{ value }}</span>
+      <span class="ls-ring-value">{{ value }}</span>
     </div>
-    <span class="ring-label">{{ label }}</span>
+    <span class="ls-ring-label">{{ label }}</span>
   </div>
 </template>
 
@@ -49,54 +49,54 @@ const dashOffset = computed(() => CIRCUMFERENCE * (1 - ratio.value));
 const strokeColor = computed(() => {
   switch (props.tone) {
     case 'positive':
-      return 'var(--c-positive)';
+      return 'var(--ls-positive)';
     case 'caution':
-      return 'var(--c-caution)';
+      return 'var(--ls-caution)';
     case 'alarm':
-      return 'var(--c-alarm)';
+      return 'var(--ls-alarm)';
     case 'neutral':
-      return 'var(--c-text-faint)';
+      return 'var(--ls-text-faint)';
     default:
-      return 'var(--c-accent)';
+      return 'var(--ls-accent)';
   }
 });
 </script>
 
 <style lang="scss" scoped>
-.ring {
+.ls-ring {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 7px;
 }
 
-.ring-dial {
+.ls-ring-dial {
   position: relative;
   width: 68px;
   height: 68px;
 }
 
-.ring-svg {
+.ls-ring-svg {
   display: block;
   width: 100%;
   height: 100%;
   transform: rotate(-90deg);
 }
 
-.ring-track {
+.ls-ring-track {
   fill: none;
-  stroke: var(--c-border);
+  stroke: var(--ls-border);
   stroke-width: 5;
 }
 
-.ring-fill {
+.ls-ring-fill {
   fill: none;
   stroke-width: 5;
   stroke-linecap: round;
-  transition: stroke-dashoffset 0.55s var(--ease-out), stroke 0.2s var(--ease);
+  transition: stroke-dashoffset 0.55s var(--ls-ease-out), stroke 0.2s var(--ls-ease);
 }
 
-.ring-value {
+.ls-ring-value {
   position: absolute;
   inset: 0;
   display: flex;
@@ -104,13 +104,13 @@ const strokeColor = computed(() => {
   justify-content: center;
   font-size: 16px;
   font-weight: 600;
-  color: var(--c-text);
+  color: var(--ls-text);
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.02em;
 }
 
-.ring-label {
+.ls-ring-label {
   font-size: 12.5px;
-  color: var(--c-text-muted);
+  color: var(--ls-text-muted);
 }
 </style>

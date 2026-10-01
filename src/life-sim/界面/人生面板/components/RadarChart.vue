@@ -1,11 +1,11 @@
 <template>
-  <div class="radar">
-    <svg class="radar-svg" :viewBox="`0 0 ${SIZE} ${SIZE}`" role="img" aria-label="六维天赋雷达图">
+  <div class="ls-radar">
+    <svg class="ls-radar-svg" :viewBox="`0 0 ${SIZE} ${SIZE}`" role="img" aria-label="六维天赋雷达图">
       <polygon
         v-for="level in GRID_LEVELS"
         :key="`grid-${level}`"
         :points="gridPoints(level)"
-        class="radar-grid"
+        class="ls-radar-grid"
       />
       <line
         v-for="axis in axes"
@@ -14,16 +14,16 @@
         :y1="CENTER"
         :x2="axis.tipX"
         :y2="axis.tipY"
-        class="radar-axis"
+        class="ls-radar-axis"
       />
-      <polygon :points="areaPoints" class="radar-area" />
+      <polygon :points="areaPoints" class="ls-radar-area" />
       <circle
         v-for="axis in axes"
         :key="`dot-${axis.label}`"
         :cx="axis.pointX"
         :cy="axis.pointY"
         r="3"
-        class="radar-dot"
+        class="ls-radar-dot"
       />
       <text
         v-for="axis in axes"
@@ -31,7 +31,7 @@
         :x="axis.labelX"
         :y="axis.labelY"
         :text-anchor="axis.anchor"
-        class="radar-label"
+        class="ls-radar-label"
       >
         {{ axis.label }}
       </text>
@@ -41,7 +41,7 @@
         :x="axis.labelX"
         :y="axis.labelY + 15"
         :text-anchor="axis.anchor"
-        class="radar-value"
+        class="ls-radar-value"
       >
         {{ axis.value }}
       </text>
@@ -106,50 +106,50 @@ function gridPoints(level: number) {
 </script>
 
 <style lang="scss" scoped>
-.radar {
+.ls-radar {
   display: flex;
   justify-content: center;
   padding: 14px 16px 16px;
 }
 
-.radar-svg {
+.ls-radar-svg {
   display: block;
   width: 100%;
   max-width: 300px;
   height: auto;
 }
 
-.radar-grid {
+.ls-radar-grid {
   fill: none;
-  stroke: var(--c-border);
+  stroke: var(--ls-border);
   stroke-width: 1;
 }
 
-.radar-axis {
-  stroke: var(--c-border);
+.ls-radar-axis {
+  stroke: var(--ls-border);
   stroke-width: 1;
 }
 
-.radar-area {
-  fill: var(--c-accent-soft);
-  stroke: var(--c-accent);
+.ls-radar-area {
+  fill: var(--ls-accent-soft);
+  stroke: var(--ls-accent);
   stroke-width: 1.5;
   stroke-linejoin: round;
 }
 
-.radar-dot {
-  fill: var(--c-accent);
+.ls-radar-dot {
+  fill: var(--ls-accent);
 }
 
-.radar-label {
+.ls-radar-label {
   font-size: 11.5px;
-  fill: var(--c-text-body);
+  fill: var(--ls-text-body);
 }
 
-.radar-value {
+.ls-radar-value {
   font-size: 11px;
   font-weight: 600;
-  fill: var(--c-accent-hover);
+  fill: var(--ls-accent-hover);
   font-variant-numeric: tabular-nums;
 }
 </style>

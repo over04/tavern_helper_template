@@ -1,8 +1,8 @@
 <template>
-  <div class="skills">
-    <div class="group">
-      <span class="group-label">学识</span>
-      <CollapsibleList class="skill-list" :items="studyEntries" :limit="5">
+  <div class="ls-skills">
+    <div class="ls-group">
+      <span class="ls-group-label">学识</span>
+      <CollapsibleList class="ls-skill-list" :items="studyEntries" :limit="5">
         <template #default="{ items }">
           <LevelBar
             v-for="[name, item] in items"
@@ -14,12 +14,12 @@
           />
         </template>
       </CollapsibleList>
-      <span v-if="!studyEntries.length" class="empty">无</span>
+      <span v-if="!studyEntries.length" class="ls-empty">无</span>
     </div>
 
-    <div class="group">
-      <span class="group-label">技能</span>
-      <CollapsibleList class="skill-list" :items="skillEntries" :limit="5">
+    <div class="ls-group">
+      <span class="ls-group-label">技能</span>
+      <CollapsibleList class="ls-skill-list" :items="skillEntries" :limit="5">
         <template #default="{ items }">
           <LevelBar
             v-for="[name, item] in items"
@@ -31,7 +31,7 @@
           />
         </template>
       </CollapsibleList>
-      <span v-if="!skillEntries.length" class="empty">无</span>
+      <span v-if="!skillEntries.length" class="ls-empty">无</span>
     </div>
   </div>
 </template>
@@ -53,30 +53,30 @@ const skillEntries = computed(() => Object.entries(props.skills ?? {}));
 </script>
 
 <style lang="scss" scoped>
-.skills {
+.ls-skills {
   display: flex;
   flex-direction: column;
   gap: 16px;
   padding: 16px;
 }
 
-.group {
+.ls-group {
   display: flex;
   flex-direction: column;
   gap: 9px;
 }
 
-.group-label {
+.ls-group-label {
   font-size: 12px;
-  color: var(--c-text-faint);
+  color: var(--ls-text-faint);
 }
 
-.skill-list {
-  --collapse-gap: 11px;
+.ls-skill-list {
+  --ls-collapse-gap: 11px;
 }
 
-.empty {
+.ls-empty {
   font-size: 12.5px;
-  color: var(--c-text-faint);
+  color: var(--ls-text-faint);
 }
 </style>

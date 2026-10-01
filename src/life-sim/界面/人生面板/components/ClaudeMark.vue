@@ -1,5 +1,5 @@
 <template>
-  <svg class="cl-mark" :style="{ width: `${size}px`, height: `${size}px` }" viewBox="0 0 24 24" aria-hidden="true">
+  <svg class="ls-mark" :style="{ width: `${size}px`, height: `${size}px` }" viewBox="0 0 24 24" aria-hidden="true">
     <g stroke="currentColor" stroke-linecap="round">
       <line
         v-for="ray in RAYS"
@@ -30,9 +30,9 @@ const RAYS = Array.from({ length: 12 }, (_, index) => {
 </script>
 
 <style scoped>
-.cl-mark {
+.ls-mark {
   display: block;
-  color: var(--c-accent);
+  color: var(--ls-accent);
   flex: none;
 }
 </style>

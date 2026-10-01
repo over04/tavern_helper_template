@@ -1,7 +1,7 @@
 <template>
-  <div class="collapse">
+  <div class="ls-collapse">
     <slot :items="visibleItems" />
-    <button v-if="hasMore" class="collapse-toggle" type="button" @click="expanded = !expanded">
+    <button v-if="hasMore" class="ls-collapse-toggle" type="button" @click="expanded = !expanded">
       {{ expanded ? '收起' : `展开全部（还有 ${hiddenCount} 个）` }}
     </button>
   </div>
@@ -26,26 +26,26 @@ const hasMore = computed(() => props.items.length > props.limit);
 </script>
 
 <style lang="scss" scoped>
-.collapse {
+.ls-collapse {
   display: flex;
   flex-direction: column;
-  gap: var(--collapse-gap, 0px);
+  gap: var(--ls-collapse-gap, 0px);
 }
 
-.collapse-toggle {
+.ls-collapse-toggle {
   margin-top: 10px;
   padding: 8px 0;
-  border: 1px dashed var(--c-border-strong);
-  border-radius: var(--r-sm);
+  border: 1px dashed var(--ls-border-strong);
+  border-radius: var(--ls-r-sm);
   background: transparent;
-  color: var(--c-text-muted);
+  color: var(--ls-text-muted);
   font-size: 12px;
   cursor: pointer;
 }
 
-.collapse-toggle:hover {
-  border-color: var(--c-accent-line);
-  background: var(--c-accent-soft);
-  color: var(--c-accent-hover);
+.ls-collapse-toggle:hover {
+  border-color: var(--ls-accent-line);
+  background: var(--ls-accent-soft);
+  color: var(--ls-accent-hover);
 }
 </style>

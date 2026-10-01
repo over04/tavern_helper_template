@@ -1,20 +1,20 @@
 <template>
-  <div class="archive">
-    <div class="vitals">
+  <div class="ls-archive">
+    <div class="ls-vitals">
       <RingProgress label="健康" :value="vitals.健康" :tone="hpTone" />
       <RingProgress label="气度" :value="vitals.气度" tone="neutral" />
       <RingProgress label="声望" :value="vitals.声望" tone="accent" />
       <RingProgress label="幸福" :value="vitals.幸福" tone="positive" />
     </div>
 
-    <div class="group">
-      <span class="group-label">精力</span>
+    <div class="ls-group">
+      <span class="ls-group-label">精力</span>
       <FocusRing :focus="focus" />
     </div>
 
-    <div class="group">
-      <span class="group-label">关系</span>
-      <CollapsibleList class="rel-list" :items="relationEntries" :limit="5">
+    <div class="ls-group">
+      <span class="ls-group-label">关系</span>
+      <CollapsibleList class="ls-rel-list" :items="relationEntries" :limit="5">
         <template #default="{ items }">
           <RelationBar
             v-for="[name, rel] in items"
@@ -26,43 +26,43 @@
           />
         </template>
       </CollapsibleList>
-      <span v-if="!relationEntries.length" class="empty">无</span>
+      <span v-if="!relationEntries.length" class="ls-empty">无</span>
     </div>
 
-    <div class="group">
-      <span class="group-label">资产</span>
-      <div class="asset-groups">
-        <div v-if="familyEntries.length" class="asset-group">
-          <span class="asset-group-label">家庭</span>
+    <div class="ls-group">
+      <span class="ls-group-label">资产</span>
+      <div class="ls-asset-groups">
+        <div v-if="familyEntries.length" class="ls-asset-group">
+          <span class="ls-asset-group-label">家庭</span>
           <CollapsibleList :items="familyEntries" :limit="5">
             <template #default="{ items }">
-              <div v-for="[name, item] in items" :key="name" class="asset-row">
-                <div class="asset-info">
-                  <span class="asset-name">{{ name }}</span>
-                  <span v-if="item.来源" class="asset-source">{{ item.来源 }}</span>
+              <div v-for="[name, item] in items" :key="name" class="ls-asset-row">
+                <div class="ls-asset-info">
+                  <span class="ls-asset-name">{{ name }}</span>
+                  <span v-if="item.来源" class="ls-asset-source">{{ item.来源 }}</span>
                 </div>
-                <span class="asset-amount">{{ item.数量 }}</span>
+                <span class="ls-asset-amount">{{ item.数量 }}</span>
               </div>
             </template>
           </CollapsibleList>
         </div>
 
-        <div v-if="personalEntries.length" class="asset-group">
-          <span class="asset-group-label">个人</span>
+        <div v-if="personalEntries.length" class="ls-asset-group">
+          <span class="ls-asset-group-label">个人</span>
           <CollapsibleList :items="personalEntries" :limit="5">
             <template #default="{ items }">
-              <div v-for="[name, item] in items" :key="name" class="asset-row">
-                <div class="asset-info">
-                  <span class="asset-name">{{ name }}</span>
-                  <span v-if="item.来源" class="asset-source">{{ item.来源 }}</span>
+              <div v-for="[name, item] in items" :key="name" class="ls-asset-row">
+                <div class="ls-asset-info">
+                  <span class="ls-asset-name">{{ name }}</span>
+                  <span v-if="item.来源" class="ls-asset-source">{{ item.来源 }}</span>
                 </div>
-                <span class="asset-amount">{{ item.数量 }}</span>
+                <span class="ls-asset-amount">{{ item.数量 }}</span>
               </div>
             </template>
           </CollapsibleList>
         </div>
 
-        <span v-if="!familyEntries.length && !personalEntries.length" class="empty">无</span>
+        <span v-if="!familyEntries.length && !personalEntries.length" class="ls-empty">无</span>
       </div>
     </div>
   </div>
@@ -100,96 +100,96 @@ const personalEntries = computed(() => Object.entries(props.personalAssets ?? {}
 </script>
 
 <style lang="scss" scoped>
-.archive {
+.ls-archive {
   display: flex;
   flex-direction: column;
   gap: 18px;
   padding: 16px;
 }
 
-.vitals {
+.ls-vitals {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 10px;
 }
 
-.group {
+.ls-group {
   display: flex;
   flex-direction: column;
   gap: 9px;
 }
 
-.group-label {
+.ls-group-label {
   font-size: 12px;
-  color: var(--c-text-faint);
+  color: var(--ls-text-faint);
 }
 
-.rel-list {
-  --collapse-gap: 11px;
+.ls-rel-list {
+  --ls-collapse-gap: 11px;
 }
 
-.empty {
+.ls-empty {
   font-size: 12.5px;
-  color: var(--c-text-faint);
+  color: var(--ls-text-faint);
 }
 
-.asset-groups {
+.ls-asset-groups {
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
 
-.asset-group {
+.ls-asset-group {
   display: flex;
   flex-direction: column;
   padding: 6px 12px 8px;
-  border: 1px solid var(--c-border);
-  border-radius: var(--r-sm);
-  background: var(--c-surface-sunken);
+  border: 1px solid var(--ls-border);
+  border-radius: var(--ls-r-sm);
+  background: var(--ls-surface-sunken);
 }
 
-.asset-group-label {
+.ls-asset-group-label {
   padding: 4px 0 6px;
   font-size: 11px;
   letter-spacing: 0.1em;
-  color: var(--c-text-faint);
+  color: var(--ls-text-faint);
 }
 
-.asset-row {
+.ls-asset-row {
   display: flex;
   align-items: baseline;
   gap: 12px;
   padding: 9px 0;
-  border-top: 1px solid var(--c-border);
+  border-top: 1px solid var(--ls-border);
 }
 
-.asset-row:first-child {
+.ls-asset-row:first-child {
   border-top: none;
 }
 
-.asset-info {
+.ls-asset-info {
   display: flex;
   flex-direction: column;
   gap: 2px;
   min-width: 0;
 }
 
-.asset-name {
+.ls-asset-name {
   font-size: 13px;
-  color: var(--c-text);
+  color: var(--ls-text);
 }
 
-.asset-source {
+.ls-asset-source {
   font-size: 11.5px;
-  color: var(--c-text-faint);
+  color: var(--ls-text-faint);
 }
 
-.asset-amount {
+.ls-asset-amount {
   margin-left: auto;
   flex: none;
   font-size: 13px;
   font-weight: 600;
-  color: var(--c-accent-hover);
+  color: var(--ls-accent-hover);
   font-variant-numeric: tabular-nums;
 }
 </style>

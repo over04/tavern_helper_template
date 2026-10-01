@@ -1,27 +1,27 @@
 <template>
-  <article class="finale">
-    <header class="finale-head">
+  <article class="ls-finale">
+    <header class="ls-finale-head">
       <ClaudeMark :size="22" />
-      <span class="finale-kicker">一生结算</span>
-      <h2 class="finale-age">
-        {{ finale.享年 }}<span class="finale-age-unit">岁</span>
+      <span class="ls-finale-kicker">一生结算</span>
+      <h2 class="ls-finale-age">
+        {{ finale.享年 }}<span class="ls-finale-age-unit">岁</span>
       </h2>
-      <p class="finale-cause">{{ finale.死因 }}</p>
+      <p class="ls-finale-cause">{{ finale.死因 }}</p>
     </header>
 
-    <section class="finale-block">
-      <span class="finale-label">一生</span>
-      <p class="finale-text">{{ finale.一生总结 }}</p>
+    <section class="ls-finale-block">
+      <span class="ls-finale-label">一生</span>
+      <p class="ls-finale-text">{{ finale.一生总结 }}</p>
     </section>
 
-    <section class="finale-block">
-      <span class="finale-label">巅峰</span>
-      <p class="finale-text">{{ finale.巅峰 }}</p>
+    <section class="ls-finale-block">
+      <span class="ls-finale-label">巅峰</span>
+      <p class="ls-finale-text">{{ finale.巅峰 }}</p>
     </section>
 
-    <footer class="finale-foot">
-      <p class="finale-epitaph">{{ finale.墓志铭 }}</p>
-      <span class="finale-rate">{{ finale.评语 }}</span>
+    <footer class="ls-finale-foot">
+      <p class="ls-finale-epitaph">{{ finale.墓志铭 }}</p>
+      <span class="ls-finale-rate">{{ finale.评语 }}</span>
     </footer>
   </article>
 </template>
@@ -35,75 +35,75 @@ defineProps<{
 </script>
 
 <style lang="scss" scoped>
-.finale {
+.ls-finale {
   display: flex;
   flex-direction: column;
-  background: var(--c-surface);
-  border: 1px solid var(--c-border);
-  border-radius: var(--r-md);
+  background: var(--ls-surface);
+  border: 1px solid var(--ls-border);
+  border-radius: var(--ls-r-md);
   overflow: hidden;
-  animation: cl-enter 0.5s var(--ease-out) both;
+  animation: ls-enter 0.5s var(--ls-ease-out) both;
 }
 
-.finale-head {
+.ls-finale-head {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 7px;
   padding: 30px 20px 26px;
-  background: var(--c-bg-alt);
-  border-bottom: 1px solid var(--c-border);
+  background: var(--ls-bg-alt);
+  border-bottom: 1px solid var(--ls-border);
 }
 
-.finale-kicker {
+.ls-finale-kicker {
   font-size: 12px;
   letter-spacing: 0.16em;
-  color: var(--c-text-muted);
+  color: var(--ls-text-muted);
 }
 
-.finale-age {
+.ls-finale-age {
   font-size: 38px;
   font-weight: 600;
   line-height: 1;
   letter-spacing: -0.03em;
-  color: var(--c-text);
+  color: var(--ls-text);
   font-variant-numeric: tabular-nums;
 }
 
-.finale-age-unit {
+.ls-finale-age-unit {
   margin-left: 5px;
   font-size: 15px;
   font-weight: 400;
-  color: var(--c-text-muted);
+  color: var(--ls-text-muted);
 }
 
-.finale-cause {
+.ls-finale-cause {
   font-size: 13px;
-  color: var(--c-text-muted);
+  color: var(--ls-text-muted);
 }
 
-.finale-block {
+.ls-finale-block {
   display: flex;
   flex-direction: column;
   gap: 7px;
   padding: 18px 20px;
-  border-bottom: 1px solid var(--c-border);
+  border-bottom: 1px solid var(--ls-border);
 }
 
-.finale-label {
+.ls-finale-label {
   font-size: 12px;
-  color: var(--c-text-faint);
+  color: var(--ls-text-faint);
 }
 
-.finale-text {
-  font-family: var(--f-serif);
+.ls-finale-text {
+  font-family: var(--ls-f-serif);
   font-size: 14px;
   line-height: 1.85;
-  color: var(--c-text-body);
+  color: var(--ls-text-body);
   white-space: pre-wrap;
 }
 
-.finale-foot {
+.ls-finale-foot {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -111,17 +111,17 @@ defineProps<{
   padding: 24px 20px 26px;
 }
 
-.finale-epitaph {
-  font-family: var(--f-serif);
+.ls-finale-epitaph {
+  font-family: var(--ls-f-serif);
   font-size: 16px;
   line-height: 1.7;
   text-align: center;
-  color: var(--c-text);
+  color: var(--ls-text);
 }
 
-.finale-rate {
+.ls-finale-rate {
   font-size: 12px;
   letter-spacing: 0.2em;
-  color: var(--c-text-faint);
+  color: var(--ls-text-faint);
 }
 </style>

@@ -1,12 +1,12 @@
 <template>
-  <section class="fold">
-    <button class="fold-head" type="button" :aria-expanded="open" @click="open = !open">
-      <span class="fold-title">{{ title }}</span>
-      <span v-if="meta" class="fold-meta">{{ meta }}</span>
-      <i class="fa-solid fa-chevron-down fold-chevron" :class="{ 'is-open': open }" />
+  <section class="ls-fold">
+    <button class="ls-fold-head" type="button" :aria-expanded="open" @click="open = !open">
+      <span class="ls-fold-title">{{ title }}</span>
+      <span v-if="meta" class="ls-fold-meta">{{ meta }}</span>
+      <i class="fa-solid fa-chevron-down ls-fold-chevron" :class="{ 'ls-is-open': open }" />
     </button>
-    <div class="fold-body" :class="{ 'is-open': open }">
-      <div class="fold-inner">
+    <div class="ls-fold-body" :class="{ 'ls-is-open': open }">
+      <div class="ls-fold-inner">
         <slot />
       </div>
     </div>
@@ -22,11 +22,11 @@ const open = ref(true);
 </script>
 
 <style lang="scss" scoped>
-.fold {
-  border-top: 1px solid var(--c-border);
+.ls-fold {
+  border-top: 1px solid var(--ls-border);
 }
 
-.fold-head {
+.ls-fold-head {
   width: 100%;
   display: flex;
   align-items: center;
@@ -38,50 +38,50 @@ const open = ref(true);
   text-align: left;
 }
 
-.fold-head:hover {
-  background: var(--c-surface-sunken);
+.ls-fold-head:hover {
+  background: var(--ls-surface-sunken);
 }
 
-.fold-title {
+.ls-fold-title {
   font-size: 13px;
   font-weight: 500;
-  color: var(--c-text);
+  color: var(--ls-text);
 }
 
-.fold-meta {
+.ls-fold-meta {
   margin-left: auto;
   font-size: 12px;
-  color: var(--c-text-faint);
+  color: var(--ls-text-faint);
   font-variant-numeric: tabular-nums;
 }
 
-.fold-chevron {
+.ls-fold-chevron {
   font-size: 10px;
-  color: var(--c-text-faint);
-  transition: transform 0.24s var(--ease);
+  color: var(--ls-text-faint);
+  transition: transform 0.24s var(--ls-ease);
 }
 
-.fold-chevron.is-open {
+.ls-fold-chevron.ls-is-open {
   transform: rotate(180deg);
 }
 
-.fold-body {
+.ls-fold-body {
   display: grid;
   grid-template-rows: 0fr;
   opacity: 0;
-  transition: grid-template-rows 0.26s var(--ease), opacity 0.2s var(--ease);
+  transition: grid-template-rows 0.26s var(--ls-ease), opacity 0.2s var(--ls-ease);
 }
 
-.fold-body.is-open {
+.ls-fold-body.ls-is-open {
   grid-template-rows: 1fr;
   opacity: 1;
 }
 
-.fold-inner {
+.ls-fold-inner {
   overflow: hidden;
 }
 
-.fold-body.is-open .fold-inner > :deep(*) {
-  animation: cl-reveal 0.28s var(--ease-out) both;
+.ls-fold-body.ls-is-open .ls-fold-inner > :deep(*) {
+  animation: ls-reveal 0.28s var(--ls-ease-out) both;
 }
 </style>

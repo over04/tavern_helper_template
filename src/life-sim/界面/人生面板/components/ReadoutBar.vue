@@ -1,31 +1,31 @@
 <template>
-  <header class="readout">
-    <div class="readout-top">
-      <div class="readout-age">
-        <span class="readout-age-num">{{ time.年龄岁 }}</span>
-        <span class="readout-age-unit">岁</span>
-        <span v-if="time.年龄月 > 0" class="readout-age-month">{{ time.年龄月 }} 个月</span>
+  <header class="ls-readout">
+    <div class="ls-readout-top">
+      <div class="ls-readout-age">
+        <span class="ls-readout-age-num">{{ time.年龄岁 }}</span>
+        <span class="ls-readout-age-unit">岁</span>
+        <span v-if="time.年龄月 > 0" class="ls-readout-age-month">{{ time.年龄月 }} 个月</span>
       </div>
       <AgeRing :age-year="time.年龄岁" :age-month="time.年龄月" />
     </div>
 
-    <div class="readout-meta">
+    <div class="ls-readout-meta">
       <template v-if="displayName">
-        <span class="readout-name">{{ displayName }}</span>
-        <span class="readout-sep">·</span>
+        <span class="ls-readout-name">{{ displayName }}</span>
+        <span class="ls-readout-sep">·</span>
       </template>
       <span>第 {{ time.回合 }} 回合</span>
-      <span class="readout-sep">·</span>
+      <span class="ls-readout-sep">·</span>
       <span>{{ spanLabel }}</span>
-      <span class="readout-sep">·</span>
+      <span class="ls-readout-sep">·</span>
       <span>{{ sex }}</span>
     </div>
 
-    <div class="readout-span">
-      <span class="readout-span-label">跨度</span>
-      <input v-model.number="span" class="readout-range" type="range" min="1" max="60" step="1" />
-      <span class="readout-span-value">{{ span }} 个月</span>
-      <button class="btn-quiet" type="button" @click="applySpan">应用</button>
+    <div class="ls-readout-span">
+      <span class="ls-readout-span-label">跨度</span>
+      <input v-model.number="span" class="ls-readout-range" type="range" min="1" max="60" step="1" />
+      <span class="ls-readout-span-value">{{ span }} 个月</span>
+      <button class="ls-btn-quiet" type="button" @click="applySpan">应用</button>
     </div>
   </header>
 </template>
@@ -96,136 +96,136 @@ function applySpan() {
 </script>
 
 <style lang="scss" scoped>
-.readout {
+.ls-readout {
   display: flex;
   flex-direction: column;
   gap: 10px;
   padding: 18px 16px 16px;
 }
 
-.readout-top {
+.ls-readout-top {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
 }
 
-.readout-age {
+.ls-readout-age {
   display: flex;
   align-items: baseline;
   gap: 5px;
 }
 
-.readout-age-num {
+.ls-readout-age-num {
   font-size: 30px;
   font-weight: 600;
   line-height: 1;
   letter-spacing: -0.03em;
-  color: var(--c-text);
+  color: var(--ls-text);
   font-variant-numeric: tabular-nums;
 }
 
-.readout-age-unit {
+.ls-readout-age-unit {
   font-size: 14px;
-  color: var(--c-text-muted);
+  color: var(--ls-text-muted);
 }
 
-.readout-age-month {
+.ls-readout-age-month {
   margin-left: 6px;
   font-size: 13px;
-  color: var(--c-text-faint);
+  color: var(--ls-text-faint);
   font-variant-numeric: tabular-nums;
 }
 
-.readout-meta {
+.ls-readout-meta {
   display: flex;
   align-items: center;
   gap: 6px;
   font-size: 13px;
-  color: var(--c-text-muted);
+  color: var(--ls-text-muted);
   font-variant-numeric: tabular-nums;
 }
 
-.readout-name {
+.ls-readout-name {
   font-weight: 600;
-  color: var(--c-text);
+  color: var(--ls-text);
 }
 
-.readout-sep {
-  color: var(--c-border-strong);
+.ls-readout-sep {
+  color: var(--ls-border-strong);
 }
 
-.readout-span {
+.ls-readout-span {
   display: flex;
   align-items: center;
   gap: 10px;
   margin-top: 2px;
   padding: 8px 12px;
-  border: 1px solid var(--c-border);
-  border-radius: var(--r-sm);
-  background: var(--c-surface-sunken);
+  border: 1px solid var(--ls-border);
+  border-radius: var(--ls-r-sm);
+  background: var(--ls-surface-sunken);
 }
 
-.readout-span-label {
+.ls-readout-span-label {
   flex: none;
   font-size: 12.5px;
-  color: var(--c-text-muted);
+  color: var(--ls-text-muted);
 }
 
-.readout-range {
+.ls-readout-range {
   flex: 1;
   min-width: 0;
   height: 4px;
   appearance: none;
   border-radius: 999px;
-  background: var(--c-border-strong);
+  background: var(--ls-border-strong);
   outline: none;
   cursor: pointer;
 }
 
-.readout-range::-webkit-slider-thumb {
+.ls-readout-range::-webkit-slider-thumb {
   appearance: none;
   width: 14px;
   height: 14px;
   border-radius: 50%;
-  background: var(--c-accent);
-  border: 2px solid var(--c-surface);
-  box-shadow: var(--shadow-hair);
+  background: var(--ls-accent);
+  border: 2px solid var(--ls-surface);
+  box-shadow: var(--ls-shadow-hair);
 }
 
-.readout-range::-moz-range-thumb {
+.ls-readout-range::-moz-range-thumb {
   width: 14px;
   height: 14px;
   border-radius: 50%;
-  background: var(--c-accent);
-  border: 2px solid var(--c-surface);
+  background: var(--ls-accent);
+  border: 2px solid var(--ls-surface);
 }
 
-.readout-span-value {
+.ls-readout-span-value {
   flex: none;
   min-width: 52px;
   text-align: right;
   font-size: 13px;
   font-weight: 500;
-  color: var(--c-text);
+  color: var(--ls-text);
   font-variant-numeric: tabular-nums;
 }
 
-.btn-quiet {
+.ls-btn-quiet {
   flex: none;
   padding: 5px 12px;
-  border: 1px solid var(--c-border-strong);
-  border-radius: var(--r-sm);
-  background: var(--c-surface);
-  color: var(--c-text-body);
+  border: 1px solid var(--ls-border-strong);
+  border-radius: var(--ls-r-sm);
+  background: var(--ls-surface);
+  color: var(--ls-text-body);
   font-size: 12.5px;
   font-weight: 500;
   cursor: pointer;
 }
 
-.btn-quiet:hover {
-  background: var(--c-surface-hover);
-  border-color: var(--c-text-faint);
-  color: var(--c-text);
+.ls-btn-quiet:hover {
+  background: var(--ls-surface-hover);
+  border-color: var(--ls-text-faint);
+  color: var(--ls-text);
 }
 </style>

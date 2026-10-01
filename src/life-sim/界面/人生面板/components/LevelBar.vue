@@ -1,21 +1,21 @@
 <template>
-  <div class="level">
-    <div class="level-head">
-      <span class="level-name">{{ name }}</span>
-      <span class="level-meta">
+  <div class="ls-level">
+    <div class="ls-level-head">
+      <span class="ls-level-name">{{ name }}</span>
+      <span class="ls-level-meta">
         <b>L{{ 层级 }}</b>
-        <span class="level-pct">{{ 进度 }}%</span>
-        <span class="level-cap">上限 {{ 上限 }}</span>
+        <span class="ls-level-pct">{{ 进度 }}%</span>
+        <span class="ls-level-cap">上限 {{ 上限 }}</span>
       </span>
     </div>
-    <div class="level-track">
+    <div class="ls-level-track">
       <span
         v-for="step in STEPS"
         :key="step"
-        class="level-cell"
-        :class="{ 'is-done': step < 层级, 'is-capped': step > 上限 }"
+        class="ls-level-cell"
+        :class="{ 'ls-is-done': step < 层级, 'ls-is-capped': step > 上限 }"
       >
-        <i v-if="step === 层级" class="level-fill" :style="{ width: `${进度}%` }" />
+        <i v-if="step === 层级" class="ls-level-fill" :style="{ width: `${进度}%` }" />
       </span>
     </div>
   </div>
@@ -33,24 +33,24 @@ const STEPS = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 </script>
 
 <style lang="scss" scoped>
-.level {
+.ls-level {
   display: flex;
   flex-direction: column;
   gap: 6px;
 }
 
-.level-head {
+.ls-level-head {
   display: flex;
   align-items: baseline;
   gap: 8px;
 }
 
-.level-name {
+.ls-level-name {
   font-size: 13px;
-  color: var(--c-text);
+  color: var(--ls-text);
 }
 
-.level-meta {
+.ls-level-meta {
   display: flex;
   align-items: baseline;
   gap: 7px;
@@ -58,52 +58,52 @@ const STEPS = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
   font-variant-numeric: tabular-nums;
 }
 
-.level-meta b {
+.ls-level-meta b {
   font-size: 12.5px;
   font-weight: 600;
-  color: var(--c-accent-hover);
+  color: var(--ls-accent-hover);
 }
 
-.level-pct {
+.ls-level-pct {
   font-size: 11.5px;
-  color: var(--c-text-muted);
+  color: var(--ls-text-muted);
 }
 
-.level-cap {
+.ls-level-cap {
   font-size: 11px;
-  color: var(--c-text-faint);
+  color: var(--ls-text-faint);
 }
 
-.level-track {
+.ls-level-track {
   display: flex;
   gap: 3px;
   height: 6px;
 }
 
-.level-cell {
+.ls-level-cell {
   position: relative;
   flex: 1;
   border-radius: 2px;
-  background: var(--c-border);
+  background: var(--ls-border);
   overflow: hidden;
 }
 
-.level-cell.is-done {
-  background: var(--c-accent);
+.ls-level-cell.ls-is-done {
+  background: var(--ls-accent);
 }
 
-.level-cell.is-capped {
+.ls-level-cell.ls-is-capped {
   background: transparent;
-  box-shadow: inset 0 0 0 1px var(--c-border);
+  box-shadow: inset 0 0 0 1px var(--ls-border);
 }
 
-.level-fill {
+.ls-level-fill {
   position: absolute;
   top: 0;
   bottom: 0;
   left: 0;
   border-radius: 2px;
-  background: var(--c-accent);
-  transition: width 0.45s var(--ease-out);
+  background: var(--ls-accent);
+  transition: width 0.45s var(--ls-ease-out);
 }
 </style>

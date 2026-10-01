@@ -1,29 +1,29 @@
 <template>
-  <div class="focus">
-    <div class="focus-dial">
-      <svg class="focus-svg" :viewBox="`0 0 ${SIZE} ${SIZE}`" role="img" aria-label="精力份额占比">
-        <circle :cx="CENTER" :cy="CENTER" :r="RADIUS" class="focus-track" />
+  <div class="ls-focus">
+    <div class="ls-focus-dial">
+      <svg class="ls-focus-svg" :viewBox="`0 0 ${SIZE} ${SIZE}`" role="img" aria-label="精力份额占比">
+        <circle :cx="CENTER" :cy="CENTER" :r="RADIUS" class="ls-focus-track" />
         <circle
           v-for="segment in segments"
           :key="segment.field"
           :cx="CENTER"
           :cy="CENTER"
           :r="RADIUS"
-          class="focus-arc"
+          class="ls-focus-arc"
           :stroke="segment.color"
           :stroke-dasharray="`${segment.length} ${CIRCUMFERENCE - segment.length}`"
           :stroke-dashoffset="segment.offset"
         />
       </svg>
-      <span class="focus-center" :class="{ 'is-over': isOverdrawn }">{{ totalLabel }}</span>
+      <span class="ls-focus-center" :class="{ 'ls-is-over': isOverdrawn }">{{ totalLabel }}</span>
     </div>
-    <div class="focus-legend">
-      <span v-for="segment in segments" :key="segment.field" class="focus-item">
-        <i class="focus-dot" :style="{ background: segment.color }" />
-        <span class="focus-field">{{ segment.field }}</span>
+    <div class="ls-focus-legend">
+      <span v-for="segment in segments" :key="segment.field" class="ls-focus-item">
+        <i class="ls-focus-dot" :style="{ background: segment.color }" />
+        <span class="ls-focus-field">{{ segment.field }}</span>
         <b>{{ segment.share }}</b>
       </span>
-      <span v-if="!segments.length" class="empty">未分配</span>
+      <span v-if="!segments.length" class="ls-empty">未分配</span>
     </div>
   </div>
 </template>
@@ -40,11 +40,11 @@ const CENTER = SIZE / 2;
 const RADIUS = 42;
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
 const PALETTE = [
-  'var(--c-accent)',
-  'var(--c-positive)',
-  'var(--c-caution)',
-  'var(--c-accent-hover)',
-  'var(--c-text-muted)',
+  'var(--ls-accent)',
+  'var(--ls-positive)',
+  'var(--ls-caution)',
+  'var(--ls-accent-hover)',
+  'var(--ls-text-muted)',
 ];
 
 const total = computed(() => Object.values(props.focus ?? {}).reduce((sum, share) => sum + share, 0));
@@ -76,39 +76,39 @@ const isOverdrawn = computed(() => total.value > 1.0001);
 </script>
 
 <style lang="scss" scoped>
-.focus {
+.ls-focus {
   display: flex;
   align-items: center;
   gap: 18px;
 }
 
-.focus-dial {
+.ls-focus-dial {
   position: relative;
   flex: none;
   width: 108px;
   height: 108px;
 }
 
-.focus-svg {
+.ls-focus-svg {
   display: block;
   width: 100%;
   height: 100%;
   transform: rotate(-90deg);
 }
 
-.focus-track {
+.ls-focus-track {
   fill: none;
-  stroke: var(--c-border);
+  stroke: var(--ls-border);
   stroke-width: 10;
 }
 
-.focus-arc {
+.ls-focus-arc {
   fill: none;
   stroke-width: 10;
-  transition: stroke-dasharray 0.5s var(--ease-out), stroke-dashoffset 0.5s var(--ease-out);
+  transition: stroke-dasharray 0.5s var(--ls-ease-out), stroke-dashoffset 0.5s var(--ls-ease-out);
 }
 
-.focus-center {
+.ls-focus-center {
   position: absolute;
   inset: 0;
   display: flex;
@@ -116,50 +116,50 @@ const isOverdrawn = computed(() => total.value > 1.0001);
   justify-content: center;
   font-size: 19px;
   font-weight: 600;
-  color: var(--c-text);
+  color: var(--ls-text);
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.02em;
 }
 
-.focus-center.is-over {
-  color: var(--c-alarm);
+.ls-focus-center.ls-is-over {
+  color: var(--ls-alarm);
 }
 
-.focus-legend {
+.ls-focus-legend {
   display: flex;
   flex-direction: column;
   gap: 7px;
   min-width: 0;
 }
 
-.focus-item {
+.ls-focus-item {
   display: flex;
   align-items: center;
   gap: 7px;
   font-size: 12.5px;
-  color: var(--c-text-body);
+  color: var(--ls-text-body);
 }
 
-.focus-dot {
+.ls-focus-dot {
   flex: none;
   width: 7px;
   height: 7px;
   border-radius: 50%;
 }
 
-.focus-field {
-  color: var(--c-text);
+.ls-focus-field {
+  color: var(--ls-text);
 }
 
-.focus-item b {
+.ls-focus-item b {
   margin-left: auto;
   font-weight: 600;
-  color: var(--c-text-muted);
+  color: var(--ls-text-muted);
   font-variant-numeric: tabular-nums;
 }
 
-.empty {
+.ls-empty {
   font-size: 12.5px;
-  color: var(--c-text-faint);
+  color: var(--ls-text-faint);
 }
 </style>

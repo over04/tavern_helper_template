@@ -1,19 +1,19 @@
 <template>
-  <div class="opening">
-    <header class="opening-head">
+  <div class="ls-opening">
+    <header class="ls-opening-head">
       <ClaudeMark :size="24" />
-      <div class="opening-titles">
-        <h2 class="opening-title">人生尚未开始</h2>
-        <p class="opening-sub">设定出身，或直接以文字报出设定</p>
+      <div class="ls-opening-titles">
+        <h2 class="ls-opening-title">人生尚未开始</h2>
+        <p class="ls-opening-sub">设定出身，或直接以文字报出设定</p>
       </div>
     </header>
 
-    <nav class="opening-tabs">
+    <nav class="ls-opening-tabs">
       <button
         v-for="tab in TABS"
         :key="tab.key"
-        class="opening-tab"
-        :class="{ 'is-active': page === tab.key }"
+        class="ls-opening-tab"
+        :class="{ 'ls-is-active': page === tab.key }"
         type="button"
         @click="page = tab.key"
       >
@@ -21,53 +21,53 @@
       </button>
     </nav>
 
-    <div class="opening-body">
+    <div class="ls-opening-body">
       <template v-if="page === 'tpl'">
-        <button v-for="tpl in TEMPLATES" :key="tpl.key" class="tpl" type="button" @click="useTemplate(tpl)">
-          <span class="tpl-index">{{ tpl.index }}</span>
-          <span class="tpl-title">{{ tpl.title }}</span>
-          <span class="tpl-meta">{{ tpl.meta }}</span>
-          <span class="tpl-desc">{{ tpl.desc }}</span>
-          <span class="tpl-cast">
-            <span v-for="person in tpl.cast" :key="person" class="tpl-person">{{ person }}</span>
+        <button v-for="tpl in TEMPLATES" :key="tpl.key" class="ls-tpl" type="button" @click="useTemplate(tpl)">
+          <span class="ls-tpl-index">{{ tpl.index }}</span>
+          <span class="ls-tpl-title">{{ tpl.title }}</span>
+          <span class="ls-tpl-meta">{{ tpl.meta }}</span>
+          <span class="ls-tpl-desc">{{ tpl.desc }}</span>
+          <span class="ls-tpl-cast">
+            <span v-for="person in tpl.cast" :key="person" class="ls-tpl-person">{{ person }}</span>
           </span>
         </button>
       </template>
 
       <template v-else-if="page === 'custom'">
-        <label class="field">
-          <span class="field-label">背景设定</span>
+        <label class="ls-field">
+          <span class="ls-field-label">背景设定</span>
           <textarea
             v-model="form.bg"
-            class="field-area"
+            class="ls-field-area"
             rows="3"
             placeholder="可留空，留空时由模型按年代补全"
           />
         </label>
 
-        <div class="field-grid">
-          <label class="field">
-            <span class="field-label">出生年</span>
-            <input v-model.number="form.yy" class="field-input" type="number" min="1" max="9999" />
+        <div class="ls-field-grid">
+          <label class="ls-field">
+            <span class="ls-field-label">出生年</span>
+            <input v-model.number="form.yy" class="ls-field-input" type="number" min="1" max="9999" />
           </label>
-          <label class="field">
-            <span class="field-label">出生月</span>
-            <input v-model.number="form.mm" class="field-input" type="number" min="1" max="12" />
+          <label class="ls-field">
+            <span class="ls-field-label">出生月</span>
+            <input v-model.number="form.mm" class="ls-field-input" type="number" min="1" max="12" />
           </label>
-          <label class="field">
-            <span class="field-label">出生日</span>
-            <input v-model.number="form.dd" class="field-input" type="number" min="1" max="31" />
+          <label class="ls-field">
+            <span class="ls-field-label">出生日</span>
+            <input v-model.number="form.dd" class="ls-field-input" type="number" min="1" max="31" />
           </label>
         </div>
 
-        <div class="field">
-          <span class="field-label">性别</span>
-          <div class="sex-row">
+        <div class="ls-field">
+          <span class="ls-field-label">性别</span>
+          <div class="ls-sex-row">
             <button
               v-for="option in SEXES"
               :key="option"
-              class="sex"
-              :class="{ 'is-active': form.sex === option }"
+              class="ls-sex"
+              :class="{ 'ls-is-active': form.sex === option }"
               type="button"
               @click="form.sex = option"
             >
@@ -76,40 +76,40 @@
           </div>
         </div>
 
-        <div class="field">
-          <span class="field-label">先天天赋</span>
-          <div class="trait-grid">
-            <label v-for="trait in TRAITS" :key="trait.key" class="trait">
-              <span class="trait-name">{{ trait.label }}</span>
-              <input v-model.number="form[trait.key]" class="trait-range" type="range" min="0" max="100" step="1" />
-              <span class="trait-value">{{ form[trait.key] }}</span>
+        <div class="ls-field">
+          <span class="ls-field-label">先天天赋</span>
+          <div class="ls-trait-grid">
+            <label v-for="trait in TRAITS" :key="trait.key" class="ls-trait">
+              <span class="ls-trait-name">{{ trait.label }}</span>
+              <input v-model.number="form[trait.key]" class="ls-trait-range" type="range" min="0" max="100" step="1" />
+              <span class="ls-trait-value">{{ form[trait.key] }}</span>
             </label>
           </div>
         </div>
 
-        <div class="field">
-          <span class="field-label">跨度（月）</span>
-          <div class="trait">
-            <input v-model.number="form.span" class="trait-range" type="range" min="1" max="60" step="1" />
-            <span class="trait-value">{{ form.span }}</span>
+        <div class="ls-field">
+          <span class="ls-field-label">跨度（月）</span>
+          <div class="ls-trait">
+            <input v-model.number="form.span" class="ls-trait-range" type="range" min="1" max="60" step="1" />
+            <span class="ls-trait-value">{{ form.span }}</span>
           </div>
         </div>
       </template>
 
       <template v-else>
-        <button class="random" type="button" @click="rollRandom">
+        <button class="ls-random" type="button" @click="rollRandom">
           <i class="fa-solid fa-shuffle" />
           <span>随机开局</span>
         </button>
       </template>
     </div>
 
-    <footer class="opening-foot">
-      <button class="begin" type="button" :disabled="submitted" @click="begin">
+    <footer class="ls-opening-foot">
+      <button class="ls-begin" type="button" :disabled="submitted" @click="begin">
         {{ submitted ? '开局已提交' : '以此生开始' }}
       </button>
-      <p v-if="hint" class="opening-hint">{{ hint }}</p>
-      <p v-else class="opening-hint is-quiet">也可直接以文字报出出生年月日、性别、背景设定、跨度和先天天赋</p>
+      <p v-if="hint" class="ls-opening-hint">{{ hint }}</p>
+      <p v-else class="ls-opening-hint ls-is-quiet">也可直接以文字报出出生年月日、性别、背景设定、跨度和先天天赋</p>
     </footer>
   </div>
 </template>
@@ -357,322 +357,322 @@ function begin() {
 </script>
 
 <style lang="scss" scoped>
-.opening {
+.ls-opening {
   display: flex;
   flex-direction: column;
-  background: var(--c-surface);
-  border: 1px solid var(--c-border);
-  border-radius: var(--r-md);
+  background: var(--ls-surface);
+  border: 1px solid var(--ls-border);
+  border-radius: var(--ls-r-md);
   overflow: hidden;
-  animation: cl-enter 0.5s var(--ease-out) both;
+  animation: ls-enter 0.5s var(--ls-ease-out) both;
 }
 
-.opening-head {
+.ls-opening-head {
   display: flex;
   align-items: center;
   gap: 12px;
   padding: 20px 18px 18px;
 }
 
-.opening-title {
+.ls-opening-title {
   font-size: 17px;
   font-weight: 600;
   letter-spacing: -0.015em;
-  color: var(--c-text);
+  color: var(--ls-text);
 }
 
-.opening-sub {
+.ls-opening-sub {
   margin-top: 2px;
   font-size: 12.5px;
-  color: var(--c-text-muted);
+  color: var(--ls-text-muted);
 }
 
-.opening-tabs {
+.ls-opening-tabs {
   display: flex;
   gap: 2px;
   margin: 0 16px;
   padding: 3px;
-  border-radius: var(--r-sm);
-  background: var(--c-bg-alt);
+  border-radius: var(--ls-r-sm);
+  background: var(--ls-bg-alt);
 }
 
-.opening-tab {
+.ls-opening-tab {
   flex: 1;
   padding: 6px 0;
   border: none;
   border-radius: 6px;
   background: transparent;
-  color: var(--c-text-muted);
+  color: var(--ls-text-muted);
   font-size: 12.5px;
   font-weight: 500;
   cursor: pointer;
 }
 
-.opening-tab:hover {
-  color: var(--c-text);
+.ls-opening-tab:hover {
+  color: var(--ls-text);
 }
 
-.opening-tab.is-active {
-  background: var(--c-surface);
-  color: var(--c-text);
-  box-shadow: var(--shadow-hair);
+.ls-opening-tab.ls-is-active {
+  background: var(--ls-surface);
+  color: var(--ls-text);
+  box-shadow: var(--ls-shadow-hair);
 }
 
-.opening-body {
+.ls-opening-body {
   display: flex;
   flex-direction: column;
   gap: 14px;
   padding: 16px;
 }
 
-.tpl {
+.ls-tpl {
   display: flex;
   flex-direction: column;
   gap: 5px;
   padding: 14px 15px;
-  border: 1px solid var(--c-border);
-  border-radius: var(--r-sm);
-  background: var(--c-surface);
+  border: 1px solid var(--ls-border);
+  border-radius: var(--ls-r-sm);
+  background: var(--ls-surface);
   text-align: left;
   cursor: pointer;
-  animation: cl-enter 0.42s var(--ease-out) both;
+  animation: ls-enter 0.42s var(--ls-ease-out) both;
 }
 
-.tpl:nth-child(2) {
+.ls-tpl:nth-child(2) {
   animation-delay: 50ms;
 }
 
-.tpl:nth-child(3) {
+.ls-tpl:nth-child(3) {
   animation-delay: 100ms;
 }
 
-.tpl:hover {
-  background: var(--c-surface-sunken);
-  border-color: var(--c-border-strong);
+.ls-tpl:hover {
+  background: var(--ls-surface-sunken);
+  border-color: var(--ls-border-strong);
 }
 
-.tpl-index {
+.ls-tpl-index {
   font-size: 11px;
-  color: var(--c-accent);
+  color: var(--ls-accent);
   letter-spacing: 0.2em;
 }
 
-.tpl-title {
+.ls-tpl-title {
   font-size: 14.5px;
   font-weight: 500;
-  color: var(--c-text);
+  color: var(--ls-text);
 }
 
-.tpl-meta {
+.ls-tpl-meta {
   font-size: 12px;
-  color: var(--c-text-faint);
+  color: var(--ls-text-faint);
 }
 
-.tpl-desc {
+.ls-tpl-desc {
   margin-top: 3px;
-  font-family: var(--f-serif);
+  font-family: var(--ls-f-serif);
   font-size: 13.5px;
   line-height: 1.7;
-  color: var(--c-text-body);
+  color: var(--ls-text-body);
 }
 
-.tpl-cast {
+.ls-tpl-cast {
   display: flex;
   flex-wrap: wrap;
   gap: 5px;
   margin-top: 6px;
 }
 
-.tpl-person {
+.ls-tpl-person {
   padding: 2px 9px;
   border-radius: 999px;
-  background: var(--c-bg-alt);
+  background: var(--ls-bg-alt);
   font-size: 11px;
-  color: var(--c-text-muted);
+  color: var(--ls-text-muted);
 }
 
-.field {
+.ls-field {
   display: flex;
   flex-direction: column;
   gap: 6px;
 }
 
-.field-label {
+.ls-field-label {
   font-size: 12px;
-  color: var(--c-text-muted);
+  color: var(--ls-text-muted);
 }
 
-.field-area,
-.field-input {
+.ls-field-area,
+.ls-field-input {
   width: 100%;
   padding: 9px 11px;
-  border: 1px solid var(--c-border-strong);
-  border-radius: var(--r-sm);
-  background: var(--c-surface);
-  color: var(--c-text);
+  border: 1px solid var(--ls-border-strong);
+  border-radius: var(--ls-r-sm);
+  background: var(--ls-surface);
+  color: var(--ls-text);
   font-size: 13.5px;
   line-height: 1.6;
   outline: none;
   resize: vertical;
 }
 
-.field-area::placeholder {
-  color: var(--c-text-faint);
+.ls-field-area::placeholder {
+  color: var(--ls-text-faint);
 }
 
-.field-area:focus,
-.field-input:focus {
-  border-color: var(--c-accent);
-  box-shadow: 0 0 0 3px var(--c-accent-soft);
+.ls-field-area:focus,
+.ls-field-input:focus {
+  border-color: var(--ls-accent);
+  box-shadow: 0 0 0 3px var(--ls-accent-soft);
 }
 
-.field-grid {
+.ls-field-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 10px;
 }
 
-.sex-row {
+.ls-sex-row {
   display: flex;
   gap: 8px;
 }
 
-.sex {
+.ls-sex {
   flex: 1;
   padding: 8px 0;
-  border: 1px solid var(--c-border-strong);
-  border-radius: var(--r-sm);
-  background: var(--c-surface);
-  color: var(--c-text-body);
+  border: 1px solid var(--ls-border-strong);
+  border-radius: var(--ls-r-sm);
+  background: var(--ls-surface);
+  color: var(--ls-text-body);
   font-size: 13.5px;
   cursor: pointer;
 }
 
-.sex:hover {
-  background: var(--c-surface-sunken);
+.ls-sex:hover {
+  background: var(--ls-surface-sunken);
 }
 
-.sex.is-active {
-  border-color: var(--c-accent);
-  background: var(--c-accent-soft);
-  color: var(--c-accent-hover);
+.ls-sex.ls-is-active {
+  border-color: var(--ls-accent);
+  background: var(--ls-accent-soft);
+  color: var(--ls-accent-hover);
   font-weight: 500;
 }
 
-.trait-grid {
+.ls-trait-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(158px, 1fr));
   gap: 8px 18px;
 }
 
-.trait {
+.ls-trait {
   display: flex;
   align-items: center;
   gap: 10px;
 }
 
-.trait-name {
+.ls-trait-name {
   flex: none;
   width: 32px;
   font-size: 12.5px;
-  color: var(--c-text-body);
+  color: var(--ls-text-body);
 }
 
-.trait-range {
+.ls-trait-range {
   flex: 1;
   min-width: 0;
   height: 4px;
   appearance: none;
   border-radius: 999px;
-  background: var(--c-border-strong);
+  background: var(--ls-border-strong);
   outline: none;
   cursor: pointer;
 }
 
-.trait-range::-webkit-slider-thumb {
+.ls-trait-range::-webkit-slider-thumb {
   appearance: none;
   width: 14px;
   height: 14px;
   border-radius: 50%;
-  background: var(--c-accent);
-  border: 2px solid var(--c-surface);
-  box-shadow: var(--shadow-hair);
+  background: var(--ls-accent);
+  border: 2px solid var(--ls-surface);
+  box-shadow: var(--ls-shadow-hair);
 }
 
-.trait-range::-moz-range-thumb {
+.ls-trait-range::-moz-range-thumb {
   width: 14px;
   height: 14px;
   border-radius: 50%;
-  background: var(--c-accent);
-  border: 2px solid var(--c-surface);
+  background: var(--ls-accent);
+  border: 2px solid var(--ls-surface);
 }
 
-.trait-value {
+.ls-trait-value {
   flex: none;
   min-width: 28px;
   text-align: right;
   font-size: 13px;
   font-weight: 500;
-  color: var(--c-text);
+  color: var(--ls-text);
   font-variant-numeric: tabular-nums;
 }
 
-.random {
+.ls-random {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 9px;
   padding: 20px;
-  border: 1px dashed var(--c-border-strong);
-  border-radius: var(--r-sm);
-  background: var(--c-surface-sunken);
-  color: var(--c-text-body);
+  border: 1px dashed var(--ls-border-strong);
+  border-radius: var(--ls-r-sm);
+  background: var(--ls-surface-sunken);
+  color: var(--ls-text-body);
   font-size: 13.5px;
   cursor: pointer;
 }
 
-.random:hover {
-  border-color: var(--c-accent);
-  background: var(--c-accent-soft);
-  color: var(--c-accent-hover);
+.ls-random:hover {
+  border-color: var(--ls-accent);
+  background: var(--ls-accent-soft);
+  color: var(--ls-accent-hover);
 }
 
-.opening-foot {
+.ls-opening-foot {
   display: flex;
   flex-direction: column;
   gap: 9px;
   padding: 0 16px 16px;
 }
 
-.begin {
+.ls-begin {
   padding: 11px 0;
   border: none;
-  border-radius: var(--r-sm);
-  background: var(--c-accent);
+  border-radius: var(--ls-r-sm);
+  background: var(--ls-accent);
   color: #ffffff;
   font-size: 13.5px;
   font-weight: 500;
   cursor: pointer;
 }
 
-.begin:not(:disabled):hover {
-  background: var(--c-accent-hover);
+.ls-begin:not(:disabled):hover {
+  background: var(--ls-accent-hover);
 }
 
-.begin:disabled {
-  background: var(--c-border-strong);
-  color: var(--c-bg-alt);
+.ls-begin:disabled {
+  background: var(--ls-border-strong);
+  color: var(--ls-bg-alt);
   cursor: default;
 }
 
-.opening-hint {
+.ls-opening-hint {
   min-height: 16px;
   text-align: center;
   font-size: 12px;
-  color: var(--c-accent-hover);
+  color: var(--ls-accent-hover);
 }
 
-.opening-hint.is-quiet {
-  color: var(--c-text-faint);
+.ls-opening-hint.ls-is-quiet {
+  color: var(--ls-text-faint);
 }
 </style>
