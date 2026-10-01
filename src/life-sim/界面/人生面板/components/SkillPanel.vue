@@ -11,6 +11,8 @@
             :层级="item.层级"
             :进度="item.进度"
             :上限="item.上限"
+            :类="item.类"
+            :教育质量="item.教育质量"
           />
         </template>
       </CollapsibleList>
@@ -33,6 +35,8 @@
             :层级="item.层级"
             :进度="item.进度"
             :上限="item.上限"
+            :类="item.类"
+            :教育质量="item.教育质量"
           />
         </template>
       </CollapsibleList>
@@ -51,7 +55,7 @@ import { computed } from 'vue';
 import CollapsibleList from './CollapsibleList.vue';
 import LevelBar from './LevelBar.vue';
 
-type Ability = { 层级: number; 进度: number; 上限: number };
+type Ability = { 层级: number; 进度: number; 上限: number; 类?: string; 教育质量?: number };
 
 // 空态占位槽的格数，与 LevelBar 的刻度格保持一致
 const GHOST_CELLS = 10;

@@ -317,6 +317,16 @@ function validate(): string {
   return '';
 }
 
+// 事件数量按对数公式掷：L(s) = 1 + 3·log₆(s)、U(s) = 2 + 6·log₆(s)
+// 与 脚本/事件数量随机.txt 同一公式；开局即写入具体值，避免首回合沿用 initvar 的占位值
+function rollEventCount(span: number): number {
+  const s = Math.max(1, Math.min(60, Number(span) || 1));
+  const log6 = (value: number) => Math.log(value) / Math.log(6);
+  const lower = Math.max(1, Math.round(1 + 3 * log6(s)));
+  const upper = Math.max(lower, Math.round(2 + 6 * log6(s)));
+  return lower + Math.floor(Math.random() * (upper - lower + 1));
+}
+
 function writeVariables() {
   store.data.时间.年 = form.yy;
   store.data.时间.月 = form.mm;
@@ -336,6 +346,7 @@ function writeVariables() {
   store.data.状态.气度 = 0;
   store.data.状态.声望 = 0;
   store.data.状态.幸福 = 0;
+  store.data.$参数.事件数量 = rollEventCount(form.span);
 }
 
 function begin() {

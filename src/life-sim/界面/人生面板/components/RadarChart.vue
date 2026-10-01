@@ -1,6 +1,6 @@
 <template>
   <div class="ls-radar">
-    <svg class="ls-radar-svg" :viewBox="`0 0 ${SIZE} ${SIZE}`" role="img" aria-label="六维天赋雷达图">
+    <svg class="ls-radar-svg" :viewBox="`0 0 ${SIZE} ${SIZE}`" role="img" aria-label="六项天赋雷达图">
       <polygon
         v-for="level in GRID_LEVELS"
         :key="`grid-${level}`"

@@ -46,10 +46,10 @@ export const Schema = z.object({
   // _性别：出生即定，AI 可见不可改
   _性别: z.enum(['男', '女']).prefault('男'),
 
-  // 姓名：玩家姓名，AI 可见可改（改名、取字、用别名时更新）
+  // 姓名：玩家姓名，AI 可见可改（改名或用别名时更新）
   姓名: z.string().prefault(''),
 
-  // _先天：六维天赋，出生即定终身不变，AI 可见不可改
+  // _先天：六项天赋，出生即定终身不变，AI 可见不可改
   _先天: z
     .object({
       智商: z.coerce
@@ -79,7 +79,7 @@ export const Schema = z.object({
     })
     .prefault({}),
 
-  // 状态：健康为生命值，0 死亡；气度不占份额
+  // 状态：健康为生命值，归 0 即死亡；气度不占份额
   状态: z
     .object({
       健康: z.coerce
@@ -111,7 +111,7 @@ export const Schema = z.object({
     )
     .prefault({}),
 
-  // 学识：动态键为学科名，层级制成长
+  // 学识：动态键为学科名，按层级成长
   学识: z
     .record(
       z.string().describe('学科名'),
@@ -129,12 +129,30 @@ export const Schema = z.object({
             .number()
             .transform((v) => _.clamp(v, 0, 9))
             .prefault(0),
+          类: z
+            .enum([
+              '数学',
+              '语言',
+              '自然科学',
+              '工程技术',
+              '医学',
+              '人文',
+              '社会科学',
+              '艺术',
+              '体育',
+              '技艺',
+            ])
+            .prefault('技艺'),
+          教育质量: z.coerce
+            .number()
+            .transform((v) => _.clamp(v, 0.5, 2))
+            .prefault(1),
         })
         .prefault({}),
     )
     .prefault({}),
 
-  // 技能：动态键为技能名，与学识同构
+  // 技能：动态键为技能名，结构同学识
   技能: z
     .record(
       z.string().describe('技能名'),
@@ -152,6 +170,24 @@ export const Schema = z.object({
             .number()
             .transform((v) => _.clamp(v, 0, 9))
             .prefault(0),
+          类: z
+            .enum([
+              '数学',
+              '语言',
+              '自然科学',
+              '工程技术',
+              '医学',
+              '人文',
+              '社会科学',
+              '艺术',
+              '体育',
+              '技艺',
+            ])
+            .prefault('技艺'),
+          教育质量: z.coerce
+            .number()
+            .transform((v) => _.clamp(v, 0.5, 2))
+            .prefault(1),
         })
         .prefault({}),
     )
@@ -248,33 +284,17 @@ export const Schema = z.object({
     })
     .prefault({}),
 
-  // $参数：渲染进条目的字数参数，AI 不可见不可改
+  // $参数：渲染进条目的数值参数，AI 不可见不可改
   $参数: z
     .object({
-      正文下限: z.coerce
+      事件数量: z.coerce
         .number()
-        .transform((v) => _.clamp(v, 0, 100000))
-        .prefault(1500),
-      正文上限: z.coerce
-        .number()
-        .transform((v) => _.clamp(v, 0, 100000))
-        .prefault(3000),
-      事件细节下限: z.coerce
-        .number()
-        .transform((v) => _.clamp(v, 0, 100000))
-        .prefault(40),
+        .transform((v) => _.clamp(v, 1, 20))
+        .prefault(4),
       事件细节上限: z.coerce
         .number()
         .transform((v) => _.clamp(v, 0, 100000))
         .prefault(80),
-      终章总结下限: z.coerce
-        .number()
-        .transform((v) => _.clamp(v, 0, 100000))
-        .prefault(150),
-      终章总结上限: z.coerce
-        .number()
-        .transform((v) => _.clamp(v, 0, 100000))
-        .prefault(300),
     })
     .prefault({}),
 });
