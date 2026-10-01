@@ -1,13 +1,15 @@
 @import url('https://testingcf.jsdelivr.net/npm/@fontsource/inter@5.1.0/index.min.css');
 
-* {
+/* 全局样式一律收到根容器上，并用 :where() 把特异性压到 0：
+   既不穿透到宿主文档，也不会反过来盖掉组件的 scoped 样式。 */
+:where(#ls-app, #ls-app *) {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
   -webkit-tap-highlight-color: transparent;
 }
 
-:root {
+:where(#ls-app) {
   /* ── 表面：ivory 纸面 + 纯白卡 ── */
   --ls-bg: #faf9f5;
   --ls-bg-alt: #f0eee6;
@@ -60,12 +62,8 @@
   --ls-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-html,
-body {
-  background: transparent;
-}
-
-body {
+#ls-app {
+  min-height: 100vh;
   background-color: var(--ls-bg);
   font-family: var(--ls-f-ui);
   color: var(--ls-text);
@@ -140,12 +138,12 @@ body {
 .ls-enter-seq > *:nth-child(7) { animation-delay: 240ms; }
 .ls-enter-seq > *:nth-child(8) { animation-delay: 280ms; }
 
-/* 全局交互过渡：Claude 的 hover 只动颜色，不动位置 */
-button,
-[role='button'],
-summary,
-input,
-textarea {
+/* 交互过渡：Claude 的 hover 只动颜色，不动位置。限定在根容器内 */
+#ls-app button,
+#ls-app [role='button'],
+#ls-app summary,
+#ls-app input,
+#ls-app textarea {
   font-family: inherit;
   transition:
     background-color 0.15s var(--ls-ease),
@@ -154,10 +152,11 @@ textarea {
     box-shadow 0.15s var(--ls-ease);
 }
 
+/* 降级动效同样只限定在根容器内，避免 !important 打到宿主文档 */
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
+  :where(#ls-app, #ls-app *),
+  :where(#ls-app, #ls-app *)::before,
+  :where(#ls-app, #ls-app *)::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
