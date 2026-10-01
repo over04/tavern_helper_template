@@ -14,7 +14,12 @@
           />
         </template>
       </CollapsibleList>
-      <span v-if="!studyEntries.length" class="ls-empty">无</span>
+      <div v-if="!studyEntries.length" class="ls-ghost">
+        <span class="ls-ghost-note">尚未习得</span>
+        <div class="ls-ghost-track">
+          <span v-for="cell in GHOST_CELLS" :key="cell" class="ls-ghost-cell" />
+        </div>
+      </div>
     </div>
 
     <div class="ls-group">
@@ -31,7 +36,12 @@
           />
         </template>
       </CollapsibleList>
-      <span v-if="!skillEntries.length" class="ls-empty">无</span>
+      <div v-if="!skillEntries.length" class="ls-ghost">
+        <span class="ls-ghost-note">尚未习得</span>
+        <div class="ls-ghost-track">
+          <span v-for="cell in GHOST_CELLS" :key="cell" class="ls-ghost-cell" />
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -42,6 +52,9 @@ import CollapsibleList from './CollapsibleList.vue';
 import LevelBar from './LevelBar.vue';
 
 type Ability = { 层级: number; 进度: number; 上限: number };
+
+// 空态占位槽的格数，与 LevelBar 的刻度格保持一致
+const GHOST_CELLS = 10;
 
 const props = defineProps<{
   studies: Record<string, Ability>;
@@ -75,8 +88,26 @@ const skillEntries = computed(() => Object.entries(props.skills ?? {}));
   --ls-collapse-gap: 11px;
 }
 
-.ls-empty {
+.ls-ghost {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ls-ghost-note {
   font-size: 12.5px;
   color: var(--ls-text-faint);
+}
+
+.ls-ghost-track {
+  display: flex;
+  gap: 3px;
+  height: 6px;
+}
+
+.ls-ghost-cell {
+  flex: 1;
+  border-radius: 2px;
+  box-shadow: inset 0 0 0 1px var(--ls-border);
 }
 </style>

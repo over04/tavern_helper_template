@@ -10,14 +10,14 @@
 </template>
 
 <script setup lang="ts">
-import { injectInput } from '../inject';
+import { appendInput } from '../inject';
 
 defineProps<{
   wishes: string[];
 }>();
 
 function pick(wish: string) {
-  injectInput(`「心向」：${wish}`);
+  appendInput(`「心向」：${wish}`);
 }
 </script>
 

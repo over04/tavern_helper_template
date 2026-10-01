@@ -30,7 +30,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { injectInput } from '../inject';
+import { appendInput } from '../inject';
 import CollapsibleList from './CollapsibleList.vue';
 
 type Option = { 动作: string; 代价: string };
@@ -53,7 +53,7 @@ function optionEntries(ev: Event) {
 }
 
 function pick(name: string, action: string) {
-  injectInput(`「事件」「${name}」：${action}`);
+  appendInput(`「事件」「${name}」：${action}`);
 }
 </script>
 

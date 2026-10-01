@@ -4,7 +4,6 @@
       <ClaudeMark :size="24" />
       <div class="ls-opening-titles">
         <h2 class="ls-opening-title">人生尚未开始</h2>
-        <p class="ls-opening-sub">设定出身，或直接以文字报出设定</p>
       </div>
     </header>
 
@@ -23,7 +22,7 @@
 
     <div class="ls-opening-body">
       <template v-if="page === 'tpl'">
-        <button v-for="tpl in TEMPLATES" :key="tpl.key" class="ls-tpl" type="button" @click="useTemplate(tpl)">
+        <button v-for="tpl in templates" :key="tpl.key" class="ls-tpl" type="button" @click="useTemplate(tpl)">
           <span class="ls-tpl-index">{{ tpl.index }}</span>
           <span class="ls-tpl-title">{{ tpl.title }}</span>
           <span class="ls-tpl-meta">{{ tpl.meta }}</span>
@@ -37,12 +36,7 @@
       <template v-else-if="page === 'custom'">
         <label class="ls-field">
           <span class="ls-field-label">背景设定</span>
-          <textarea
-            v-model="form.bg"
-            class="ls-field-area"
-            rows="3"
-            placeholder="可留空，留空时由模型按年代补全"
-          />
+          <textarea v-model="form.bg" class="ls-field-area" rows="3" />
         </label>
 
         <div class="ls-field-grid">
@@ -105,17 +99,15 @@
     </div>
 
     <footer class="ls-opening-foot">
-      <button class="ls-begin" type="button" :disabled="submitted" @click="begin">
-        {{ submitted ? '开局已提交' : '以此生开始' }}
-      </button>
+      <button class="ls-begin" type="button" @click="begin">以此生开始</button>
       <p v-if="hint" class="ls-opening-hint">{{ hint }}</p>
-      <p v-else class="ls-opening-hint ls-is-quiet">也可直接以文字报出出生年月日、性别、背景设定、跨度和先天天赋</p>
     </footer>
   </div>
 </template>
 
 <script setup lang="ts">
-import { reactive, ref } from 'vue';
+import { computed, onMounted, reactive, ref } from 'vue';
+import { injectInput } from '../inject';
 import { useDataStore } from '../store';
 import ClaudeMark from './ClaudeMark.vue';
 
@@ -172,7 +164,7 @@ const TEMPLATES: Template[] = [
     index: '壹',
     title: '现代都市 · 2003',
     meta: '杭州 · 工薪家庭 · 每回合 6 个月',
-    desc: '父亲陈建国，轴承厂车工；母亲周敏，小卖部营业员；外婆王彩凤。存款约三万元，两室一厅老公房。主角是家中第一个孩子。',
+    desc: '父亲陈建国在轴承厂做车工，母亲周敏在巷口经营一间小卖部，外婆王彩凤从绍兴赶来照看月子。家里只有一套两室一厅的老公房，存款三万元出头，{{user}}是家中的第一个孩子。',
     cast: ['陈建国 · 父亲', '周敏 · 母亲', '王彩凤 · 外婆'],
     form: {
       bg: '家在杭州城北的轴承厂家属区，一套两室一厅的老公房。父亲陈建国在厂里做车工，母亲周敏在巷口守着一间小卖部，外婆王彩凤特意从绍兴赶来照顾月子。家里存款三万出头，日子不宽裕，却也安稳。',
@@ -193,7 +185,7 @@ const TEMPLATES: Template[] = [
     index: '贰',
     title: '小镇一九八五',
     meta: '湘南青溪 · 教师家庭 · 每回合 6 个月',
-    desc: '父亲林守拙，民办教师；母亲王秀兰，供销社营业员；外公王德厚，务农。存款约八百元，一间镇教工宿舍。主角是家中第一个孩子。',
+    desc: '父亲林守拙在镇中学做民办教师，母亲王秀兰在供销社当营业员，外公王德厚在十里外的村子里种田。家里住镇上的教工宿舍，存款不过八百元，{{user}}是家中的第一个孩子。',
     cast: ['林守拙 · 父亲', '王秀兰 · 母亲', '王德厚 · 外公'],
     form: {
       bg: '家在湘南青溪镇上的教工宿舍，堂屋里摆着一台红灯牌收音机。父亲林守拙在镇中学做民办教师，母亲王秀兰在供销社当营业员，外公王德厚在十里外的村子里种田。家中存款不过八百元，日子过得紧，书香气却重。',
@@ -214,7 +206,7 @@ const TEMPLATES: Template[] = [
     index: '叁',
     title: '架空古代 · 大衍',
     meta: '京城商户 · 每回合 6 个月',
-    desc: '父亲裴远山，绸缎庄东主；母亲沈静姝；长兄裴铭、次兄裴钰、奶娘周嬷嬷。一间绸缎庄，一座三进宅院。主角排行第三。',
+    desc: '父亲裴远山经营城南的一间绸缎庄，母亲沈静姝主持中馈，上头有长兄裴铭和次兄裴钰，另有奶娘周嬷嬷照看起居。家中有三进宅院，在行市里数得上名号，{{user}}是家中的第三个孩子。',
     cast: ['裴远山 · 父亲', '沈静姝 · 母亲', '裴铭 · 长兄', '裴钰 · 次兄', '周嬷嬷 · 奶娘'],
     form: {
       bg: '家在架空王朝大衍的京城，城南有一间绸缎庄，城东有一座三进宅院。父亲裴远山是绸缎庄东主，母亲沈静姝主持中馈，上头有七岁的长兄裴铭和四岁的次兄裴钰，另有奶娘周嬷嬷照看起居。家中殷实，在行市里数得上名号。',
@@ -240,8 +232,25 @@ const RANDOM_POOL = [
   { yy: 1017, mm: 2, place: '架空王朝大衍的京城', fam: '父亲经营绸缎庄，母亲主持中馈，长兄在书院读书，家中上下十几口人。', wealth: '殷实' },
 ];
 
+// 模板简介里的 {{user}} 需要自己替换：界面内的文本不经过酒馆的宏处理
+const userName = ref('');
+
+onMounted(() => {
+  try {
+    const name = globalThis.SillyTavern?.substituteParams?.('{{user}}');
+    if (typeof name === 'string' && name && name !== '{{user}}') {
+      userName.value = name;
+    }
+  } catch {
+    userName.value = '';
+  }
+});
+
+const templates = computed(() =>
+  TEMPLATES.map(tpl => ({ ...tpl, desc: tpl.desc.replace(/\{\{user\}\}/g, () => userName.value || '你') })),
+);
+
 const page = ref<(typeof TABS)[number]['key']>('tpl');
-const submitted = ref(false);
 const hint = ref('');
 
 const form = reactive<Form>({
@@ -332,27 +341,18 @@ function writeVariables() {
 }
 
 function begin() {
-  if (submitted.value) {
-    hint.value = '开局已提交，人生开始。';
-    return;
-  }
   const error = validate();
   if (error) {
     hint.value = error;
     return;
   }
+  hint.value = '';
 
   writeVariables();
-  submitted.value = true;
-  hint.value = '开局已提交，人生开始。';
 
   const intro =
     form.bg.trim() || `${form.yy}年${form.mm}月${form.dd}日 生，${form.sex}。出身与家庭背景按该年代常识补全。`;
-  const message = `【开局】设定如下：补全档案，随后开始这段人生。\n\n${intro}`;
-
-  createChatMessages([{ role: 'user', message }])
-    .then(() => triggerSlash('/trigger'))
-    .catch(error => console.error('开局发送失败', error));
+  injectInput(`【开局】设定如下：补全档案，随后开始这段人生。\n\n${intro}`);
 }
 </script>
 
@@ -379,12 +379,6 @@ function begin() {
   font-weight: 600;
   letter-spacing: -0.015em;
   color: var(--ls-text);
-}
-
-.ls-opening-sub {
-  margin-top: 2px;
-  font-size: 12.5px;
-  color: var(--ls-text-muted);
 }
 
 .ls-opening-tabs {
@@ -670,9 +664,5 @@ function begin() {
   text-align: center;
   font-size: 12px;
   color: var(--ls-accent-hover);
-}
-
-.ls-opening-hint.ls-is-quiet {
-  color: var(--ls-text-faint);
 }
 </style>
