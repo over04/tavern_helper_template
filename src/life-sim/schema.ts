@@ -197,15 +197,16 @@ export const Schema = z.object({
     )
     .prefault({}),
 
-  // 事件：动态键为事件名，选项为动态键 一~四
+  // 事件：动态键为事件名，整体指向下一回合跨度，选项为动态键 一~四
   事件: z
     .record(
       z.string().describe('事件名'),
       z
         .object({
-          细节: z.string().prefault('待初始化'),
-          截止: z.string().prefault('待初始化'),
-          主题: z.string().prefault('待初始化'),
+          细节段落: z.string().prefault('待初始化'),
+          发生时间: z.string().prefault('待初始化'),
+          截止时间: z.string().prefault('待初始化'),
+          所属主题: z.string().prefault('待初始化'),
           选项: z
             .record(
               z.string().describe('选项名'),

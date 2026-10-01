@@ -3,10 +3,11 @@
     <article v-for="[name, ev] in entries" :key="name" class="event">
       <header class="event-head">
         <h4 class="event-name">{{ name }}</h4>
-        <span v-if="ev.截止" class="event-deadline">{{ ev.截止 }}</span>
-        <span v-if="ev.主题" class="event-theme">{{ ev.主题 }}</span>
+        <span v-if="ev.发生时间" class="event-time">{{ ev.发生时间 }}</span>
+        <span v-if="ev.截止时间" class="event-deadline">{{ ev.截止时间 }}</span>
+        <span v-if="ev.所属主题" class="event-theme">{{ ev.所属主题 }}</span>
       </header>
-      <p class="event-detail">{{ ev.细节 }}</p>
+      <p class="event-detail">{{ ev.细节段落 }}</p>
       <div class="event-options">
         <button
           v-for="[key, op] in optionEntries(ev)"
@@ -28,7 +29,13 @@ import { computed } from 'vue';
 import { injectInput } from '../inject';
 
 type Option = { 动作: string; 代价: string };
-type Event = { 细节: string; 截止: string; 主题: string; 选项: Record<string, Option> };
+type Event = {
+  细节段落: string;
+  发生时间: string;
+  截止时间: string;
+  所属主题: string;
+  选项: Record<string, Option>;
+};
 
 const props = defineProps<{
   events: Record<string, Event>;
@@ -78,6 +85,7 @@ function pick(name: string, action: string) {
   color: var(--c-text);
 }
 
+.event-time,
 .event-deadline {
   padding: 2px 8px;
   border-radius: 999px;

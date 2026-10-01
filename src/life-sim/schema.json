@@ -252,15 +252,19 @@
         "default": {},
         "type": "object",
         "properties": {
-          "细节": {
+          "细节段落": {
             "default": "待初始化",
             "type": "string"
           },
-          "截止": {
+          "发生时间": {
             "default": "待初始化",
             "type": "string"
           },
-          "主题": {
+          "截止时间": {
+            "default": "待初始化",
+            "type": "string"
+          },
+          "所属主题": {
             "default": "待初始化",
             "type": "string"
           },
