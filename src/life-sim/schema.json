@@ -1,0 +1,364 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "时间": {
+      "default": {},
+      "type": "object",
+      "properties": {
+        "回合": {
+          "default": 0,
+          "type": "number"
+        },
+        "年": {
+          "default": 1,
+          "type": "number"
+        },
+        "月": {
+          "default": 1,
+          "type": "number"
+        },
+        "跨度": {
+          "default": 1,
+          "type": "number"
+        },
+        "年龄岁": {
+          "default": 0,
+          "type": "number"
+        },
+        "年龄月": {
+          "default": 0,
+          "type": "number"
+        },
+        "阶段": {
+          "default": "新生儿",
+          "type": "string",
+          "enum": [
+            "新生儿",
+            "幼年",
+            "童年",
+            "少年",
+            "青年",
+            "成年",
+            "中年",
+            "壮年",
+            "老年",
+            "暮年"
+          ]
+        }
+      }
+    },
+    "_性别": {
+      "default": "男",
+      "type": "string",
+      "enum": [
+        "男",
+        "女"
+      ]
+    },
+    "_先天": {
+      "default": {},
+      "type": "object",
+      "properties": {
+        "智商": {
+          "default": 50,
+          "type": "number"
+        },
+        "情商": {
+          "default": 50,
+          "type": "number"
+        },
+        "体质": {
+          "default": 50,
+          "type": "number"
+        },
+        "颜值": {
+          "default": 50,
+          "type": "number"
+        },
+        "意志": {
+          "default": 50,
+          "type": "number"
+        },
+        "幸运": {
+          "default": 50,
+          "type": "number"
+        }
+      }
+    },
+    "状态": {
+      "default": {},
+      "type": "object",
+      "properties": {
+        "健康": {
+          "default": 100,
+          "type": "number"
+        },
+        "气度": {
+          "default": 50,
+          "type": "number"
+        },
+        "声望": {
+          "default": 0,
+          "type": "number"
+        },
+        "幸福": {
+          "default": 50,
+          "type": "number"
+        }
+      }
+    },
+    "焦点": {
+      "default": {},
+      "type": "object",
+      "propertyNames": {
+        "type": "string",
+        "description": "领域名"
+      },
+      "additionalProperties": {
+        "type": "number"
+      }
+    },
+    "学识": {
+      "default": {},
+      "type": "object",
+      "propertyNames": {
+        "type": "string",
+        "description": "学科名"
+      },
+      "additionalProperties": {
+        "default": {},
+        "type": "object",
+        "properties": {
+          "层级": {
+            "default": 0,
+            "type": "number"
+          },
+          "进度": {
+            "default": 0,
+            "type": "number"
+          },
+          "上限": {
+            "default": 0,
+            "type": "number"
+          }
+        }
+      }
+    },
+    "技能": {
+      "default": {},
+      "type": "object",
+      "propertyNames": {
+        "type": "string",
+        "description": "技能名"
+      },
+      "additionalProperties": {
+        "default": {},
+        "type": "object",
+        "properties": {
+          "层级": {
+            "default": 0,
+            "type": "number"
+          },
+          "进度": {
+            "default": 0,
+            "type": "number"
+          },
+          "上限": {
+            "default": 0,
+            "type": "number"
+          }
+        }
+      }
+    },
+    "关系": {
+      "default": {},
+      "type": "object",
+      "propertyNames": {
+        "type": "string",
+        "description": "人物姓名"
+      },
+      "additionalProperties": {
+        "default": {},
+        "type": "object",
+        "properties": {
+          "身份": {
+            "default": "待初始化",
+            "type": "string"
+          },
+          "阶段": {
+            "default": "待初始化",
+            "type": "string"
+          },
+          "亲密度": {
+            "default": 0,
+            "type": "number"
+          }
+        }
+      }
+    },
+    "家庭资产": {
+      "default": {},
+      "type": "object",
+      "propertyNames": {
+        "type": "string",
+        "description": "资产名"
+      },
+      "additionalProperties": {
+        "default": {},
+        "type": "object",
+        "properties": {
+          "数量": {
+            "default": "待初始化",
+            "type": "string"
+          },
+          "来源": {
+            "default": "待初始化",
+            "type": "string"
+          }
+        }
+      }
+    },
+    "个人资产": {
+      "default": {},
+      "type": "object",
+      "propertyNames": {
+        "type": "string",
+        "description": "资产名"
+      },
+      "additionalProperties": {
+        "default": {},
+        "type": "object",
+        "properties": {
+          "数量": {
+            "default": "待初始化",
+            "type": "string"
+          },
+          "来源": {
+            "default": "待初始化",
+            "type": "string"
+          }
+        }
+      }
+    },
+    "事件": {
+      "default": {},
+      "type": "object",
+      "propertyNames": {
+        "type": "string",
+        "description": "事件名"
+      },
+      "additionalProperties": {
+        "default": {},
+        "type": "object",
+        "properties": {
+          "细节": {
+            "default": "待初始化",
+            "type": "string"
+          },
+          "截止": {
+            "default": "待初始化",
+            "type": "string"
+          },
+          "主题": {
+            "default": "待初始化",
+            "type": "string"
+          },
+          "选项": {
+            "default": {},
+            "type": "object",
+            "propertyNames": {
+              "type": "string",
+              "description": "选项名"
+            },
+            "additionalProperties": {
+              "default": {},
+              "type": "object",
+              "properties": {
+                "动作": {
+                  "default": "待初始化",
+                  "type": "string"
+                },
+                "代价": {
+                  "default": "待初始化",
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "心向": {
+      "default": [],
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "终章": {
+      "default": {},
+      "type": "object",
+      "properties": {
+        "已结算": {
+          "default": false,
+          "type": "boolean"
+        },
+        "享年": {
+          "default": 0,
+          "type": "number"
+        },
+        "死因": {
+          "default": "待初始化",
+          "type": "string"
+        },
+        "一生总结": {
+          "default": "待初始化",
+          "type": "string"
+        },
+        "巅峰": {
+          "default": "待初始化",
+          "type": "string"
+        },
+        "墓志铭": {
+          "default": "待初始化",
+          "type": "string"
+        },
+        "评语": {
+          "default": "待初始化",
+          "type": "string"
+        }
+      }
+    },
+    "$参数": {
+      "default": {},
+      "type": "object",
+      "properties": {
+        "正文下限": {
+          "default": 1500,
+          "type": "number"
+        },
+        "正文上限": {
+          "default": 3000,
+          "type": "number"
+        },
+        "事件细节下限": {
+          "default": 40,
+          "type": "number"
+        },
+        "事件细节上限": {
+          "default": 80,
+          "type": "number"
+        },
+        "终章总结下限": {
+          "default": 150,
+          "type": "number"
+        },
+        "终章总结上限": {
+          "default": 300,
+          "type": "number"
+        }
+      }
+    }
+  }
+}

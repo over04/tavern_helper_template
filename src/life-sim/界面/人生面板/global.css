@@ -1,0 +1,165 @@
+@import url('https://testingcf.jsdelivr.net/npm/@fontsource/inter@5.1.0/index.min.css');
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+:root {
+  /* ── 表面：ivory 纸面 + 纯白卡 ── */
+  --c-bg: #faf9f5;
+  --c-bg-alt: #f0eee6;
+  --c-surface: #ffffff;
+  --c-surface-sunken: #f5f4ee;
+  --c-surface-hover: #eeede5;
+
+  /* ── 描边 ── */
+  --c-border: #e5e4df;
+  --c-border-strong: #d5d3cc;
+
+  /* ── 文字：近黑到雾灰 ── */
+  --c-text: #141413;
+  --c-text-body: #3d3d3a;
+  --c-text-muted: #6c6b68;
+  --c-text-faint: #87867f;
+
+  /* ── 品牌橙 ── */
+  --c-accent: #d97757;
+  --c-accent-hover: #c15f3c;
+  --c-accent-soft: #f7ede8;
+  --c-accent-line: #e8cdbf;
+
+  /* ── 语义 ── */
+  --c-positive: #5f8b52;
+  --c-positive-soft: #eef3ea;
+  --c-caution: #b8862f;
+  --c-caution-soft: #f8f2e4;
+  --c-alarm: #b4472f;
+  --c-alarm-soft: #f8ede9;
+
+  /* ── 圆角 ── */
+  --r-xs: 6px;
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 16px;
+
+  /* ── 投影：一层几乎看不见的浮起 ── */
+  --shadow-hair: 0 1px 2px rgba(20, 20, 19, 0.05);
+  --shadow-lift: 0 2px 8px rgba(20, 20, 19, 0.06), 0 1px 2px rgba(20, 20, 19, 0.04);
+
+  /* ── 排版 ── */
+  --f-ui: 'Styrene A', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC',
+    'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+  --f-serif: 'Tiempos Text', 'Songti SC', 'Noto Serif SC', 'Source Han Serif SC', Georgia, serif;
+  --f-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+
+  /* ── 缓动 ── */
+  --ease: cubic-bezier(0.25, 0.1, 0.25, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+html,
+body {
+  background: transparent;
+}
+
+body {
+  background-color: var(--c-bg);
+  font-family: var(--f-ui);
+  color: var(--c-text);
+  font-size: 14px;
+  line-height: 1.6;
+  letter-spacing: -0.006em;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: 'cv11' 1;
+}
+
+/* ══════════════════════════════════════════
+   动效：只做 Claude 会做的三件事
+   —— 入场淡入上移 / 状态呼吸 / 折线展开
+   ══════════════════════════════════════════ */
+
+/* 入场：淡入 + 6px 上移，长尾收束 */
+@keyframes cl-enter {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 呼吸：用于状态指示点 */
+@keyframes cl-breathe {
+  0%,
+  100% {
+    opacity: 0.4;
+    transform: scale(0.9);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.1);
+  }
+}
+
+/* 星芒旋转：等待/书写态 */
+@keyframes cl-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* 折线展开：折叠区内容浮现 */
+@keyframes cl-reveal {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* 交错入场 */
+.cl-enter-seq > * {
+  animation: cl-enter 0.42s var(--ease-out) both;
+}
+.cl-enter-seq > *:nth-child(1) { animation-delay: 0ms; }
+.cl-enter-seq > *:nth-child(2) { animation-delay: 40ms; }
+.cl-enter-seq > *:nth-child(3) { animation-delay: 80ms; }
+.cl-enter-seq > *:nth-child(4) { animation-delay: 120ms; }
+.cl-enter-seq > *:nth-child(5) { animation-delay: 160ms; }
+.cl-enter-seq > *:nth-child(6) { animation-delay: 200ms; }
+.cl-enter-seq > *:nth-child(7) { animation-delay: 240ms; }
+.cl-enter-seq > *:nth-child(8) { animation-delay: 280ms; }
+
+/* 全局交互过渡：Claude 的 hover 只动颜色，不动位置 */
+button,
+[role='button'],
+summary,
+input,
+textarea {
+  font-family: inherit;
+  transition:
+    background-color 0.15s var(--ease),
+    border-color 0.15s var(--ease),
+    color 0.15s var(--ease),
+    box-shadow 0.15s var(--ease);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
