@@ -22,6 +22,30 @@
           "default": 1,
           "type": "number"
         },
+        "模式": {
+          "default": "月推进",
+          "type": "string",
+          "enum": [
+            "月推进",
+            "分钟推进"
+          ]
+        },
+        "日": {
+          "default": 0,
+          "type": "number"
+        },
+        "时": {
+          "default": 0,
+          "type": "number"
+        },
+        "分": {
+          "default": 0,
+          "type": "number"
+        },
+        "慢速累计": {
+          "default": 0,
+          "type": "number"
+        },
         "年龄岁": {
           "default": 0,
           "type": "number"

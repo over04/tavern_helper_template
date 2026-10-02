@@ -19,6 +19,7 @@
       <span>{{ spanLabel }}</span>
       <span class="ls-readout-sep">·</span>
       <span>{{ sex }}</span>
+      <button class="ls-btn-quiet ls-readout-mode" type="button" @click="enterSlow">进入慢速模式</button>
     </div>
 
     <div class="ls-readout-span">
@@ -32,18 +33,28 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue';
+import { injectInput } from '../inject';
 import { useDataStore } from '../store';
 import AgeRing from './AgeRing.vue';
 
 const store = useDataStore();
 
 const props = defineProps<{
-  time: { 回合: number; 年: number; 月: number; 跨度: number; 年龄岁: number; 年龄月: number; 阶段: string };
+  time: {
+    回合: number;
+    年: number;
+    月: number;
+    跨度: number;
+    模式: string;
+    年龄岁: number;
+    年龄月: number;
+    阶段: string;
+  };
   sex: string;
   name: string;
 }>();
 
-// 变量 `姓名` 为空时，退回酒馆 persona 名（{{user}} 宏）
+// 变量 `姓名` 为空时，回退到酒馆 persona 名（{{user}} 宏）
 const personaName = ref('');
 
 onMounted(() => {
@@ -62,7 +73,7 @@ const displayName = computed(() => props.name?.trim() || personaName.value);
 
 const span = ref(props.time.跨度);
 
-// 年/月 是回合结束时的读数，往前推 (跨度 - 1) 个月得到起点
+// 年/月 是回合结束时的读数，往前推算 (跨度 - 1) 个月得到起点
 function shiftMonth(year: number, month: number, delta: number) {
   const total = year * 12 + (month - 1) + delta;
   if (total < 12) {
@@ -92,6 +103,11 @@ watch(
 
 function applySpan() {
   store.data.时间.跨度 = span.value;
+}
+
+// 只写进输入框，由玩家确认后发送；切换模式必须由模型写进本回合的变量更新
+function enterSlow() {
+  injectInput('进入慢速模式');
 }
 </script>
 
@@ -153,6 +169,12 @@ function applySpan() {
 
 .ls-readout-sep {
   color: var(--ls-border-strong);
+}
+
+.ls-readout-mode {
+  margin-left: auto;
+  padding: 3px 10px;
+  font-size: 12px;
 }
 
 .ls-readout-span {

@@ -1,37 +1,34 @@
 <template>
   <section v-if="entries.length" class="ls-events">
-    <CollapsibleList class="ls-event-list" :items="entries" :limit="3">
-      <template #default="{ items }">
-        <article v-for="[name, ev] in items" :key="name" class="ls-event">
-          <header class="ls-event-head">
-            <h4 class="ls-event-name">{{ name }}</h4>
-            <span v-if="ev.发生时间" class="ls-event-time">{{ ev.发生时间 }}</span>
-            <span v-if="ev.截止时间" class="ls-event-deadline">{{ ev.截止时间 }}</span>
-            <span v-if="ev.所属主题" class="ls-event-theme">{{ ev.所属主题 }}</span>
-          </header>
-          <p class="ls-event-detail">{{ ev.细节段落 }}</p>
-          <div class="ls-event-options">
-            <button
-              v-for="[key, op] in optionEntries(ev)"
-              :key="key"
-              class="ls-option"
-              type="button"
-              @click="pick(name, op.动作)"
-            >
-              <span class="ls-option-act">{{ op.动作 }}</span>
-              <span v-if="op.代价" class="ls-option-cost">{{ op.代价 }}</span>
-            </button>
-          </div>
-        </article>
-      </template>
-    </CollapsibleList>
+    <div class="ls-event-list">
+      <article v-for="[name, ev] in entries" :key="name" class="ls-event">
+        <header class="ls-event-head">
+          <h4 class="ls-event-name">{{ name }}</h4>
+          <span v-if="ev.发生时间" class="ls-event-time">{{ ev.发生时间 }}</span>
+          <span v-if="ev.截止时间" class="ls-event-deadline">{{ ev.截止时间 }}</span>
+          <span v-if="ev.所属主题" class="ls-event-theme">{{ ev.所属主题 }}</span>
+        </header>
+        <p class="ls-event-detail">{{ ev.细节段落 }}</p>
+        <div class="ls-event-options">
+          <button
+            v-for="[key, op] in optionEntries(ev)"
+            :key="key"
+            class="ls-option"
+            type="button"
+            @click="pick(name, op.动作)"
+          >
+            <span class="ls-option-act">{{ op.动作 }}</span>
+            <span v-if="op.代价" class="ls-option-cost">{{ op.代价 }}</span>
+          </button>
+        </div>
+      </article>
+    </div>
   </section>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue';
 import { appendInput } from '../inject';
-import CollapsibleList from './CollapsibleList.vue';
 
 type Option = { 动作: string; 代价: string };
 type Event = {
@@ -66,7 +63,9 @@ function pick(name: string, action: string) {
 }
 
 .ls-event-list {
-  --ls-collapse-gap: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 .ls-event {

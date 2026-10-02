@@ -18,6 +18,28 @@ export const Schema = z.object({
         .number()
         .transform((v) => _.clamp(v, 1, 60))
         .prefault(1),
+      // 模式：月推进 / 分钟推进，玩家在正文里用自然语言切换，开局固定为月推进
+      模式: z.enum(['月推进', '分钟推进']).prefault('月推进'),
+      // 日：0 表示时间未具体到日，首次进入分钟推进时以当前读数的当月月末 23:59 为起点；1~31 为真实日；月推进回合冻结保留
+      日: z.coerce
+        .number()
+        .transform((v) => _.clamp(v, 0, 31))
+        .prefault(0),
+      // 时：分钟推进的进位单位，月推进回合冻结保留
+      时: z.coerce
+        .number()
+        .transform((v) => _.clamp(v, 0, 23))
+        .prefault(0),
+      // 分：分钟推进的最小单位，满 60 进位到 时，月推进回合冻结保留
+      分: z.coerce
+        .number()
+        .transform((v) => _.clamp(v, 0, 59))
+        .prefault(0),
+      // 慢速累计：本段分钟推进期间累计流逝的分钟数，由脚本按 日/时/分 的实际推进自动维护；退出回合按 T/43200 月折算补结算，结算后清零
+      慢速累计: z.coerce
+        .number()
+        .transform((v) => _.clamp(v, 0, 999999))
+        .prefault(0),
       年龄岁: z.coerce
         .number()
         .transform((v) => _.clamp(v, 0, 150))
@@ -79,7 +101,7 @@ export const Schema = z.object({
     })
     .prefault({}),
 
-  // 状态：健康为生命值，归 0 即死亡；气度不占份额
+  // 状态：健康为生命值，降为 0 即死亡；气度不占份额
   状态: z
     .object({
       健康: z.coerce
@@ -152,7 +174,7 @@ export const Schema = z.object({
     )
     .prefault({}),
 
-  // 技能：动态键为技能名，结构同学识
+  // 技能：动态键为技能名，结构与学识相同
   技能: z
     .record(
       z.string().describe('技能名'),

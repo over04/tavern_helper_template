@@ -1,7 +1,7 @@
 @import url('https://testingcf.jsdelivr.net/npm/@fontsource/inter@5.1.0/index.min.css');
 
-/* 全局样式一律收到根容器上，并用 :where() 把特异性压到 0：
-   既不穿透到宿主文档，也不会反过来盖掉组件的 scoped 样式。 */
+/* 全局样式一律写在根容器上，并用 :where() 把特异性压到 0：
+   既不穿透到宿主文档，也不会反过来覆盖组件的 scoped 样式。 */
 :where(#ls-app, #ls-app *) {
   box-sizing: border-box;
   margin: 0;
@@ -47,7 +47,7 @@
   --ls-r-md: 12px;
   --ls-r-lg: 16px;
 
-  /* ── 投影：一层几乎看不见的浮起 ── */
+  /* ── 投影：一层几乎看不见的浮起效果 ── */
   --ls-shadow-hair: 0 1px 2px rgba(20, 20, 19, 0.05);
   --ls-shadow-lift: 0 2px 8px rgba(20, 20, 19, 0.06), 0 1px 2px rgba(20, 20, 19, 0.04);
 
@@ -76,11 +76,12 @@
 }
 
 /* ══════════════════════════════════════════
-   动效：只做 Claude 会做的三件事
-   —— 入场淡入上移 / 状态呼吸 / 折线展开
+   动效：只保留以下两类
+   入场淡入上移 / 页签内容浮现
+   同级交错由各组件按 nth-child 自行设置延迟
    ══════════════════════════════════════════ */
 
-/* 入场：淡入 + 6px 上移，长尾收束 */
+/* 入场：淡入并上移 6px，尾段减速 */
 @keyframes ls-enter {
   from {
     opacity: 0;
@@ -92,30 +93,7 @@
   }
 }
 
-/* 呼吸：用于状态指示点 */
-@keyframes ls-breathe {
-  0%,
-  100% {
-    opacity: 0.4;
-    transform: scale(0.9);
-  }
-  50% {
-    opacity: 1;
-    transform: scale(1.1);
-  }
-}
-
-/* 星芒旋转：等待/书写态 */
-@keyframes ls-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-/* 折线展开：折叠区内容浮现 */
+/* 页签内容浮现 */
 @keyframes ls-reveal {
   from {
     opacity: 0;
@@ -125,20 +103,7 @@
   }
 }
 
-/* 交错入场 */
-.ls-enter-seq > * {
-  animation: ls-enter 0.42s var(--ls-ease-out) both;
-}
-.ls-enter-seq > *:nth-child(1) { animation-delay: 0ms; }
-.ls-enter-seq > *:nth-child(2) { animation-delay: 40ms; }
-.ls-enter-seq > *:nth-child(3) { animation-delay: 80ms; }
-.ls-enter-seq > *:nth-child(4) { animation-delay: 120ms; }
-.ls-enter-seq > *:nth-child(5) { animation-delay: 160ms; }
-.ls-enter-seq > *:nth-child(6) { animation-delay: 200ms; }
-.ls-enter-seq > *:nth-child(7) { animation-delay: 240ms; }
-.ls-enter-seq > *:nth-child(8) { animation-delay: 280ms; }
-
-/* 交互过渡：Claude 的 hover 只动颜色，不动位置。限定在根容器内 */
+/* 交互过渡：hover 只改变颜色，不改变位置。以下选择器限定在根容器内 */
 #ls-app button,
 #ls-app [role='button'],
 #ls-app summary,
@@ -152,7 +117,7 @@
     box-shadow 0.15s var(--ls-ease);
 }
 
-/* 降级动效同样只限定在根容器内，避免 !important 打到宿主文档 */
+/* 降级动效同样只限定在根容器内，避免 !important 影响宿主文档 */
 @media (prefers-reduced-motion: reduce) {
   :where(#ls-app, #ls-app *),
   :where(#ls-app, #ls-app *)::before,

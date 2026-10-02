@@ -2,22 +2,20 @@
   <div class="ls-skills">
     <div class="ls-group">
       <span class="ls-group-label">学识</span>
-      <CollapsibleList class="ls-skill-list" :items="studyEntries" :limit="5">
-        <template #default="{ items }">
-          <LevelBar
-            v-for="[name, item] in items"
-            :key="name"
-            :name="name"
-            :层级="item.层级"
-            :进度="item.进度"
-            :上限="item.上限"
-            :类="item.类"
-            :教育质量="item.教育质量"
-          />
-        </template>
-      </CollapsibleList>
+      <div class="ls-skill-list">
+        <LevelBar
+          v-for="[name, item] in studyEntries"
+          :key="name"
+          :name="name"
+          :层级="item.层级"
+          :进度="item.进度"
+          :上限="item.上限"
+          :类="item.类"
+          :教育质量="item.教育质量"
+        />
+      </div>
       <div v-if="!studyEntries.length" class="ls-ghost">
-        <span class="ls-ghost-note">尚未习得</span>
+        <span class="ls-ghost-note">尚无学识</span>
         <div class="ls-ghost-track">
           <span v-for="cell in GHOST_CELLS" :key="cell" class="ls-ghost-cell" />
         </div>
@@ -26,22 +24,20 @@
 
     <div class="ls-group">
       <span class="ls-group-label">技能</span>
-      <CollapsibleList class="ls-skill-list" :items="skillEntries" :limit="5">
-        <template #default="{ items }">
-          <LevelBar
-            v-for="[name, item] in items"
-            :key="name"
-            :name="name"
-            :层级="item.层级"
-            :进度="item.进度"
-            :上限="item.上限"
-            :类="item.类"
-            :教育质量="item.教育质量"
-          />
-        </template>
-      </CollapsibleList>
+      <div class="ls-skill-list">
+        <LevelBar
+          v-for="[name, item] in skillEntries"
+          :key="name"
+          :name="name"
+          :层级="item.层级"
+          :进度="item.进度"
+          :上限="item.上限"
+          :类="item.类"
+          :教育质量="item.教育质量"
+        />
+      </div>
       <div v-if="!skillEntries.length" class="ls-ghost">
-        <span class="ls-ghost-note">尚未习得</span>
+        <span class="ls-ghost-note">尚未学会</span>
         <div class="ls-ghost-track">
           <span v-for="cell in GHOST_CELLS" :key="cell" class="ls-ghost-cell" />
         </div>
@@ -52,12 +48,11 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import CollapsibleList from './CollapsibleList.vue';
 import LevelBar from './LevelBar.vue';
 
 type Ability = { 层级: number; 进度: number; 上限: number; 类?: string; 教育质量?: number };
 
-// 空态占位槽的格数，与 LevelBar 的刻度格保持一致
+// 空态占位的格数，与 LevelBar 的刻度格保持一致
 const GHOST_CELLS = 10;
 
 const props = defineProps<{
@@ -89,7 +84,9 @@ const skillEntries = computed(() => Object.entries(props.skills ?? {}));
 }
 
 .ls-skill-list {
-  --ls-collapse-gap: 11px;
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
 }
 
 .ls-ghost {

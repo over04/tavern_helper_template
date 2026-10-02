@@ -14,18 +14,16 @@
 
     <div class="ls-group">
       <span class="ls-group-label">关系</span>
-      <CollapsibleList class="ls-rel-list" :items="relationEntries" :limit="5">
-        <template #default="{ items }">
-          <RelationBar
-            v-for="[name, rel] in items"
-            :key="name"
-            :name="name"
-            :identity="rel.身份"
-            :stage="rel.阶段"
-            :value="rel.亲密度"
-          />
-        </template>
-      </CollapsibleList>
+      <div class="ls-rel-list">
+        <RelationBar
+          v-for="[name, rel] in relationEntries"
+          :key="name"
+          :name="name"
+          :identity="rel.身份"
+          :stage="rel.阶段"
+          :value="rel.亲密度"
+        />
+      </div>
       <span v-if="!relationEntries.length" class="ls-empty">无</span>
     </div>
 
@@ -34,32 +32,28 @@
       <div class="ls-asset-groups">
         <div v-if="familyEntries.length" class="ls-asset-group">
           <span class="ls-asset-group-label">家庭</span>
-          <CollapsibleList :items="familyEntries" :limit="5">
-            <template #default="{ items }">
-              <div v-for="[name, item] in items" :key="name" class="ls-asset-row">
-                <div class="ls-asset-info">
-                  <span class="ls-asset-name">{{ name }}</span>
-                  <span v-if="item.来源" class="ls-asset-source">{{ item.来源 }}</span>
-                </div>
-                <span class="ls-asset-amount">{{ item.数量 }}</span>
+          <div class="ls-asset-list">
+            <div v-for="[name, item] in familyEntries" :key="name" class="ls-asset-row">
+              <div class="ls-asset-info">
+                <span class="ls-asset-name">{{ name }}</span>
+                <span v-if="item.来源" class="ls-asset-source">{{ item.来源 }}</span>
               </div>
-            </template>
-          </CollapsibleList>
+              <span class="ls-asset-amount">{{ item.数量 }}</span>
+            </div>
+          </div>
         </div>
 
         <div v-if="personalEntries.length" class="ls-asset-group">
           <span class="ls-asset-group-label">个人</span>
-          <CollapsibleList :items="personalEntries" :limit="5">
-            <template #default="{ items }">
-              <div v-for="[name, item] in items" :key="name" class="ls-asset-row">
-                <div class="ls-asset-info">
-                  <span class="ls-asset-name">{{ name }}</span>
-                  <span v-if="item.来源" class="ls-asset-source">{{ item.来源 }}</span>
-                </div>
-                <span class="ls-asset-amount">{{ item.数量 }}</span>
+          <div class="ls-asset-list">
+            <div v-for="[name, item] in personalEntries" :key="name" class="ls-asset-row">
+              <div class="ls-asset-info">
+                <span class="ls-asset-name">{{ name }}</span>
+                <span v-if="item.来源" class="ls-asset-source">{{ item.来源 }}</span>
               </div>
-            </template>
-          </CollapsibleList>
+              <span class="ls-asset-amount">{{ item.数量 }}</span>
+            </div>
+          </div>
         </div>
 
         <span v-if="!familyEntries.length && !personalEntries.length" class="ls-empty">无</span>
@@ -70,7 +64,6 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import CollapsibleList from './CollapsibleList.vue';
 import FocusRing from './FocusRing.vue';
 import RelationBar from './RelationBar.vue';
 import RingProgress from './RingProgress.vue';
@@ -125,7 +118,9 @@ const personalEntries = computed(() => Object.entries(props.personalAssets ?? {}
 }
 
 .ls-rel-list {
-  --ls-collapse-gap: 11px;
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
 }
 
 .ls-empty {
@@ -153,6 +148,11 @@ const personalEntries = computed(() => Object.entries(props.personalAssets ?? {}
   font-size: 11px;
   letter-spacing: 0.1em;
   color: var(--ls-text-faint);
+}
+
+.ls-asset-list {
+  display: flex;
+  flex-direction: column;
 }
 
 .ls-asset-row {

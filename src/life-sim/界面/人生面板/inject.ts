@@ -2,7 +2,7 @@
  * 把文本写进酒馆输入框，交由玩家手动发送。
  *
  * 界面运行在消息楼层 iframe 中，与主文档同源，所以优先直接操作主文档的输入框：
- * `/setinput` 是 Slash 命令，参数以行尾为界，承载不了多行正文，只作兜底。
+ * `/setinput` 是 Slash 命令，参数以行尾为界，容纳不了多行正文，只作回退。
  */
 function getInput(): HTMLTextAreaElement | null {
   try {
@@ -13,7 +13,7 @@ function getInput(): HTMLTextAreaElement | null {
 }
 
 function fallback(text: string) {
-  // Slash 参数不能含换行，兜底路径只能压成单行
+  // Slash 参数不能含换行，回退路径只能压缩为单行
   const single = text.replace(/[\r\n]+/g, ' ').replace(/\|/g, '\\|');
   triggerSlash(`/setinput ${single}`).catch(error => console.error('写入输入框失败', error));
 }
