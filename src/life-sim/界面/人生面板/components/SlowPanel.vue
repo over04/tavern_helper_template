@@ -131,7 +131,7 @@ const relationEntries = computed(() => Object.entries(props.relations ?? {}));
 
 // 只写进输入框，由玩家确认后发送；切换模式必须由模型写进本回合的变量更新
 function backToMonthly() {
-  injectInput('回到月推进');
+  injectInput('「回到月推进」');
 }
 </script>
 

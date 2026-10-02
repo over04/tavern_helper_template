@@ -20,7 +20,7 @@
 
       <PanelTabs v-model="active" :tabs="tabs">
         <template v-if="active === 'event'">
-          <EventPanel :events="store.data.事件" />
+          <EventPanel :events="store.data.事件" :fate="store.data.命运点" />
           <WishPanel :wishes="store.data.心向" />
         </template>
 

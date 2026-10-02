@@ -1,15 +1,16 @@
 @import url('https://testingcf.jsdelivr.net/npm/@fontsource/inter@5.1.0/index.min.css');
 
 /* 全局样式一律写在根容器上，并用 :where() 把特异性压到 0：
-   既不穿透到宿主文档，也不会反过来覆盖组件的 scoped 样式。 */
-:where(#ls-app, #ls-app *) {
+   既不穿透到宿主文档，也不会反过来覆盖组件的 scoped 样式。
+   状态栏界面挂 #ls-app，判定条挂 .ls-judge-root，两者共用这一份变量与基础样式。 */
+:where(#ls-app, #ls-app *, .ls-judge-root, .ls-judge-root *) {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
   -webkit-tap-highlight-color: transparent;
 }
 
-:where(#ls-app) {
+:where(#ls-app, .ls-judge-root) {
   /* ── 表面：ivory 纸面 + 纯白卡 ── */
   --ls-bg: #faf9f5;
   --ls-bg-alt: #f0eee6;
@@ -62,9 +63,14 @@
   --ls-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+/* 底色与最小高度只给状态栏：它是一整屏界面，判定条只是正文里的一块，不该占满视口 */
 #ls-app {
   min-height: 100vh;
   background-color: var(--ls-bg);
+}
+
+/* 排版挂在两个根容器上，判定条的文字才不会退回宿主文档的字体 */
+:where(#ls-app, .ls-judge-root) {
   font-family: var(--ls-f-ui);
   color: var(--ls-text);
   font-size: 14px;
@@ -108,7 +114,12 @@
 #ls-app [role='button'],
 #ls-app summary,
 #ls-app input,
-#ls-app textarea {
+#ls-app textarea,
+.ls-judge-root button,
+.ls-judge-root [role='button'],
+.ls-judge-root summary,
+.ls-judge-root input,
+.ls-judge-root textarea {
   font-family: inherit;
   transition:
     background-color 0.15s var(--ls-ease),
@@ -119,9 +130,9 @@
 
 /* 降级动效同样只限定在根容器内，避免 !important 影响宿主文档 */
 @media (prefers-reduced-motion: reduce) {
-  :where(#ls-app, #ls-app *),
-  :where(#ls-app, #ls-app *)::before,
-  :where(#ls-app, #ls-app *)::after {
+  :where(#ls-app, #ls-app *, .ls-judge-root, .ls-judge-root *),
+  :where(#ls-app, #ls-app *, .ls-judge-root, .ls-judge-root *)::before,
+  :where(#ls-app, #ls-app *, .ls-judge-root, .ls-judge-root *)::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;

@@ -11,7 +11,7 @@
           "type": "number"
         },
         "年": {
-          "default": 1,
+          "default": 2000,
           "type": "number"
         },
         "月": {
@@ -19,7 +19,7 @@
           "type": "number"
         },
         "跨度": {
-          "default": 1,
+          "default": 6,
           "type": "number"
         },
         "模式": {
@@ -89,27 +89,27 @@
       "type": "object",
       "properties": {
         "智商": {
-          "default": 50,
+          "default": 55,
           "type": "number"
         },
         "情商": {
-          "default": 50,
+          "default": 55,
           "type": "number"
         },
         "体质": {
-          "default": 50,
+          "default": 55,
           "type": "number"
         },
         "颜值": {
-          "default": 50,
+          "default": 55,
           "type": "number"
         },
         "意志": {
-          "default": 50,
+          "default": 55,
           "type": "number"
         },
         "幸运": {
-          "default": 50,
+          "default": 55,
           "type": "number"
         }
       }
@@ -119,11 +119,11 @@
       "type": "object",
       "properties": {
         "健康": {
-          "default": 100,
+          "default": 60,
           "type": "number"
         },
         "气度": {
-          "default": 50,
+          "default": 0,
           "type": "number"
         },
         "声望": {
@@ -131,7 +131,7 @@
           "type": "number"
         },
         "幸福": {
-          "default": 50,
+          "default": 0,
           "type": "number"
         }
       }
@@ -354,6 +354,37 @@
                 "代价": {
                   "default": "待初始化",
                   "type": "string"
+                },
+                "难度": {
+                  "default": "普通",
+                  "type": "string",
+                  "enum": [
+                    "轻松",
+                    "容易",
+                    "普通",
+                    "困难",
+                    "极难"
+                  ]
+                },
+                "取项": {
+                  "default": "智商",
+                  "type": "string",
+                  "enum": [
+                    "智商",
+                    "情商",
+                    "体质",
+                    "颜值",
+                    "意志",
+                    "幸运"
+                  ]
+                },
+                "主项": {
+                  "default": "",
+                  "type": "string"
+                },
+                "领域": {
+                  "default": "",
+                  "type": "string"
                 }
               }
             }
@@ -368,6 +399,10 @@
         "type": "string"
       }
     },
+    "命运点": {
+      "default": 3,
+      "type": "number"
+    },
     "终章": {
       "default": {},
       "type": "object",
@@ -381,23 +416,23 @@
           "type": "number"
         },
         "死因": {
-          "default": "待初始化",
+          "default": "",
           "type": "string"
         },
         "一生总结": {
-          "default": "待初始化",
+          "default": "",
           "type": "string"
         },
         "巅峰": {
-          "default": "待初始化",
+          "default": "",
           "type": "string"
         },
         "墓志铭": {
-          "default": "待初始化",
+          "default": "",
           "type": "string"
         },
         "评语": {
-          "default": "待初始化",
+          "default": "",
           "type": "string"
         }
       }
@@ -413,6 +448,95 @@
         "事件细节上限": {
           "default": 80,
           "type": "number"
+        },
+        "事件配额": {
+          "default": [
+            "时代背景",
+            "时代背景",
+            "时代背景",
+            "时代背景"
+          ],
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "机会条数": {
+          "default": 0,
+          "type": "number"
+        },
+        "上回合配额领域": {
+          "default": [],
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "判定骰": {
+          "default": [],
+          "type": "array",
+          "items": {
+            "type": "number"
+          }
+        },
+        "本次判定": {
+          "default": [],
+          "type": "array",
+          "items": {
+            "default": {},
+            "type": "object",
+            "properties": {
+              "事件": {
+                "default": "",
+                "type": "string"
+              },
+              "选项": {
+                "default": 0,
+                "type": "number"
+              },
+              "骰值": {
+                "default": 0,
+                "type": "number"
+              },
+              "难度": {
+                "default": "普通",
+                "type": "string",
+                "enum": [
+                  "轻松",
+                  "容易",
+                  "普通",
+                  "困难",
+                  "极难"
+                ]
+              },
+              "目标": {
+                "default": 0,
+                "type": "number"
+              },
+              "界线": {
+                "default": 0,
+                "type": "number"
+              },
+              "修正": {
+                "default": 0,
+                "type": "number"
+              },
+              "成功线": {
+                "default": 0,
+                "type": "number"
+              },
+              "命运点": {
+                "default": "",
+                "type": "string",
+                "enum": [
+                  "",
+                  "重掷",
+                  "加值",
+                  "改判"
+                ]
+              }
+            }
+          }
         }
       }
     }

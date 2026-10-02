@@ -35,3 +35,19 @@ export function appendInput(text: string) {
   const merged = current.trim() ? `${current.replace(/\s+$/, '')}\n${text}` : text;
   injectInput(merged);
 }
+
+/**
+ * 把输入框中的 from 片段原地替换为 to。
+ *
+ * 取不到输入框、或输入框里已经没有 from 时返回 false，由调用方决定改成追加：
+ * 这两种情况都说明界面记的「上一次注入」已经不在输入框里了。
+ */
+export function replaceInput(from: string, to: string): boolean {
+  const input = getInput();
+  if (!input || !from || !input.value.includes(from)) {
+    return false;
+  }
+  input.value = input.value.replace(from, to);
+  input.dispatchEvent(new Event('input', { bubbles: true }));
+  return true;
+}

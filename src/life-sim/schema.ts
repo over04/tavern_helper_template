@@ -9,7 +9,7 @@ export const Schema = z.object({
       年: z.coerce
         .number()
         .transform((v) => _.clamp(v, 1, 9999))
-        .prefault(1),
+        .prefault(2000),
       月: z.coerce
         .number()
         .transform((v) => _.clamp(v, 1, 12))
@@ -17,10 +17,10 @@ export const Schema = z.object({
       跨度: z.coerce
         .number()
         .transform((v) => _.clamp(v, 1, 60))
-        .prefault(1),
+        .prefault(6),
       // 模式：月推进 / 分钟推进，玩家在正文里用自然语言切换，开局固定为月推进
       模式: z.enum(['月推进', '分钟推进']).prefault('月推进'),
-      // 日：0 表示时间未具体到日，首次进入分钟推进时以当前读数的当月月末 23:59 为起点；1~31 为真实日；月推进回合冻结保留
+      // 日：0 表示时间未具体到日，首次进入分钟推进时以当前读数的当月月末 23:59 为起点；1~31 为具体日期；月推进回合冻结保留
       日: z.coerce
         .number()
         .transform((v) => _.clamp(v, 0, 31))
@@ -77,27 +77,27 @@ export const Schema = z.object({
       智商: z.coerce
         .number()
         .transform((v) => _.clamp(v, 0, 100))
-        .prefault(50),
+        .prefault(55),
       情商: z.coerce
         .number()
         .transform((v) => _.clamp(v, 0, 100))
-        .prefault(50),
+        .prefault(55),
       体质: z.coerce
         .number()
         .transform((v) => _.clamp(v, 0, 100))
-        .prefault(50),
+        .prefault(55),
       颜值: z.coerce
         .number()
         .transform((v) => _.clamp(v, 0, 100))
-        .prefault(50),
+        .prefault(55),
       意志: z.coerce
         .number()
         .transform((v) => _.clamp(v, 0, 100))
-        .prefault(50),
+        .prefault(55),
       幸运: z.coerce
         .number()
         .transform((v) => _.clamp(v, 0, 100))
-        .prefault(50),
+        .prefault(55),
     })
     .prefault({}),
 
@@ -107,11 +107,11 @@ export const Schema = z.object({
       健康: z.coerce
         .number()
         .transform((v) => _.clamp(v, 0, 100))
-        .prefault(100),
+        .prefault(60),
       气度: z.coerce
         .number()
         .transform((v) => _.clamp(v, 0, 100))
-        .prefault(50),
+        .prefault(0),
       声望: z.coerce
         .number()
         .transform((v) => _.clamp(v, 0, 100))
@@ -119,7 +119,7 @@ export const Schema = z.object({
       幸福: z.coerce
         .number()
         .transform((v) => _.clamp(v, 0, 100))
-        .prefault(50),
+        .prefault(0),
     })
     .prefault({}),
 
@@ -275,6 +275,14 @@ export const Schema = z.object({
                 .object({
                   动作: z.string().prefault('待初始化'),
                   代价: z.string().prefault('待初始化'),
+                  // 难度：以同龄常人为参照，不随角色能力浮动；判定脚本据此给出目标难度
+                  难度: z.enum(['轻松', '容易', '普通', '困难', '极难']).prefault('普通'),
+                  // 取项：这项行动按性质取哪一项先天，判定脚本据此算先天修正
+                  取项: z.enum(['智商', '情商', '体质', '颜值', '意志', '幸运']).prefault('智商'),
+                  // 主项：这项行动对应的学识或技能条目名，生活领域留空，判定脚本据此取层级
+                  主项: z.string().prefault(''),
+                  // 领域：这项行动归属的领域名，取「焦点」里的键，判定脚本据此取份额
+                  领域: z.string().prefault(''),
                 })
                 .prefault({}),
             )
@@ -290,6 +298,12 @@ export const Schema = z.object({
     .transform((v) => _.takeRight(v, 6))
     .prefault([]),
 
+  // 命运点：判定用的重掷与改判资源；消耗由判定脚本在生成正文之前扣减
+  命运点: z.coerce
+    .number()
+    .transform((v) => Math.max(0, Math.round(v)))
+    .prefault(3),
+
   // 终章：死亡回合的结算内容
   终章: z
     .object({
@@ -298,11 +312,11 @@ export const Schema = z.object({
         .number()
         .transform((v) => _.clamp(v, 0, 150))
         .prefault(0),
-      死因: z.string().prefault('待初始化'),
-      一生总结: z.string().prefault('待初始化'),
-      巅峰: z.string().prefault('待初始化'),
-      墓志铭: z.string().prefault('待初始化'),
-      评语: z.string().prefault('待初始化'),
+      死因: z.string().prefault(''),
+      一生总结: z.string().prefault(''),
+      巅峰: z.string().prefault(''),
+      墓志铭: z.string().prefault(''),
+      评语: z.string().prefault(''),
     })
     .prefault({}),
 
@@ -317,6 +331,65 @@ export const Schema = z.object({
         .number()
         .transform((v) => _.clamp(v, 0, 100000))
         .prefault(80),
+      // 事件配额：本回合各条事件的来源标签（心向 / 领域名 / 天赋效应：某项先天 / 时代背景），顺序即派生顺序，由事件配额脚本写入
+      事件配额: z
+        .array(z.string())
+        .prefault(['时代背景', '时代背景', '时代背景', '时代背景']),
+      // 机会条数：在事件数量之外额外派生的机会事件条数，不占配额，由事件配额脚本写入
+      机会条数: z.coerce
+        .number()
+        .transform((v) => _.clamp(v, 0, 20))
+        .prefault(0),
+      // 上回合配额领域：上一回合分配到的领域名，供本回合的加权分配降权
+      上回合配额领域: z.array(z.string()).prefault([]),
+      // 判定骰：本回合可用的骰值，由判定骰脚本在生成正文之前一次掷出，按顺序取用
+      判定骰: z
+        .array(
+          z.coerce
+            .number()
+            .transform((v) => _.clamp(Math.round(v), 1, 100)),
+        )
+        .prefault([]),
+      // 本次判定：玩家点选项时由判定骰脚本逐条写入，无选项触发时为空数组
+      本次判定: z
+        .array(
+          z
+            .object({
+              事件: z.string().prefault(''),
+              选项: z.coerce
+                .number()
+                .transform((v) => _.clamp(Math.round(v), 0, 4))
+                .prefault(0),
+              骰值: z.coerce
+                .number()
+                .transform((v) => _.clamp(Math.round(v), 0, 100))
+                .prefault(0),
+              难度: z.enum(['轻松', '容易', '普通', '困难', '极难']).prefault('普通'),
+              // 目标：该难度对应的目标值，由脚本按难度表算好写入；注入与界面直接读，不再各自存一张表
+              目标: z.coerce
+                .number()
+                .transform((v) => _.clamp(Math.round(v), 0, 100))
+                .prefault(0),
+              // 界线：两端区的分档 k，骰值 ≤ k 为大失败、≥ 101 − k 为大成功，同样由脚本算好写入
+              界线: z.coerce
+                .number()
+                .transform((v) => _.clamp(Math.round(v), 0, 100))
+                .prefault(0),
+              // 修正：先天、主项层级、焦点份额三项之和，由脚本算并写入
+              修正: z.coerce
+                .number()
+                .transform((v) => _.clamp(Math.round(v), -30, 90))
+                .prefault(0),
+              // 成功线：目标 − 修正，骰值 ≥ 成功线为成功；成败由界面据此判断，不存结果字段
+              成功线: z.coerce
+                .number()
+                .transform((v) => _.clamp(Math.round(v), 0, 100))
+                .prefault(0),
+              命运点: z.enum(['', '重掷', '加值', '改判']).prefault(''),
+            })
+            .prefault({}),
+        )
+        .prefault([]),
     })
     .prefault({}),
 });
