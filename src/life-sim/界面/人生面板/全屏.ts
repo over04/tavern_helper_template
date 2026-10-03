@@ -174,6 +174,8 @@ const 铺满 = (): boolean => {
   // 祖先里凡是构成层叠上下文的，会把承载元素的 z-index 困在里面：2147483000 只在那层上下文内部有效，
   // 对上下文之外（酒馆的顶栏与底部输入区）只剩上下文自己那一层的层级，于是尺寸铺满了却还被压住。
   // 把这类祖先的 z-index 与 isolation 也清成 auto，承载元素就能在根层叠上下文里直接与它们比大小。
+  // 判定不能只看 position：flex/grid 子项上的 z-index 同样构成层叠上下文，而它的 position 是 static。
+  // 酒馆的 #chat 正是这种——display:flex 的子项、position:static、z-index:30，只看 position 就会漏掉它。
   // 快照由 记下 在第一次调用时取，此处两个属性都在快照之后才改，还原时一并写回。
   for (let 元素: HTMLElement | null = 承载; 元素; 元素 = 上一层(元素)) {
     if (元素 === 承载) {
@@ -183,7 +185,7 @@ const 铺满 = (): boolean => {
     if (!样式) {
       continue;
     }
-    if (样式.isolation !== 'isolate' && !(样式.position !== 'static' && 样式.zIndex !== 'auto')) {
+    if (样式.isolation !== 'isolate' && 样式.zIndex === 'auto') {
       continue;
     }
     记下(元素);
