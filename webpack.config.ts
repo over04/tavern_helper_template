@@ -192,7 +192,9 @@ function parse_configuration(entry: Entry): (_env: any, argv: any) => webpack.Co
     experiments: {
       outputModule: true,
     },
-    devtool: argv.mode === 'production' ? 'source-map' : 'eval-source-map',
+    // 前端界面的产物要整份贴进正则替换串，它的 .map 永远不会被部署，
+    // 而那行 sourceMappingURL 注释会让浏览器去取一份 404 的 map，控制台留下 JSON 解析报错
+    devtool: entry.html ? false : argv.mode === 'production' ? 'source-map' : 'eval-source-map',
     watchOptions: {
       ignored: ['**/dist', '**/node_modules'],
     },

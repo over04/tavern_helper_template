@@ -1,0 +1,47 @@
+/* 滑块外观：开局面板与读数条两处需要完全一致，抽成一份，免得两处各自漂移。
+   两处都带 scoped 的 [data-v-*]，特异性高于 global.css 里的普通类选择器，
+   所以这份外观只能随组件走，放进 global.css 会被组件自身的规则盖掉。 */
+@mixin 滑块外观 {
+  flex: 1;
+  min-width: 0;
+  height: 4px;
+  /* iOS 上无前缀的 appearance 不足以去掉原生外观，必须带 -webkit- 前缀 */
+  -webkit-appearance: none;
+  appearance: none;
+  border-radius: 999px;
+  background: var(--ls-border-strong);
+  outline: none;
+  cursor: pointer;
+
+  /* 轨道要显式声明：未声明时 iOS 深色模式会用系统原生深色轨道覆盖元素自身的背景 */
+  &::-webkit-slider-runnable-track {
+    height: 4px;
+    border-radius: 999px;
+    background: var(--ls-border-strong);
+  }
+
+  &::-moz-range-track {
+    height: 4px;
+    border-radius: 999px;
+    background: var(--ls-border-strong);
+  }
+
+  &::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--ls-accent);
+    border: 2px solid var(--ls-surface);
+    box-shadow: var(--ls-shadow-hair);
+  }
+
+  &::-moz-range-thumb {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--ls-accent);
+    border: 2px solid var(--ls-surface);
+  }
+}

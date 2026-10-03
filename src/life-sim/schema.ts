@@ -1,3 +1,42 @@
+/**
+ * 学识与技能共用同一种条目结构，动态键为条目名。
+ * 两处的字段、取值区间与初值必须完全一致，所以只在这里定义一次。
+ */
+const 条目结构 = z
+  .object({
+    层级: z.coerce
+      .number()
+      .transform((v) => _.clamp(v, 0, 9))
+      .prefault(0),
+    进度: z.coerce
+      .number()
+      .transform((v) => _.clamp(v, 0, 100))
+      .prefault(0),
+    上限: z.coerce
+      .number()
+      .transform((v) => _.clamp(v, 0, 9))
+      .prefault(0),
+    类: z
+      .enum([
+        '数学',
+        '语言',
+        '自然科学',
+        '工程技术',
+        '医学',
+        '人文',
+        '社会科学',
+        '艺术',
+        '体育',
+        '技艺',
+      ])
+      .prefault('技艺'),
+    教育质量: z.coerce
+      .number()
+      .transform((v) => _.clamp(v, 0.5, 2))
+      .prefault(1),
+  })
+  .prefault({});
+
 export const Schema = z.object({
   // 时间：回合推进与年龄读数
   时间: z
@@ -133,87 +172,11 @@ export const Schema = z.object({
     )
     .prefault({}),
 
-  // 学识：动态键为学科名，按层级成长
-  学识: z
-    .record(
-      z.string().describe('学科名'),
-      z
-        .object({
-          层级: z.coerce
-            .number()
-            .transform((v) => _.clamp(v, 0, 9))
-            .prefault(0),
-          进度: z.coerce
-            .number()
-            .transform((v) => _.clamp(v, 0, 100))
-            .prefault(0),
-          上限: z.coerce
-            .number()
-            .transform((v) => _.clamp(v, 0, 9))
-            .prefault(0),
-          类: z
-            .enum([
-              '数学',
-              '语言',
-              '自然科学',
-              '工程技术',
-              '医学',
-              '人文',
-              '社会科学',
-              '艺术',
-              '体育',
-              '技艺',
-            ])
-            .prefault('技艺'),
-          教育质量: z.coerce
-            .number()
-            .transform((v) => _.clamp(v, 0.5, 2))
-            .prefault(1),
-        })
-        .prefault({}),
-    )
-    .prefault({}),
+  // 学识：动态键为学科名，条目结构见文件头的 条目结构
+  学识: z.record(z.string().describe('学科名'), 条目结构).prefault({}),
 
-  // 技能：动态键为技能名，结构与学识相同
-  技能: z
-    .record(
-      z.string().describe('技能名'),
-      z
-        .object({
-          层级: z.coerce
-            .number()
-            .transform((v) => _.clamp(v, 0, 9))
-            .prefault(0),
-          进度: z.coerce
-            .number()
-            .transform((v) => _.clamp(v, 0, 100))
-            .prefault(0),
-          上限: z.coerce
-            .number()
-            .transform((v) => _.clamp(v, 0, 9))
-            .prefault(0),
-          类: z
-            .enum([
-              '数学',
-              '语言',
-              '自然科学',
-              '工程技术',
-              '医学',
-              '人文',
-              '社会科学',
-              '艺术',
-              '体育',
-              '技艺',
-            ])
-            .prefault('技艺'),
-          教育质量: z.coerce
-            .number()
-            .transform((v) => _.clamp(v, 0.5, 2))
-            .prefault(1),
-        })
-        .prefault({}),
-    )
-    .prefault({}),
+  // 技能：动态键为技能名，条目结构与学识相同
+  技能: z.record(z.string().describe('技能名'), 条目结构).prefault({}),
 
   // 关系：动态键为人物姓名
   关系: z
@@ -342,6 +305,56 @@ export const Schema = z.object({
         .prefault(0),
       // 上回合配额领域：上一回合分配到的领域名，供本回合的加权分配降权
       上回合配额领域: z.array(z.string()).prefault([]),
+      // 修正表：由判定骰脚本在生成正文之前算好写入的分项修正表，模型按行动性质取项查表，公式只在脚本里存一份
+      修正表: z
+        .object({
+          // 先天：键为六项先天名，值为该项先天的修正值
+          先天: z
+            .record(
+              z.string().describe('先天名'),
+              z.coerce
+                .number()
+                .transform((v) => _.clamp(Math.round(v), -30, 40)),
+            )
+            .prefault({}),
+          // 层级：键为学识或技能条目名，值为该条目的层级修正
+          层级: z
+            .record(
+              z.string().describe('学识或技能条目名'),
+              z.coerce
+                .number()
+                .transform((v) => _.clamp(Math.round(v), 0, 27)),
+            )
+            .prefault({}),
+          // 份额：键为焦点领域名，值为该领域的份额修正
+          份额: z
+            .record(
+              z.string().describe('领域名'),
+              z.coerce
+                .number()
+                .transform((v) => _.clamp(Math.round(v), 0, 20)),
+            )
+            .prefault({}),
+          // 目标值：键为五档难度名，值为该难度的目标值
+          目标值: z
+            .partialRecord(
+              z.enum(['轻松', '容易', '普通', '困难', '极难']),
+              z.coerce
+                .number()
+                .transform((v) => _.clamp(Math.round(v), 0, 100)),
+            )
+            .prefault({}),
+          // 界线：键为五档难度名，值为该难度两端区的分档 k，骰值 ≤ k 为大失败、≥ 101 − k 为大成功
+          界线: z
+            .partialRecord(
+              z.enum(['轻松', '容易', '普通', '困难', '极难']),
+              z.coerce
+                .number()
+                .transform((v) => _.clamp(Math.round(v), 1, 5)),
+            )
+            .prefault({}),
+        })
+        .prefault({}),
       // 判定骰：本回合可用的骰值，由判定骰脚本在生成正文之前一次掷出，按顺序取用
       判定骰: z
         .array(
@@ -350,16 +363,61 @@ export const Schema = z.object({
             .transform((v) => _.clamp(Math.round(v), 1, 100)),
         )
         .prefault([]),
-      // 本次判定：玩家点选项时由判定骰脚本逐条写入，无选项触发时为空数组
+      // 判定清单：由判定骰脚本在生成正文之前写入，本回合每条判定的定位与骰值，顺序即判定标签的序号
+      判定清单: z
+        .array(
+          z
+            .object({
+              事件: z.string().prefault(''),
+              // 选项：选项序号 1~4，手写行动填「其他」
+              选项: z.coerce.string().prefault(''),
+              // 行动原文：选项为「其他」时的手写行动原文，其余为空
+              行动原文: z.string().prefault(''),
+              骰值: z.coerce
+                .number()
+                .transform((v) => _.clamp(Math.round(v), 1, 100))
+                .prefault(0),
+              // 命运点：玩家在这条选择上声明的命运点方式，未声明为空
+              命运点: z.enum(['', '重掷', '加值', '改判']).prefault(''),
+            })
+            .prefault({}),
+        )
+        .prefault([]),
+      // 手写判定：由模型在生成中写入，只记选项为「其他」的手写行动的四个标注与算出的数值
+      手写判定: z
+        .array(
+          z
+            .object({
+              事件: z.string().prefault(''),
+              难度: z.enum(['轻松', '容易', '普通', '困难', '极难']).prefault('普通'),
+              // 取项：这项行动按性质取哪一项先天
+              取项: z.enum(['智商', '情商', '体质', '颜值', '意志', '幸运']).prefault('智商'),
+              // 主项：这项行动对应的学识或技能条目名，生活领域留空
+              主项: z.string().prefault(''),
+              // 领域：这项行动归属的领域名，取「焦点」里的键
+              领域: z.string().prefault(''),
+              // 修正：模型按分项修正表把先天、主项层级、焦点份额三项相加所得
+              修正: z.coerce
+                .number()
+                .transform((v) => _.clamp(Math.round(v), -30, 90))
+                .prefault(0),
+              // 成功线：目标值 − 修正，由模型算出
+              成功线: z.coerce
+                .number()
+                .transform((v) => _.clamp(Math.round(v), 0, 100))
+                .prefault(0),
+            })
+            .prefault({}),
+        )
+        .prefault([]),
+      // 本次判定：由判定复核脚本在生成结束后复算写入，界面直接读；本回合没有判定时为空数组
       本次判定: z
         .array(
           z
             .object({
               事件: z.string().prefault(''),
-              选项: z.coerce
-                .number()
-                .transform((v) => _.clamp(Math.round(v), 0, 4))
-                .prefault(0),
+              // 选项：选项序号 1~4，手写行动为「其他」
+              选项: z.coerce.string().prefault(''),
               骰值: z.coerce
                 .number()
                 .transform((v) => _.clamp(Math.round(v), 0, 100))
@@ -373,19 +431,23 @@ export const Schema = z.object({
               // 界线：两端区的分档 k，骰值 ≤ k 为大失败、≥ 101 − k 为大成功，同样由脚本算好写入
               界线: z.coerce
                 .number()
-                .transform((v) => _.clamp(Math.round(v), 0, 100))
-                .prefault(0),
-              // 修正：先天、主项层级、焦点份额三项之和，由脚本算并写入
+                .transform((v) => _.clamp(Math.round(v), 1, 5))
+                .prefault(1),
+              // 修正：先天、主项层级、焦点份额三项之和，由复核脚本按分项修正表算并写入
               修正: z.coerce
                 .number()
                 .transform((v) => _.clamp(Math.round(v), -30, 90))
                 .prefault(0),
-              // 成功线：目标 − 修正，骰值 ≥ 成功线为成功；成败由界面据此判断，不存结果字段
+              // 成功线：目标 − 修正，限在 0~100 内
               成功线: z.coerce
                 .number()
                 .transform((v) => _.clamp(Math.round(v), 0, 100))
                 .prefault(0),
+              // 结果：先判两端区，再比成功线，由复核脚本算出写入；界面直接读，不重算
+              结果: z.enum(['大失败', '失败', '成功', '大成功']).prefault('失败'),
               命运点: z.enum(['', '重掷', '加值', '改判']).prefault(''),
+              // 复核：生成后由判定复核脚本把模型所写与复算结果不符的地方标在这里，空字符串表示一致
+              复核: z.string().prefault(''),
             })
             .prefault({}),
         )

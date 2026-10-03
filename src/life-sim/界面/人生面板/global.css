@@ -1,6 +1,6 @@
 @import url('https://testingcf.jsdelivr.net/npm/@fontsource/inter@5.1.0/index.min.css');
 
-/* 全局样式一律写在根容器上，并用 :where() 把特异性压到 0：
+/* 全局样式一律写在根容器上，并用 :where() 把选择器优先级降到最低：
    既不穿透到宿主文档，也不会反过来覆盖组件的 scoped 样式。
    状态栏界面挂 #ls-app，判定条挂 .ls-judge-root，两者共用这一份变量与基础样式。 */
 :where(#ls-app, #ls-app *, .ls-judge-root, .ls-judge-root *) {
@@ -11,6 +11,9 @@
 }
 
 :where(#ls-app, .ls-judge-root) {
+  /* 固定为浅色：系统处于深色模式时，iOS 会把原生滚动条、输入框与滑块变为深色 */
+  color-scheme: light;
+
   /* ── 表面：ivory 纸面 + 纯白卡 ── */
   --ls-bg: #faf9f5;
   --ls-bg-alt: #f0eee6;
@@ -48,7 +51,7 @@
   --ls-r-md: 12px;
   --ls-r-lg: 16px;
 
-  /* ── 投影：一层几乎看不见的浮起效果 ── */
+  /* ── 投影：一层极淡的浮起效果 ── */
   --ls-shadow-hair: 0 1px 2px rgba(20, 20, 19, 0.05);
   --ls-shadow-lift: 0 2px 8px rgba(20, 20, 19, 0.06), 0 1px 2px rgba(20, 20, 19, 0.04);
 
@@ -63,13 +66,20 @@
   --ls-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* 底色与最小高度只给状态栏：它是一整屏界面，判定条只是正文里的一块，不该占满视口 */
+/* 底色只给状态栏：它是一整屏界面，判定条只是正文里的一块，不该占满视口 */
 #ls-app {
-  min-height: 100vh;
   background-color: var(--ls-bg);
 }
 
-/* 排版挂在两个根容器上，判定条的文字才不会退回宿主文档的字体 */
+/* 安全区上下边距。
+   声明在根容器上：.ls-fs 是它的子元素，若跟着声明一份，
+   会把这里的值覆盖掉，顶栏与底部导航就都读不到安全区。 */
+#ls-app {
+  --ls-safe-top: env(safe-area-inset-top, 0px);
+  --ls-safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* 排版挂在两个根容器上，判定条与全屏壳的文字才不会退回宿主文档的字体 */
 :where(#ls-app, .ls-judge-root) {
   font-family: var(--ls-f-ui);
   color: var(--ls-text);
@@ -128,6 +138,11 @@
     box-shadow 0.15s var(--ls-ease);
 }
 
+/* 关闭动效时，入场淡入与页签浮现都不播。作用范围限定在界面根元素内 */
+:where(.ls-panel, .ls-fs):not(.ls-fs--动效) :where(*) {
+  animation: none !important;
+}
+
 /* 降级动效同样只限定在根容器内，避免 !important 影响宿主文档 */
 @media (prefers-reduced-motion: reduce) {
   :where(#ls-app, #ls-app *, .ls-judge-root, .ls-judge-root *),
@@ -136,5 +151,244 @@
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+}
+
+/* ══════════════════════════════════════════
+   全屏壳
+   界面挂在楼层 iframe 的 #ls-app 里，点「全屏」由 全屏.ts 把承载它的 iframe
+   设成 position: fixed 并铺满视口；html 上的 ls-全屏 也由它加。
+   壳内结构：顶栏 ＋ 主体（一级导航｜中间列｜右侧列）。
+   ══════════════════════════════════════════ */
+
+/* 全屏时让整条高度链都撑满，壳才有 100% 可用；滚动交给壳内的各列，文档本身不滚 */
+html.ls-全屏,
+html.ls-全屏 body,
+html.ls-全屏 #ls-app {
+  height: 100%;
+}
+
+html.ls-全屏 {
+  overflow: hidden;
+}
+
+/* 阅读区默认值：App.vue 按设置把它们覆盖为行内样式，正文区与楼层条直接读取 */
+#ls-app,
+.ls-fs {
+  --ls-read-size: 16px;
+  --ls-read-leading: 1.8;
+  --ls-read-width: 760px;
+  --ls-fs-导航高: 56px;
+  /* 底部导航连同安全区的总高度：遮罩、抽屉与导航三处必须一致，统一从这里取 */
+  --ls-fs-底栏占位: calc(var(--ls-fs-导航高) + var(--ls-safe-bottom));
+}
+
+.ls-fs {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  background: var(--ls-bg);
+}
+
+.ls-fs-壳 {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+/* ── 顶栏 ── */
+.ls-fs-顶栏 {
+  position: relative;
+  z-index: 25;
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: calc(52px + var(--ls-safe-top));
+  padding: var(--ls-safe-top) 18px 0;
+  background: var(--ls-surface);
+  border-bottom: 1px solid var(--ls-border);
+}
+
+.ls-fs-标题 {
+  flex: none;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.ls-fs-读数 {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: var(--ls-text-muted);
+  font-size: 12.5px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* 纯图标按钮：只有图标，说明文字作为悬停提示；悬停只改底色与颜色，不动位置 */
+.ls-fs-退出按钮 {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border: none;
+  border-radius: var(--ls-r-sm);
+  background: transparent;
+  color: var(--ls-text-muted);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+@media (hover: hover) {
+  .ls-fs-退出按钮:hover {
+    background: var(--ls-surface-hover);
+    color: var(--ls-text);
+  }
+}
+
+/* ── 主体：三列网格 ── */
+.ls-fs-主体 {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  /* 中间列设 400px 下限：1280 宽度下按 1/3 分只剩 370px，读数条与事件卡片会被压到换行 */
+  grid-template-columns: auto minmax(400px, 1fr) minmax(0, 2fr);
+  gap: 14px;
+  padding: 14px;
+}
+
+.ls-fs-导航 {
+  align-self: start;
+}
+
+.ls-fs-中列,
+.ls-fs-右列 {
+  min-width: 0;
+  min-height: 0;
+}
+
+.ls-fs-中列 {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow-y: auto;
+}
+
+/* 变量管理与设置占满中间与右侧两列 */
+.ls-fs-中列--通栏 {
+  grid-column: 2 / -1;
+}
+
+.ls-fs-右列 {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ls-fs-右列 > .ls-fs-正文 {
+  flex: 1;
+  min-height: 0;
+}
+
+.ls-fs-右列 > .ls-fs-输入,
+.ls-fs-右列 > .ls-fs-结算 {
+  flex: none;
+}
+
+/* 开局时中间列不渲染，正文区横跨中间与右侧两列；否则右列会被自动放进第 2 列，第 3 列完全空置 */
+.ls-fs-右列--通栏 {
+  grid-column: 2 / -1;
+  overflow-y: auto;
+}
+
+/* 抽屉把手只在窄屏渲染 */
+.ls-fs-抽屉把手 {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 26px;
+  cursor: grab;
+  touch-action: none;
+}
+
+.ls-fs-抽屉条 {
+  width: 40px;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--ls-border-strong);
+}
+
+.ls-fs-遮罩 {
+  position: fixed;
+  inset: 0;
+  bottom: var(--ls-fs-底栏占位);
+  z-index: 15;
+  padding: 0;
+  border: none;
+  background: rgba(20, 20, 19, 0.22);
+  cursor: pointer;
+}
+
+/* ── 窄屏：正文占满、输入区常驻底部、一级导航变成底部一排，
+      点页签从底部升起抽屉，抽屉顶部可下拉关闭 ──
+   断点与 App.vue 的 useMediaQuery('(min-width: 1024px)') 互补，改动须同步 */
+@media (max-width: 1023px) {
+  .ls-fs-主体 {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    padding: 0;
+  }
+
+  .ls-fs-导航 {
+    order: 3;
+    align-self: stretch;
+    flex: none;
+    height: var(--ls-fs-底栏占位);
+    padding-bottom: var(--ls-safe-bottom);
+    border-top: 1px solid var(--ls-border);
+    background: var(--ls-surface);
+  }
+
+  .ls-fs-右列 {
+    order: 1;
+    flex: 1;
+    gap: 0;
+  }
+
+  .ls-fs-中列 {
+    order: 2;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: var(--ls-fs-底栏占位);
+    z-index: 20;
+    height: 66vh;
+    min-height: 60vh;
+    max-height: 70vh;
+    padding: 0;
+    background: var(--ls-surface);
+    border-top: 1px solid var(--ls-border);
+    border-radius: var(--ls-r-lg) var(--ls-r-lg) 0 0;
+    box-shadow: 0 -10px 30px rgba(20, 20, 19, 0.14);
+    transform: translateY(calc(100% + var(--ls-fs-底栏占位)));
+  }
+
+  .ls-fs-主体--抽屉开 .ls-fs-中列 {
+    transform: translateY(0);
+  }
+
+  /* 抽屉升起只算动效的一种，关掉动效时同样不播 */
+  .ls-fs--动效 .ls-fs-中列 {
+    transition: transform 0.28s var(--ls-ease-out);
   }
 }

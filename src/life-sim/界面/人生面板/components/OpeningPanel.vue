@@ -26,7 +26,7 @@
           <span class="ls-tpl-index">{{ tpl.index }}</span>
           <span class="ls-tpl-title">{{ tpl.title }}</span>
           <span class="ls-tpl-meta">{{ tpl.meta }}</span>
-          <span class="ls-tpl-desc">{{ substituteUser(tpl.form.bg) }}</span>
+          <span class="ls-tpl-desc">{{ tpl.form.bg }}</span>
           <span class="ls-tpl-cast">
             <span v-for="person in tpl.cast" :key="person" class="ls-tpl-person">{{ person }}</span>
           </span>
@@ -36,7 +36,12 @@
       <template v-else-if="page === 'custom'">
         <label class="ls-field">
           <span class="ls-field-label">背景设定</span>
-          <textarea v-model="form.bg" class="ls-field-area" rows="3" />
+          <textarea
+            v-model="form.bg"
+            class="ls-field-area"
+            rows="3"
+            placeholder="留空则由模型按出生时间与年代常识补全"
+          />
         </label>
 
         <div class="ls-field-grid">
@@ -95,6 +100,7 @@
           <i class="fa-solid fa-shuffle" />
           <span>随机开局</span>
         </button>
+        <p class="ls-random-hint">出生年月日、性别、跨度与六项天赋在表单允许的区间内随机。</p>
       </template>
     </div>
 
@@ -106,8 +112,11 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, reactive, ref } from 'vue';
-import { injectInput } from '../inject';
+import { reactive, ref } from 'vue';
+import { 触发发送 } from '../发送';
+import { 结算前确认 } from '../结算提醒';
+import { 是否全屏 } from '../全屏';
+import { use待发送 } from '../待发送';
 import { useDataStore } from '../store';
 import ClaudeMark from './ClaudeMark.vue';
 
@@ -139,6 +148,7 @@ interface Template {
 }
 
 const store = useDataStore();
+const 待发送 = use待发送();
 
 const TABS = [
   { key: 'tpl', label: '模板开局' },
@@ -165,7 +175,7 @@ const TEMPLATES: Template[] = [
     meta: '杭州 · 工薪家庭 · 每回合 6 个月',
     cast: ['陈建国 · 父亲', '周敏 · 母亲', '王彩凤 · 外婆'],
     form: {
-      bg: '父亲陈建国在轴承厂做车工，母亲周敏在巷口经营一间小卖部，外婆王彩凤从绍兴赶来照看月子。家里只有一套两室一厅的老公房，存款三万元出头，{{user}}是家中的第一个孩子。',
+      bg: '父亲陈建国在轴承厂做车工，母亲周敏在巷口经营一间小卖部，外婆王彩凤从绍兴赶来照看月子。家里只有一套两室一厅的老公房，存款三万元出头，家中的第一个孩子。',
       yy: 2003,
       mm: 9,
       sex: '女',
@@ -185,7 +195,7 @@ const TEMPLATES: Template[] = [
     meta: '湘南青溪 · 教师家庭 · 每回合 6 个月',
     cast: ['林守拙 · 父亲', '王秀兰 · 母亲', '王德厚 · 外公'],
     form: {
-      bg: '父亲林守拙在镇中学做民办教师，母亲王秀兰在供销社当营业员，外公王德厚在十里外的村子里种田。家里住镇上的教工宿舍，存款不过八百元，{{user}}是家中的第一个孩子。',
+      bg: '父亲林守拙在镇中学做民办教师，母亲王秀兰在供销社当营业员，外公王德厚在十里外的村子里种田。家里住镇上的教工宿舍，存款不过八百元，家中的第一个孩子。',
       yy: 1985,
       mm: 4,
       sex: '男',
@@ -205,7 +215,7 @@ const TEMPLATES: Template[] = [
     meta: '京城商户 · 每回合 6 个月',
     cast: ['裴远山 · 父亲', '沈静姝 · 母亲', '裴铭 · 长兄', '裴钰 · 次兄', '周嬷嬷 · 奶娘'],
     form: {
-      bg: '父亲裴远山经营城南的一间绸缎庄，母亲沈静姝主持家务，其上还有长兄裴铭与次兄裴钰，另有奶娘周嬷嬷照看起居。家中有三进宅院，在同业中颇有声名，{{user}}是家中的第三个孩子。',
+      bg: '父亲裴远山经营城南的一间绸缎庄，母亲沈静姝主持家务，上面还有长兄裴铭与次兄裴钰，另有奶娘周嬷嬷照看起居。家中有三进宅院，在同业中颇有声名，家中的第三个孩子。',
       yy: 1017,
       mm: 2,
       sex: '男',
@@ -220,33 +230,7 @@ const TEMPLATES: Template[] = [
   },
 ];
 
-const RANDOM_POOL = [
-  { yy: 1986, mm: 6, place: '北方小城的国营机床厂家属院', fam: '父亲在机床厂做工人，母亲在纺织厂三班倒，一家三口挤在厂里分的一间筒子楼里。', wealth: '一般' },
-  { yy: 1994, mm: 3, place: '江南县城的老城街巷', fam: '父亲开一间杂货铺，母亲在街道办事处上班，外婆同住，日常起居都有人照应。', wealth: '小康' },
-  { yy: 2003, mm: 9, place: '省会城市城郊的老居民区', fam: '父亲开出租车，母亲在医院做保洁，一家住在老小区的一套两室一厅里。', wealth: '一般' },
-  { yy: 1929, mm: 4, place: '沪上石库门弄堂', fam: '父亲在洋行做账房先生，母亲在家操持，祖母同住，一家靠一份薪水维持生计。', wealth: '小康' },
-  { yy: 1017, mm: 2, place: '架空王朝大衍的京城', fam: '父亲经营绸缎庄，母亲主持家务，长兄在书院读书，家中上下十几口人。', wealth: '殷实' },
-];
-
-// 模板简介里的 {{user}} 需在此处替换：界面内的文本不经过酒馆的宏处理
-const userName = ref('');
-
-onMounted(() => {
-  try {
-    const name = globalThis.SillyTavern?.substituteParams?.('{{user}}');
-    if (typeof name === 'string' && name && name !== '{{user}}') {
-      userName.value = name;
-    }
-  } catch {
-    userName.value = '';
-  }
-});
-
-// 模板简介与填入表单的背景设定取自同一份文本，只在这里做一次 {{user}} 替换
-function substituteUser(text: string): string {
-  return text.replace(/\{\{user\}\}/g, () => userName.value || '你');
-}
-
+// 模板简介与填入表单的背景设定取自同一份文本
 const page = ref<(typeof TABS)[number]['key']>('tpl');
 const hint = ref('');
 
@@ -265,32 +249,32 @@ const form = reactive<Form>({
   span: 6,
 });
 
-function pick<T>(list: T[]): T {
-  return list[Math.floor(Math.random() * list.length)]!;
+/** 闭区间内的随机整数 */
+function 取整(下限: number, 上限: number): number {
+  return 下限 + Math.floor(Math.random() * (上限 - 下限 + 1));
 }
 
 function useTemplate(tpl: Template) {
   Object.assign(form, tpl.form);
-  form.bg = substituteUser(form.bg);
   page.value = 'custom';
 }
 
+// 出生年月日、性别、跨度与六项天赋都在表单允许的区间内随机；
+// 家庭背景、地点与谋生方式无法由脚本生成，留空交给模型按出生时间与年代常识补全
 function rollRandom() {
-  const base = pick(RANDOM_POOL);
-  const sex: Sex = Math.random() < 0.5 ? '男' : '女';
   Object.assign(form, {
-    yy: base.yy,
-    mm: base.mm,
-    dd: 1,
-    sex,
-    span: pick([3, 6, 12]),
-    iq: 45 + Math.floor(Math.random() * 31),
-    eq: 45 + Math.floor(Math.random() * 31),
-    phy: 45 + Math.floor(Math.random() * 31),
-    look: 45 + Math.floor(Math.random() * 31),
-    will: 45 + Math.floor(Math.random() * 31),
-    luck: 45 + Math.floor(Math.random() * 31),
-    bg: `家在${base.place}。${base.fam}日子过得${base.wealth}。`,
+    yy: 取整(1, 9999),
+    mm: 取整(1, 12),
+    dd: 取整(1, 31),
+    sex: Math.random() < 0.5 ? '男' : '女',
+    span: 取整(1, 60),
+    iq: 取整(0, 100),
+    eq: 取整(0, 100),
+    phy: 取整(0, 100),
+    look: 取整(0, 100),
+    will: 取整(0, 100),
+    luck: 取整(0, 100),
+    bg: '',
   });
   page.value = 'custom';
 }
@@ -327,6 +311,8 @@ function rollEventCount(span: number): number {
   return lower + Math.floor(Math.random() * (upper - lower + 1));
 }
 
+// 开局只写玩家在面板上定下的值与由它派生的读数；状态四条（健康、气度、声望、幸福）
+// 由 initvar 给初值，健康再由模型按开局背景核对，界面不在这里写一遍
 function writeVariables() {
   store.data.时间.年 = form.yy;
   store.data.时间.月 = form.mm;
@@ -342,14 +328,25 @@ function writeVariables() {
   store.data._先天.颜值 = form.look;
   store.data._先天.意志 = form.will;
   store.data._先天.幸运 = form.luck;
-  store.data.状态.健康 = 60;
-  store.data.状态.气度 = 0;
-  store.data.状态.声望 = 0;
-  store.data.状态.幸福 = 0;
   store.data.$参数.事件数量 = rollEventCount(form.span);
 }
 
-function begin() {
+/** 开局声明：出生、性别、跨度与六项天赋逐项列出；背景留空时标为随机，交给模型补全 */
+function 拼开局声明(): string {
+  const 段 = [
+    '<开局>',
+    `<出生 年="${form.yy}" 月="${form.mm}" 日="${form.dd}"/>`,
+    `<性别>${form.sex}</性别>`,
+    `<跨度>${form.span}</跨度>`,
+    `<天赋 智商="${form.iq}" 情商="${form.eq}" 体质="${form.phy}" 颜值="${form.look}" 意志="${form.will}" 幸运="${form.luck}"/>`,
+  ];
+  const 背景 = form.bg.trim();
+  段.push(背景 ? `<背景>${背景}</背景>` : '<背景 随机="true"/>');
+  段.push('</开局>');
+  return 段.join('\n');
+}
+
+async function begin() {
   const error = validate();
   if (error) {
     hint.value = error;
@@ -358,17 +355,26 @@ function begin() {
   hint.value = '';
 
   writeVariables();
+  待发送.设开局(拼开局声明());
 
-  const intro =
-    form.bg.trim() || `${form.yy}年${form.mm}月${form.dd}日 生，${form.sex}。出身与家庭背景按该年代常识补全。`;
-  injectInput(`【开局】设定如下：补全档案，随后开始这段人生。\n\n${intro}`);
+  // 全屏时酒馆的输入框与发送键都被界面遮挡，发送由界面自己触发；
+  // 聊天层里酒馆的发送键就在下面，交给玩家自己按
+  if (是否全屏.value && (await 结算前确认(store.data.事件))) {
+    触发发送();
+  }
 }
 </script>
 
 <style lang="scss" scoped>
+@use '../滑块.scss' as 滑块;
+
 .ls-opening {
   display: flex;
   flex-direction: column;
+  width: 100%;
+  /* 开局时正文区独占整个宽列，面板限宽居中，列宽跟随设置里的阅读区上限 */
+  max-width: var(--ls-read-width);
+  margin: 0 auto;
   background: var(--ls-surface);
   border: 1px solid var(--ls-border);
   border-radius: var(--ls-r-md);
@@ -411,8 +417,10 @@ function begin() {
   cursor: pointer;
 }
 
-.ls-opening-tab:hover {
-  color: var(--ls-text);
+@media (hover: hover) {
+  .ls-opening-tab:hover {
+    color: var(--ls-text);
+  }
 }
 
 .ls-opening-tab.ls-is-active {
@@ -449,9 +457,11 @@ function begin() {
   animation-delay: 100ms;
 }
 
-.ls-tpl:hover {
-  background: var(--ls-surface-sunken);
-  border-color: var(--ls-border-strong);
+@media (hover: hover) {
+  .ls-tpl:hover {
+    background: var(--ls-surface-sunken);
+    border-color: var(--ls-border-strong);
+  }
 }
 
 .ls-tpl-index {
@@ -551,8 +561,10 @@ function begin() {
   cursor: pointer;
 }
 
-.ls-sex:hover {
-  background: var(--ls-surface-sunken);
+@media (hover: hover) {
+  .ls-sex:hover {
+    background: var(--ls-surface-sunken);
+  }
 }
 
 .ls-sex.ls-is-active {
@@ -582,32 +594,7 @@ function begin() {
 }
 
 .ls-trait-range {
-  flex: 1;
-  min-width: 0;
-  height: 4px;
-  appearance: none;
-  border-radius: 999px;
-  background: var(--ls-border-strong);
-  outline: none;
-  cursor: pointer;
-}
-
-.ls-trait-range::-webkit-slider-thumb {
-  appearance: none;
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  background: var(--ls-accent);
-  border: 2px solid var(--ls-surface);
-  box-shadow: var(--ls-shadow-hair);
-}
-
-.ls-trait-range::-moz-range-thumb {
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  background: var(--ls-accent);
-  border: 2px solid var(--ls-surface);
+  @include 滑块.滑块外观;
 }
 
 .ls-trait-value {
@@ -634,10 +621,18 @@ function begin() {
   cursor: pointer;
 }
 
-.ls-random:hover {
-  border-color: var(--ls-accent);
-  background: var(--ls-accent-soft);
-  color: var(--ls-accent-hover);
+@media (hover: hover) {
+  .ls-random:hover {
+    border-color: var(--ls-accent);
+    background: var(--ls-accent-soft);
+    color: var(--ls-accent-hover);
+  }
+}
+
+.ls-random-hint {
+  font-size: 12px;
+  line-height: 1.7;
+  color: var(--ls-text-faint);
 }
 
 .ls-opening-foot {
@@ -658,8 +653,10 @@ function begin() {
   cursor: pointer;
 }
 
-.ls-begin:not(:disabled):hover {
-  background: var(--ls-accent-hover);
+@media (hover: hover) {
+  .ls-begin:not(:disabled):hover {
+    background: var(--ls-accent-hover);
+  }
 }
 
 .ls-begin:disabled {

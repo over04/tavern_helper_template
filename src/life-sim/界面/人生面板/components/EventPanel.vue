@@ -15,8 +15,9 @@
             v-for="option in optionList(ev)"
             :key="option.key"
             class="ls-option"
-            :class="{ 'is-picked': picks[name]?.index === option.index }"
+            :class="{ 'is-picked': 选中序号(name) === String(option.index) }"
             type="button"
+            :disabled="只读"
             @click="pickOption(name, option)"
           >
             <span class="ls-option-index">{{ option.index }}</span>
@@ -24,6 +25,41 @@
             <span class="ls-option-difficulty" :data-level="option.level">{{ option.level }}</span>
             <span v-if="option.cost" class="ls-option-cost">{{ option.cost }}</span>
           </button>
+
+          <!-- 常驻第 5 条「其他」：四条之后固定追加，点开在下方展开手写输入区 -->
+          <button
+            class="ls-option ls-option-other"
+            :class="{ 'is-picked': 选中序号(name) === '其他', 'is-open': 展开[name] }"
+            type="button"
+            :disabled="只读"
+            @click="切换其他(name)"
+          >
+            <span class="ls-option-index" aria-hidden="true"></span>
+            <span class="ls-option-act">其他</span>
+            <span class="ls-option-difficulty">待定</span>
+          </button>
+
+          <div v-if="展开[name]" class="ls-other">
+            <textarea
+              class="ls-other-input"
+              rows="2"
+              placeholder="写下你想做的事，随消息一起交给模型判定"
+              :value="手写[name] ?? ''"
+              :disabled="只读"
+              @input="写手写(name, $event)"
+            ></textarea>
+            <div class="ls-other-foot">
+              <span class="ls-other-hint">写好后点「确定」作为本条事件的选项；再点一次「其他」即取消</span>
+              <button
+                class="ls-other-save"
+                type="button"
+                :disabled="只读 || !(手写[name] ?? '').trim()"
+                @click="确定其他(name)"
+              >
+                确定
+              </button>
+            </div>
+          </div>
         </div>
 
         <div class="ls-fate">
@@ -33,9 +69,9 @@
               v-for="way in FATE_WAYS"
               :key="way.key"
               class="ls-fate-btn"
-              :class="{ 'is-picked': picks[name]?.fate === way.key }"
+              :class="{ 'is-picked': 选中命运点(name) === way.key }"
               type="button"
-              :disabled="!canUseFate(name, way.cost)"
+              :disabled="只读 || !canUseFate(name, way.cost)"
               @click="pickFate(name, way.key)"
             >
               <span class="ls-fate-act">{{ way.label }}</span>
@@ -49,10 +85,18 @@
 </template>
 
 <script setup lang="ts">
-import { computed, reactive, watch } from 'vue';
-import { appendInput, replaceInput } from '../inject';
+import { computed, onMounted, onUnmounted, reactive } from 'vue';
+import { 待发送更新事件, use待发送 } from '../待发送';
 
-type Option = { 动作: string; 代价: string; 难度: string };
+type Option = {
+  动作: string;
+  代价: string;
+  难度: string;
+  取项?: string;
+  主项?: string;
+  领域?: string;
+};
+
 type Event = {
   细节段落: string;
   发生时间: string;
@@ -64,9 +108,10 @@ type Event = {
 const props = defineProps<{
   events: Record<string, Event>;
   fate: number;
+  只读?: boolean;
 }>();
 
-// 选项键固定为 一~四：界面显示的序号即判定脚本取用 stat.事件[名].选项[键] 的序号，两处必须同序
+// 选项键固定为 一~四：界面显示的序号即判定脚本取用 stat.事件[名].选项[键] 的序号，两处顺序必须一致
 const OPTION_KEYS = ['一', '二', '三', '四'];
 
 const FATE_WAYS = [
@@ -75,15 +120,13 @@ const FATE_WAYS = [
   { key: '改判', label: '改判为成功', cost: 3 },
 ];
 
-type Pick = { index: number; line: string; fate: string };
+const 待发送 = use待发送();
+
+// 手写输入区的展开状态与草稿都只属于本组件，选中态一律以待发送状态为准
+const 展开 = reactive<Record<string, boolean>>({});
+const 手写 = reactive<Record<string, string>>({});
 
 const entries = computed(() => Object.entries(props.events ?? {}));
-
-// 每个事件当前选中的选项与命运点声明
-const picks = reactive<Record<string, Pick>>({});
-
-// 上一次写进输入框的整段声明，用于原地替换，避免同一事件留下多条互相冲突的声明
-let lastInjected = '';
 
 const 余量 = computed(() => Math.max(0, Math.round(Number(props.fate) || 0)));
 
@@ -106,74 +149,99 @@ function optionList(ev: Event) {
   return list;
 }
 
-function 组装声明() {
-  const 段: string[] = [];
-  for (const name of Object.keys(picks)) {
-    const pick = picks[name];
-    if (!pick?.line) {
-      continue;
+/* ── 待发送状态的读写 ── */
+
+function 查选择(事件名: string) {
+  return 待发送.状态.value.选择.find(项 => 项.事件 === 事件名);
+}
+
+function 选中序号(事件名: string) {
+  return String(查选择(事件名)?.选项 || '');
+}
+
+function 选中命运点(事件名: string) {
+  return String(查选择(事件名)?.命运点 || '');
+}
+
+function 广播() {
+  window.dispatchEvent(new CustomEvent(待发送更新事件));
+}
+
+// 再点一次已选中的条目即撤销选择
+function pickOption(事件名: string, option: { index: number }) {
+  if (props.只读) {
+    return;
+  }
+  if (选中序号(事件名) === String(option.index)) {
+    待发送.移除选择(事件名);
+  } else {
+    待发送.选选项(事件名, String(option.index));
+  }
+  广播();
+}
+
+// 命运点必须与选项记在同一条选择里，判定脚本才结算；没点选项时按钮一律置灰
+function canUseFate(事件名: string, cost: number) {
+  return Boolean(选中序号(事件名)) && 余量.value >= cost;
+}
+
+function pickFate(事件名: string, 命运点: string) {
+  if (props.只读) {
+    return;
+  }
+  待发送.设命运点(事件名, 选中命运点(事件名) === 命运点 ? '' : 命运点);
+  广播();
+}
+
+/* ── 「其他」的手写行动 ── */
+
+// 「其他」是手写输入区的开合开关；收起时若这条手写行动已记录，一并取消
+function 切换其他(事件名: string) {
+  if (props.只读) {
+    return;
+  }
+  展开[事件名] = !展开[事件名];
+  if (!展开[事件名] && 选中序号(事件名) === '其他') {
+    待发送.移除选择(事件名);
+    广播();
+  }
+}
+
+// 参数类型走全局的 Event：本文件里的 Event 是事件条目，不是 DOM 事件
+function 写手写(事件名: string, event: globalThis.Event) {
+  手写[事件名] = (event.target as HTMLTextAreaElement).value;
+}
+
+function 确定其他(事件名: string) {
+  const 文本 = String(手写[事件名] || '').trim();
+  if (props.只读 || !文本) {
+    return;
+  }
+  待发送.选选项(事件名, '其他', 文本);
+  广播();
+}
+
+// 待发送里已记录手写行动时回填草稿；已有草稿时不动，以免覆盖玩家正在修改的内容
+function 回填手写() {
+  for (const 项 of 待发送.状态.value.选择) {
+    if (项.选项 === '其他' && 项.行动原文 && !手写[项.事件]) {
+      手写[项.事件] = String(项.行动原文);
     }
-    段.push(pick.fate ? `${pick.line}\n命运点：${pick.fate}` : pick.line);
   }
-  return 段.join('\n');
 }
 
-function 提交() {
-  const 下一段 = 组装声明();
-  if (!下一段) {
-    return;
-  }
-  if (lastInjected && replaceInput(lastInjected, 下一段)) {
-    lastInjected = 下一段;
-    return;
-  }
-  lastInjected = 下一段;
-  appendInput(下一段);
+function 同步() {
+  待发送.刷新();
+  回填手写();
 }
 
-function pickOption(name: string, option: { index: number; action: string }) {
-  picks[name] = {
-    index: option.index,
-    line: `「事件」「${name}」选项${option.index}：${option.action}`,
-    fate: picks[name]?.fate ?? '',
-  };
-  提交();
-}
+onMounted(() => {
+  同步();
+  window.addEventListener(待发送更新事件, 同步);
+});
 
-// 命运点必须与选项写在同一段文本里，判定脚本才会结算；没点选项时按钮一律置灰
-function canUseFate(name: string, cost: number) {
-  return Boolean(picks[name]?.line) && 余量.value >= cost;
-}
-
-function pickFate(name: string, key: string) {
-  const pick = picks[name];
-  if (!pick?.line) {
-    return;
-  }
-  picks[name] = { ...pick, fate: key };
-  提交();
-}
-
-// 事件消失后清掉对应声明，避免残留的旧声明被判定脚本当作本回合的选项
-watch(entries, list => {
-  const 现存 = new Set(list.map(([name]) => name));
-  let 有变化 = false;
-  for (const name of Object.keys(picks)) {
-    if (!现存.has(name)) {
-      delete picks[name];
-      有变化 = true;
-    }
-  }
-  if (!有变化 || !lastInjected) {
-    return;
-  }
-  const 下一段 = 组装声明();
-  if (下一段 && replaceInput(lastInjected, 下一段)) {
-    lastInjected = 下一段;
-    return;
-  }
-  // 输入框已不含上次注入的整段（通常是玩家已发送），放弃追踪
-  lastInjected = '';
+onUnmounted(() => {
+  window.removeEventListener(待发送更新事件, 同步);
 });
 </script>
 
@@ -198,8 +266,10 @@ watch(entries, list => {
   background: var(--ls-surface);
 }
 
-.ls-event:hover {
-  border-color: var(--ls-border-strong);
+@media (hover: hover) {
+  .ls-event:hover {
+    border-color: var(--ls-border-strong);
+  }
 }
 
 .ls-event-head {
@@ -258,15 +328,28 @@ watch(entries, list => {
   text-align: left;
 }
 
-.ls-option:hover {
-  background: var(--ls-surface-sunken);
-  border-color: var(--ls-border-strong);
+@media (hover: hover) {
+  .ls-option:hover:not(:disabled) {
+    background: var(--ls-surface-sunken);
+    border-color: var(--ls-border-strong);
+  }
 }
 
-.ls-option.is-picked,
-.ls-option.is-picked:hover {
+.ls-option.is-picked {
   border-color: var(--ls-accent-line);
   background: var(--ls-accent-soft);
+}
+
+@media (hover: hover) {
+  .ls-option.is-picked:hover {
+    border-color: var(--ls-accent-line);
+    background: var(--ls-accent-soft);
+  }
+}
+
+.ls-option:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
 }
 
 .ls-option-index {
@@ -283,9 +366,14 @@ watch(entries, list => {
   color: var(--ls-text);
 }
 
-.ls-option:hover .ls-option-act,
 .ls-option.is-picked .ls-option-act {
   color: var(--ls-accent-hover);
+}
+
+@media (hover: hover) {
+  .ls-option:hover:not(:disabled) .ls-option-act {
+    color: var(--ls-accent-hover);
+  }
 }
 
 .ls-option-difficulty {
@@ -320,6 +408,91 @@ watch(entries, list => {
 /* 选中态下把难度标签的底换成白，避免灰底色与橙底色相叠而显得浑浊 */
 .ls-option.is-picked .ls-option-difficulty {
   background: var(--ls-surface);
+}
+
+/* 「其他」的序号位留空，只占宽度，以便与其余选项对齐；它不对应 选项="5" */
+.ls-option-other .ls-option-act {
+  color: var(--ls-text-muted);
+}
+
+.ls-option-other.is-open .ls-option-act,
+.ls-option-other.is-picked .ls-option-act {
+  color: var(--ls-accent-hover);
+}
+
+.ls-other {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin-top: 2px;
+  padding: 10px 12px;
+  border: 1px solid var(--ls-border);
+  border-radius: var(--ls-r-sm);
+  background: var(--ls-surface-sunken);
+}
+
+.ls-other-input {
+  width: 100%;
+  min-height: 58px;
+  padding: 8px 10px;
+  border: 1px solid var(--ls-border-strong);
+  border-radius: var(--ls-r-sm);
+  background: var(--ls-surface);
+  color: var(--ls-text);
+  font-size: 13.5px;
+  line-height: 1.65;
+  resize: vertical;
+}
+
+.ls-other-input::placeholder {
+  color: var(--ls-text-faint);
+}
+
+.ls-other-input:focus {
+  outline: none;
+  border-color: var(--ls-accent-line);
+}
+
+.ls-other-input:disabled {
+  background: var(--ls-bg-alt);
+  cursor: not-allowed;
+}
+
+.ls-other-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.ls-other-hint {
+  font-size: 11.5px;
+  color: var(--ls-text-faint);
+}
+
+.ls-other-save {
+  flex: none;
+  padding: 4px 14px;
+  border: 1px solid var(--ls-border-strong);
+  border-radius: var(--ls-r-sm);
+  background: var(--ls-surface);
+  color: var(--ls-text-body);
+  font-size: 12.5px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+@media (hover: hover) {
+  .ls-other-save:hover:not(:disabled) {
+    border-color: var(--ls-accent-line);
+    background: var(--ls-accent-soft);
+    color: var(--ls-accent-hover);
+  }
+}
+
+.ls-other-save:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
 }
 
 .ls-fate {
@@ -359,9 +532,11 @@ watch(entries, list => {
   cursor: pointer;
 }
 
-.ls-fate-btn:hover:not(:disabled) {
-  border-color: var(--ls-accent-line);
-  background: var(--ls-accent-soft);
+@media (hover: hover) {
+  .ls-fate-btn:hover:not(:disabled) {
+    border-color: var(--ls-accent-line);
+    background: var(--ls-accent-soft);
+  }
 }
 
 .ls-fate-btn.is-picked {
@@ -381,9 +556,14 @@ watch(entries, list => {
   white-space: nowrap;
 }
 
-.ls-fate-btn:hover:not(:disabled) .ls-fate-act,
 .ls-fate-btn.is-picked .ls-fate-act {
   color: var(--ls-accent-hover);
+}
+
+@media (hover: hover) {
+  .ls-fate-btn:hover:not(:disabled) .ls-fate-act {
+    color: var(--ls-accent-hover);
+  }
 }
 
 .ls-fate-cost {

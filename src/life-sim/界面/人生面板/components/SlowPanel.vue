@@ -49,7 +49,8 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import { injectInput } from '../inject';
+import { useDataStore } from '../store';
+import { 待发送更新事件, use待发送 } from '../待发送';
 import FocusRing from './FocusRing.vue';
 import PanelTabs from './PanelTabs.vue';
 import RelationBar from './RelationBar.vue';
@@ -57,6 +58,9 @@ import RingProgress from './RingProgress.vue';
 import SkillPanel from './SkillPanel.vue';
 
 type Ability = { 层级: number; 进度: number; 上限: number; 类?: string; 教育质量?: number };
+
+const store = useDataStore();
+const 待发送 = use待发送();
 
 // 时间头常驻页签之外，时刻是慢速模式的核心信息
 const TABS = [
@@ -129,9 +133,12 @@ const hpTone = computed(() => {
 
 const relationEntries = computed(() => Object.entries(props.relations ?? {}));
 
-// 只写进输入框，由玩家确认后发送；切换模式必须由模型写进本回合的变量更新
+// 模式切换由界面直接改写变量，改完立即生效，下一次发送时附一次模式切换声明
 function backToMonthly() {
-  injectInput('「回到月推进」');
+  // 先按切换前的模式记下基准，再改变量，声明里才会出现这一条模式切换
+  待发送.清空();
+  store.data.时间.模式 = '月推进';
+  window.dispatchEvent(new CustomEvent(待发送更新事件));
 }
 </script>
 
@@ -226,9 +233,11 @@ function backToMonthly() {
   cursor: pointer;
 }
 
-.ls-btn-quiet:hover {
-  background: var(--ls-surface-hover);
-  border-color: var(--ls-text-faint);
-  color: var(--ls-text);
+@media (hover: hover) {
+  .ls-btn-quiet:hover {
+    background: var(--ls-surface-hover);
+    border-color: var(--ls-text-faint);
+    color: var(--ls-text);
+  }
 }
 </style>

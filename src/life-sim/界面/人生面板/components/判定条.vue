@@ -5,61 +5,79 @@
       <span class="ls-judge-outcome" :data-outcome="判定.成败">{{ 判定.成败 }}</span>
     </header>
 
-    <!-- 区间条按成功线切成四段，骰值标记落在哪一段就是什么结果，文字只留骰值本身 -->
+    <!-- 区间条按成功线切成四段，骰值徽章落在哪一段就是什么结果，文字只留骰值本身 -->
     <div class="ls-judge-gauge">
+      <div v-if="判定.命运点 || 判定.复核" class="ls-judge-marks">
+        <span
+          v-if="判定.命运点"
+          class="ls-judge-mark ls-is-fate"
+          :title="命运点说明[判定.命运点] ?? '命运点'"
+        ></span>
+        <span v-if="判定.复核" class="ls-judge-mark ls-is-review" :title="`复核：${判定.复核}`"></span>
+      </div>
+
       <div class="ls-judge-track">
         <span class="ls-seg" data-kind="大失败" :style="{ width: 段宽.大失败 + '%' }"></span>
         <span class="ls-seg" data-kind="失败" :style="{ width: 段宽.失败 + '%' }"></span>
         <span class="ls-seg" data-kind="成功" :style="{ width: 段宽.成功 + '%' }"></span>
         <span class="ls-seg" data-kind="大成功" :style="{ width: 段宽.大成功 + '%' }"></span>
       </div>
+
       <span class="ls-pin" :style="{ left: 判定.骰值 + '%' }">{{ 判定.骰值 }}</span>
     </div>
   </section>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
-import { useDataStore } from './store';
+import { 读快照, 楼层上下文键 } from '../正文';
 
-const props = defineProps<{ 位置: number }>();
+const props = defineProps<{ 序号: number }>();
 
-const store = useDataStore();
+// 楼层条提供所在楼层；没有它就没有可以取判定数据的楼层，整块不渲染
+const 楼层上下文 = inject(楼层上下文键, null);
 
-// 两端区先判与成功线的判法见「判定」条目；界面不存难度表，数值全部取用变量。
-function 判成败(骰值: number, 界线: number, 成功线: number, 方式: string) {
-  if (方式 === '改判') {
-    return '成功';
-  }
-  if (骰值 <= 界线) {
-    return '大失败';
-  }
-  if (骰值 >= 101 - 界线) {
-    return '大成功';
-  }
-  return 骰值 >= 成功线 ? '成功' : '失败';
-}
+const 命运点说明: Record<string, string> = {
+  重掷: '命运点：重掷',
+  加值: '命运点：加值 +20',
+  改判: '命运点：改判为成功',
+};
 
 const 判定 = computed(() => {
-  const 条目 = (store.data.$参数?.本次判定 ?? [])[props.位置];
+  // 读一次变量版本，变量表变化时本组件才会重新取数
+  void 楼层上下文?.变量版本.value;
+
+  const 楼层号 = 楼层上下文?.楼层.value?.楼层号;
+  if (楼层号 === undefined) {
+    return null;
+  }
+
+  const 条目 = 读快照(楼层号)?.$参数?.本次判定?.[props.序号 - 1];
   if (!条目?.事件) {
     return null;
   }
+
+  const 骰值 = Number(条目.骰值) || 0;
+  const 界线 = Number(条目.界线) || 0;
+  const 成功线 = Number(条目.成功线) || 0;
+  const 命运点 = String(条目.命运点 ?? '');
+
   return {
-    事件: 条目.事件,
-    骰值: 条目.骰值,
-    界线: 条目.界线,
-    成功线: 条目.成功线,
-    成败: 判成败(条目.骰值, 条目.界线, 条目.成功线, 条目.命运点),
+    事件: String(条目.事件),
+    骰值,
+    界线,
+    成功线,
+    命运点,
+    复核: String(条目.复核 ?? ''),
+    成败: String(条目.结果 ?? ''),
   };
 });
 
 // 四段各自的宽度，合计恰好 100。骰值越大越好，所以失败段紧贴大失败区、成功段紧贴大成功区，
 // 中间两段以成功线为界；成功线越出两端区时对应的一段宽度收缩为 0。
 const 段宽 = computed(() => {
-  // 界线合法值是 1~5，0 只可能是没写进来，用普通档兜底；成功线 0 是合法值（骰值必然不低于它），只能用 ?? 兜底
-  const k = 判定.value?.界线 || 3;
-  const s = 判定.value?.成功线 ?? 55;
+  // 界线与成功线由 schema 的 prefault 兜住、由判定复核脚本写入，界面不再各存一份难度表
+  const k = Number(判定.value?.界线 ?? 0);
+  const s = Number(判定.value?.成功线 ?? 0);
   const 上限 = 100 - k;
   return {
     大失败: k,
@@ -157,7 +175,7 @@ const 段宽 = computed(() => {
   background: var(--ls-positive);
 }
 
-/* 骰值做成骑在区间条上的胶囊徽章，用品牌橙，白描边把它与条分开 */
+/* 骰值做成叠在区间条上的胶囊徽章，用品牌橙，白描边把它与条分开 */
 .ls-pin {
   position: absolute;
   top: 50%;
@@ -177,6 +195,30 @@ const 段宽 = computed(() => {
   font-variant-numeric: tabular-nums;
   transform: translate(-50%, -50%);
   box-shadow: 0 0 0 3px var(--ls-surface);
+}
+
+/* 命运点与复核各留一个小标记，落在区间条上方的空隙里，悬停给出说明 */
+.ls-judge-marks {
+  position: absolute;
+  top: -13px;
+  right: 2px;
+  display: flex;
+  gap: 5px;
+}
+
+.ls-judge-mark {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  cursor: help;
+}
+
+.ls-judge-mark.ls-is-fate {
+  background: var(--ls-caution);
+}
+
+.ls-judge-mark.ls-is-review {
+  background: var(--ls-alarm);
 }
 
 @media (max-width: 480px) {

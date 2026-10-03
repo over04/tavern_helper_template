@@ -1,39 +1,125 @@
 <template>
-  <section v-if="wishes.length" class="ls-wishes">
-    <span class="ls-wishes-label">心向</span>
-    <div class="ls-wishes-row">
-      <button v-for="(wish, index) in wishes" :key="`${wish}-${index}`" class="ls-wish" type="button" @click="pick(wish)">
+  <section class="ls-wishes">
+    <div class="ls-wishes-head">
+      <span class="ls-wishes-label">心向</span>
+      <span class="ls-wishes-hint">点一条即记入待发送，再点一次取消</span>
+    </div>
+
+    <div v-if="wishes.length" class="ls-wishes-row">
+      <button
+        v-for="(wish, index) in wishes"
+        :key="`${wish}-${index}`"
+        class="ls-wish"
+        :class="{ 'is-picked': 已选(wish) }"
+        type="button"
+        :disabled="只读"
+        @click="切换(wish)"
+      >
         {{ wish }}
       </button>
+    </div>
+    <span v-else class="ls-empty">暂无方向</span>
+
+    <div class="ls-wish-add">
+      <input
+        v-model="新方向"
+        class="ls-wish-input"
+        type="text"
+        placeholder="写一条新的方向"
+        :disabled="只读"
+        @keydown.enter="回车加入"
+      />
+      <button class="ls-wish-add-btn" type="button" :disabled="只读 || !新方向.trim()" @click="加入">加入</button>
     </div>
   </section>
 </template>
 
 <script setup lang="ts">
-import { appendInput } from '../inject';
+import { onMounted, onUnmounted, ref } from 'vue';
+import { 待发送更新事件, use待发送 } from '../待发送';
 
-defineProps<{
+const props = defineProps<{
   wishes: string[];
+  只读?: boolean;
 }>();
 
-function pick(wish: string) {
-  appendInput(`「心向」：${wish}`);
+const 待发送 = use待发送();
+const 新方向 = ref('');
+
+function 已选(方向: string) {
+  return 待发送.状态.value.心向.includes(方向);
 }
+
+function 广播() {
+  window.dispatchEvent(new CustomEvent(待发送更新事件));
+}
+
+function 切换(方向: string) {
+  if (props.只读) {
+    return;
+  }
+  if (已选(方向)) {
+    待发送.移除心向(方向);
+  } else {
+    待发送.增心向(方向);
+  }
+  广播();
+}
+
+function 加入() {
+  const 文本 = 新方向.value.trim();
+  if (props.只读 || !文本) {
+    return;
+  }
+  待发送.增心向(文本);
+  新方向.value = '';
+  广播();
+}
+
+// 输入法选字时的回车不算加入
+function 回车加入(event: KeyboardEvent) {
+  if (event.isComposing) {
+    return;
+  }
+  加入();
+}
+
+function 同步() {
+  待发送.刷新();
+}
+
+onMounted(() => {
+  同步();
+  window.addEventListener(待发送更新事件, 同步);
+});
+
+onUnmounted(() => {
+  window.removeEventListener(待发送更新事件, 同步);
+});
 </script>
 
 <style lang="scss" scoped>
 .ls-wishes {
   display: flex;
-  align-items: flex-start;
-  gap: 10px;
+  flex-direction: column;
+  gap: 8px;
   padding: 13px 16px 15px;
   border-top: 1px solid var(--ls-border);
 }
 
+.ls-wishes-head {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
 .ls-wishes-label {
-  flex: none;
-  padding-top: 4px;
   font-size: 12px;
+  color: var(--ls-text-faint);
+}
+
+.ls-wishes-hint {
+  font-size: 11px;
   color: var(--ls-text-faint);
 }
 
@@ -53,9 +139,91 @@ function pick(wish: string) {
   cursor: pointer;
 }
 
-.ls-wish:hover {
+@media (hover: hover) {
+  .ls-wish:hover:not(:disabled) {
+    background: var(--ls-accent-soft);
+    border-color: var(--ls-accent-line);
+    color: var(--ls-accent-hover);
+  }
+}
+
+.ls-wish.is-picked {
   background: var(--ls-accent-soft);
   border-color: var(--ls-accent-line);
   color: var(--ls-accent-hover);
+}
+
+@media (hover: hover) {
+  .ls-wish.is-picked:hover {
+    background: var(--ls-accent-soft);
+    border-color: var(--ls-accent-line);
+    color: var(--ls-accent-hover);
+  }
+}
+
+.ls-wish:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.ls-empty {
+  font-size: 12.5px;
+  color: var(--ls-text-faint);
+}
+
+.ls-wish-add {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ls-wish-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 6px 10px;
+  border: 1px solid var(--ls-border-strong);
+  border-radius: var(--ls-r-sm);
+  background: var(--ls-surface);
+  color: var(--ls-text);
+  font-size: 12.5px;
+}
+
+.ls-wish-input::placeholder {
+  color: var(--ls-text-faint);
+}
+
+.ls-wish-input:focus {
+  outline: none;
+  border-color: var(--ls-accent-line);
+}
+
+.ls-wish-input:disabled {
+  background: var(--ls-bg-alt);
+  cursor: not-allowed;
+}
+
+.ls-wish-add-btn {
+  flex: none;
+  padding: 6px 14px;
+  border: 1px solid var(--ls-border-strong);
+  border-radius: var(--ls-r-sm);
+  background: var(--ls-surface);
+  color: var(--ls-text-body);
+  font-size: 12.5px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+@media (hover: hover) {
+  .ls-wish-add-btn:hover:not(:disabled) {
+    border-color: var(--ls-accent-line);
+    background: var(--ls-accent-soft);
+    color: var(--ls-accent-hover);
+  }
+}
+
+.ls-wish-add-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
 }
 </style>

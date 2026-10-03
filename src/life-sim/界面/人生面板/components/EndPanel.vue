@@ -38,6 +38,9 @@ defineProps<{
 .ls-finale {
   display: flex;
   flex-direction: column;
+  width: 100%;
+  max-width: var(--ls-read-width);
+  margin: 0 auto;
   background: var(--ls-surface);
   border: 1px solid var(--ls-border);
   border-radius: var(--ls-r-md);

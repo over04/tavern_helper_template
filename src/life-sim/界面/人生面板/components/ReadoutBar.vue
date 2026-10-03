@@ -32,12 +32,13 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue';
-import { injectInput } from '../inject';
+import { computed, ref, watch } from 'vue';
 import { useDataStore } from '../store';
+import { 待发送更新事件, use待发送 } from '../待发送';
 import AgeRing from './AgeRing.vue';
 
 const store = useDataStore();
+const 待发送 = use待发送();
 
 const props = defineProps<{
   time: {
@@ -54,22 +55,7 @@ const props = defineProps<{
   name: string;
 }>();
 
-// 变量 `姓名` 为空时，回退到酒馆 persona 名（{{user}} 宏）
-const personaName = ref('');
-
-onMounted(() => {
-  try {
-    const api = (globalThis as { SillyTavern?: { substituteParams?: (text: string) => unknown } }).SillyTavern;
-    const value = api?.substituteParams?.('{{user}}');
-    if (typeof value === 'string' && value && value !== '{{user}}') {
-      personaName.value = value;
-    }
-  } catch {
-    personaName.value = '';
-  }
-});
-
-const displayName = computed(() => props.name?.trim() || personaName.value);
+const displayName = computed(() => props.name?.trim() || '');
 
 const span = ref(props.time.跨度);
 
@@ -105,13 +91,18 @@ function applySpan() {
   store.data.时间.跨度 = span.value;
 }
 
-// 只写进输入框，由玩家确认后发送；切换模式必须由模型写进本回合的变量更新
+// 模式切换由界面直接改写变量，改完立即生效，下一次发送时附一次模式切换声明
 function enterSlow() {
-  injectInput('「进入慢速模式」');
+  // 先按切换前的模式记下基准，再改变量，声明里才会出现这一条模式切换
+  待发送.清空();
+  store.data.时间.模式 = '分钟推进';
+  window.dispatchEvent(new CustomEvent(待发送更新事件));
 }
 </script>
 
 <style lang="scss" scoped>
+@use '../滑块.scss' as 滑块;
+
 .ls-readout {
   display: flex;
   flex-direction: column;
@@ -155,11 +146,17 @@ function enterSlow() {
 
 .ls-readout-meta {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 6px;
   font-size: 13px;
   color: var(--ls-text-muted);
   font-variant-numeric: tabular-nums;
+}
+
+/* 窄列下整体换行，字段与它前后的分隔符不被拆开 */
+.ls-readout-meta > * {
+  white-space: nowrap;
 }
 
 .ls-readout-name {
@@ -195,32 +192,7 @@ function enterSlow() {
 }
 
 .ls-readout-range {
-  flex: 1;
-  min-width: 0;
-  height: 4px;
-  appearance: none;
-  border-radius: 999px;
-  background: var(--ls-border-strong);
-  outline: none;
-  cursor: pointer;
-}
-
-.ls-readout-range::-webkit-slider-thumb {
-  appearance: none;
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  background: var(--ls-accent);
-  border: 2px solid var(--ls-surface);
-  box-shadow: var(--ls-shadow-hair);
-}
-
-.ls-readout-range::-moz-range-thumb {
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  background: var(--ls-accent);
-  border: 2px solid var(--ls-surface);
+  @include 滑块.滑块外观;
 }
 
 .ls-readout-span-value {
@@ -245,9 +217,11 @@ function enterSlow() {
   cursor: pointer;
 }
 
-.ls-btn-quiet:hover {
-  background: var(--ls-surface-hover);
-  border-color: var(--ls-text-faint);
-  color: var(--ls-text);
+@media (hover: hover) {
+  .ls-btn-quiet:hover {
+    background: var(--ls-surface-hover);
+    border-color: var(--ls-text-faint);
+    color: var(--ls-text);
+  }
 }
 </style>

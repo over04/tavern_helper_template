@@ -1,4 +1,74 @@
-<head></head>
+<head>
+  <link
+    rel="stylesheet"
+    href="https://testingcf.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css"
+  />
+  <script>
+    // 模块脚本延迟执行，这段先注册错误捕获：依赖加载失败或模块抛错时，楼层里也能看到原因
+    (function () {
+      var 报过 = false;
+      function 报告(原因) {
+        if (报过) {
+          return;
+        }
+        报过 = true;
+        var 宿主 = document.getElementById('ls-app');
+        if (!宿主 || 宿主.innerHTML) {
+          return;
+        }
+        宿主.innerHTML =
+          '<div style="padding:16px;font:13px/1.7 sans-serif;color:#b4472f">人生面板未能加载：' +
+          原因 +
+          '</div>';
+      }
+      // 报错的行号是拼装后那份 srcdoc 里的行号，光有数字认不出是谁，
+      // 所以把那一行原文与整份文档的开头一起取出来：frameElement.srcdoc 就是拼装结果的原文
+      function 取现场(行号) {
+        try {
+          var 原文 = window.frameElement && window.frameElement.srcdoc;
+          if (!原文) {
+            return '';
+          }
+          var 各行 = 原文.split('\n');
+          var 该行 = 行号 ? '第 ' + 行号 + ' 行：' + (各行[行号 - 1] || '').slice(0, 120) + '；' : '';
+          return '；srcdoc 共 ' + 各行.length + ' 行；' + 该行 + '开头：' + 原文.slice(0, 120);
+        } catch (错误) {
+          return '';
+        }
+      }
+      window.addEventListener(
+        'error',
+        function (事件) {
+          if (!事件) {
+            return;
+          }
+          if (事件.message) {
+            // 产物里若带 sourceMappingURL 注释，浏览器会去取一份取不到的 map，
+            // 报的是「Source Map ... Unrecognized token '<'」，与界面本身无关，不该挡在真错误前面
+            if (/source\s*map/i.test(事件.message)) {
+              return;
+            }
+            // 模块请求拿回 HTML 时报的是 SyntaxError，所以位置要带上，才知道是哪一个模块
+            var 位置 = 事件.filename ? '（' + 事件.filename + ':' + 事件.lineno + '）' : '';
+            报告(事件.message + 位置 + 取现场(事件.lineno));
+            return;
+          }
+          var 目标 = 事件.target;
+          if (目标 && 目标.tagName === 'SCRIPT') {
+            报告('脚本加载失败：' + (目标.src || '内联脚本'));
+          } else if (目标 && 目标.tagName === 'LINK') {
+            报告('样式表加载失败：' + (目标.href || '内联样式'));
+          }
+        },
+        true,
+      );
+      window.addEventListener('unhandledrejection', function (事件) {
+        var 原因 = 事件 && 事件.reason;
+        报告(String((原因 && 原因.message) || 原因 || '未知错误'));
+      });
+    })();
+  </script>
+</head>
 <body>
   <div id="ls-app"></div>
 </body>

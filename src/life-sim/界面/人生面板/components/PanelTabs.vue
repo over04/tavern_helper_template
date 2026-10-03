@@ -55,8 +55,10 @@ defineEmits<{ 'update:modelValue': [value: T] }>();
   cursor: pointer;
 }
 
-.ls-tab:hover {
-  color: var(--ls-text);
+@media (hover: hover) {
+  .ls-tab:hover {
+    color: var(--ls-text);
+  }
 }
 
 .ls-tab.ls-is-active {
