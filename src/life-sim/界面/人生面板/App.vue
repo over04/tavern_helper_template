@@ -65,8 +65,9 @@
           class="ls-fs-右列"
           :class="{ 'ls-fs-右列--通栏': 正文独占 }"
         >
-          <OpeningPanel v-if="视图 === '开局'" class="ls-fs-正文" />
-          <StoryPane v-else class="ls-fs-正文" />
+          <!-- 开局的正文区照常渲染：生成过之后正文里就有楼层，开局也要能翻页看历史 -->
+          <StoryPane class="ls-fs-正文" />
+          <OpeningPanel v-if="视图 === '开局'" class="ls-fs-开场" />
           <!-- 输入框与结算按钮都只在各自的推进模式出现：月推进靠结构化选项，不需要自由输入 -->
           <InputPane v-if="视图 === '分钟推进'" class="ls-fs-输入" />
           <SettleBar v-else-if="视图 === '月推进'" class="ls-fs-结算" />
