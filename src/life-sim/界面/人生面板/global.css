@@ -335,14 +335,16 @@ html.ls-全屏 #ls-app {
     display: flex;
     flex-direction: column;
     gap: 12px;
-    /* 顶栏不再占一行，内容要自己让开状态栏那一段 */
-    padding: calc(12px + var(--ls-safe-top)) 12px 0;
+    padding: 12px 12px 0;
     overflow-y: auto;
   }
 
   /* 内容比视口短时靠 margin-top: auto 把导航推到底部，比视口长时 sticky 把它钉住。
      高度把安全区算进去、内边距另算：全局是 border-box，写在 height 里会从 56px 里扣，
-     iOS 安全区 34px 时三个页签只剩 22px 可用，文字会被挤在一起。 */
+     iOS 安全区 34px 时三个页签只剩 22px 可用，文字会被挤在一起。
+     安全区取变量与 34px 中较大的那个：iOS 上 env() 在 iframe 里恒为 0，
+     而读宿主的探针在部分机型上也拿不到值，这里兜一个 iPhone 的 Home 条高度，
+     免得底部三个页签被 Home 条压住。 */
   .ls-fs-导航 {
     position: sticky;
     bottom: 0;
@@ -350,8 +352,8 @@ html.ls-全屏 #ls-app {
     margin: auto -12px 0;
     align-self: stretch;
     flex: none;
-    height: calc(var(--ls-fs-导航高) + var(--ls-safe-bottom));
-    padding-bottom: var(--ls-safe-bottom);
+    height: calc(var(--ls-fs-导航高) + max(var(--ls-safe-bottom), 34px));
+    padding-bottom: max(var(--ls-safe-bottom), 34px);
     border-top: 1px solid var(--ls-border);
     background: var(--ls-surface);
     z-index: 5;
