@@ -209,17 +209,23 @@ html.ls-全屏 #ls-app {
 }
 
 /* ── 顶栏 ── */
+/* 顶栏不再占布局高度：整条占掉一行会在手机上顶出一大块空白。
+   标题与读数在正文里各有一份（窄屏读数条就在中列顶部），这里只把退出按钮浮在右上角。 */
 .ls-fs-顶栏 {
-  position: relative;
+  position: absolute;
+  top: calc(var(--ls-safe-top) + 6px);
+  right: 12px;
   z-index: 25;
-  flex: none;
   display: flex;
   align-items: center;
-  gap: 12px;
-  height: calc(44px + var(--ls-safe-top));
-  padding: var(--ls-safe-top) 18px 0;
-  background: var(--ls-surface);
-  border-bottom: 1px solid var(--ls-border);
+  padding: 0;
+  background: transparent;
+  border-bottom: none;
+}
+
+.ls-fs-标题,
+.ls-fs-读数 {
+  display: none;
 }
 
 .ls-fs-标题 {
@@ -329,7 +335,8 @@ html.ls-全屏 #ls-app {
     display: flex;
     flex-direction: column;
     gap: 12px;
-    padding: 12px 12px 0;
+    /* 顶栏不再占一行，内容要自己让开状态栏那一段 */
+    padding: calc(12px + var(--ls-safe-top)) 12px 0;
     overflow-y: auto;
   }
 
