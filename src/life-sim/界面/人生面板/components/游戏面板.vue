@@ -49,7 +49,7 @@
       <OpeningPanel v-else />
     </div>
 
-    <!-- 聊天层没有自建发送按钮，待发送命令放在面板底部，玩家需看清原文后再按酒馆的发送键 -->
+    <!-- 紧凑面板里的待发送命令放在面板底部 -->
     <PendingBar v-if="!全屏" class="ls-panel-pending" />
   </div>
 </template>

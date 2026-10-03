@@ -14,12 +14,11 @@
  */
 
 import { computed, onMounted, onUnmounted } from 'vue';
-import { 拼声明 } from '../声明';
-import { 当前模式, 待发送更新事件, use待发送 } from '../待发送';
+import { 拼声明, 待发送更新事件, use待发送 } from '../待发送';
 
 const 待发送 = use待发送();
 
-const 声明文本 = computed(() => 拼声明(待发送.状态.value, 当前模式()));
+const 声明文本 = computed(() => 拼声明(待发送.状态.value));
 
 function 同步() {
   待发送.刷新();
