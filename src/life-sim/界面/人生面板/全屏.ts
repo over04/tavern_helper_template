@@ -188,6 +188,25 @@ const 还原视口声明 = () => {
 };
 
 /**
+ * 读 TauriTavern 的安全区契约。
+ *
+ * TauriTavern 把宿主的 `--tt-inset-*` 桥接进 iframe 的 `:root`（见它的 docs/API/Layout.md），
+ * 它的 WebView 里 `env(safe-area-inset-*)` 拿不到值。契约变量在宿主的 :root 上，读不到返回 null。
+ */
+const 读契约安全区 = (文档: Document): { 顶: number; 底: number } | null => {
+  const 样式 = 文档.defaultView?.getComputedStyle(文档.documentElement);
+  if (!样式) {
+    return null;
+  }
+  const 顶 = Number.parseFloat(样式.getPropertyValue('--tt-inset-top'));
+  const 底 = Number.parseFloat(样式.getPropertyValue('--tt-inset-bottom'));
+  if (!Number.isFinite(顶) && !Number.isFinite(底)) {
+    return null;
+  }
+  return { 顶: Number.isFinite(顶) ? 顶 : 0, 底: Number.isFinite(底) ? 底 : 0 };
+};
+
+/**
  * 从酒馆自己的底部输入区推算底部安全区。
  *
  * iOS 的 env(safe-area-inset-bottom) 在两种情况下给不出真值：界面跑在 iframe 里时只认顶层文档，
@@ -206,6 +225,13 @@ const 推算底部安全区 = (文档: Document, 视图: Window): number => {
 /** 读宿主文档的真实安全区：在宿主文档里挂一个探针元素，读它的计算值 */
 const 读安全区 = (): { 顶: number; 底: number } => {
   const 文档 = 取宿主文档();
+
+  // 客户端自己给了契约变量就用它：那是它量出来的真实安全区，比这里的探针与推算都准
+  const 契约 = 读契约安全区(文档);
+  if (契约) {
+    return 契约;
+  }
+
   const 视图 = 文档.defaultView;
   if (!文档.body || !视图) {
     return { 顶: 0, 底: 0 };
