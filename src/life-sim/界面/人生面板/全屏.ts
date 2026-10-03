@@ -153,6 +153,9 @@ const 铺满 = (): boolean => {
   // 默认书写方向下，right/bottom 还会被当成过度约束而忽略。要铺满必须写成百分比。
   承载.style.setProperty('width', '100%', 'important');
   承载.style.setProperty('height', '100%', 'important');
+  // 手机浏览器的地址栏伸缩时，position: fixed 跟的是布局视口，视觉视口更高，底下会露出酒馆原生界面。
+  // dvh 跟的是动态视口，写在 100% 之后作覆盖；不支持 dvh 的浏览器会忽略这一条，退回上一行。
+  承载.style.setProperty('height', '100dvh', 'important');
   承载.style.setProperty('max-width', 'none', 'important');
   承载.style.setProperty('max-height', 'none', 'important');
   承载.style.setProperty('margin', '0', 'important');
@@ -206,7 +209,8 @@ const 铺满 = (): boolean => {
   // 读回实际矩形做自检：真机上偶尔有祖先仍在构成包含块、或样式被别处盖掉，铺满会静默失败
   const 视图 = 承载.ownerDocument.defaultView;
   const 视口宽 = 视图?.innerWidth ?? 0;
-  const 视口高 = 视图?.innerHeight ?? 0;
+  // 手机浏览器上视觉视口可能比布局视口高，取两者较大的那个，自检才不会因为地址栏伸缩而误判
+  const 视口高 = Math.max(视图?.innerHeight ?? 0, 视图?.visualViewport?.height ?? 0);
   const 盖住了 = () => {
     if (!视口宽 || !视口高) {
       return true;

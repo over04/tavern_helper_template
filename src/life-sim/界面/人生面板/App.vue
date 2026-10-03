@@ -36,8 +36,8 @@
         </button>
       </header>
 
-      <div class="ls-fs-主体" :class="{ 'ls-fs-主体--抽屉开': 抽屉开 }">
-        <div class="ls-fs-导航" @click="点导航">
+      <div class="ls-fs-主体">
+        <div class="ls-fs-导航">
           <PrimaryNav v-model="一级" :纵向="宽屏" />
         </div>
 
@@ -45,26 +45,14 @@
           v-if="!正文独占"
           class="ls-fs-中列"
           :class="{ 'ls-fs-中列--通栏': 一级 !== '游戏' }"
-          :style="抽屉样式"
         >
-          <div
-            v-if="!宽屏"
-            class="ls-fs-抽屉把手"
-            @pointerdown="开始拖动"
-            @pointermove="拖动移动"
-            @pointerup="结束拖动"
-            @pointercancel="结束拖动"
-          >
-            <span class="ls-fs-抽屉条"></span>
-          </div>
-
           <GamePanel v-if="一级 === '游戏'" />
           <VariableManager v-else-if="一级 === '变量管理'" />
           <SettingsPage v-else />
         </section>
 
         <section
-          v-if="一级 === '游戏' || !宽屏"
+          v-if="一级 === '游戏'"
           class="ls-fs-右列"
           :class="{ 'ls-fs-右列--通栏': 正文独占 }"
         >
@@ -76,8 +64,6 @@
         </section>
       </div>
     </div>
-
-    <button v-if="!宽屏 && 抽屉开" class="ls-fs-遮罩" type="button" aria-label="关闭面板" @click="关抽屉"></button>
   </div>
 </template>
 
@@ -184,7 +170,7 @@ const 读数 = computed(() => {
   return 名字 ? `${名字} · ${段落.join(' · ')}` : 段落.join(' · ');
 });
 
-/* ── 一级导航：宽屏常驻三列，窄屏点页签从底部升起抽屉 ── */
+/* ── 一级导航：宽屏竖排在最左，窄屏横排在最下；两种宽度都是点页签直接切页面 ── */
 const 一级 = ref<一级名称>('游戏');
 
 // 与 global.css 里 (max-width: 1023px) 的那段互补，改动须同步
@@ -192,61 +178,6 @@ const 宽屏 = useMediaQuery('(min-width: 1024px)');
 
 /** 正文区独占整宽：开局时中间列不渲染；终章要让出中间列放结算卡，右侧列才放得下正文区 */
 const 正文独占 = computed(() => 一级.value === '游戏' && 视图.value === '开局');
-
-const 抽屉开 = ref(false);
-
-function 点导航() {
-  // 正文独占时游戏页没有中间列的内容，抽屉打开只会是一片空白
-  if (宽屏.value || 正文独占.value) {
-    return;
-  }
-  抽屉开.value = true;
-}
-
-function 关抽屉() {
-  抽屉开.value = false;
-  // 抽屉收起即离开该页，页签回到「游戏」
-  一级.value = '游戏';
-}
-
-/* 抽屉下拉关闭：位移超过 80 像素即收起 */
-const 拖动中 = ref(false);
-const 拖动位移 = ref(0);
-let 起点纵坐标 = 0;
-
-const 抽屉样式 = computed(() =>
-  拖动中.value ? { transform: `translateY(${拖动位移.value}px)`, transition: 'none' } : undefined,
-);
-
-function 开始拖动(事件: PointerEvent) {
-  const 把手 = 事件.currentTarget as HTMLElement | null;
-  起点纵坐标 = 事件.clientY;
-  拖动中.value = true;
-  拖动位移.value = 0;
-  把手?.setPointerCapture?.(事件.pointerId);
-}
-
-function 拖动移动(事件: PointerEvent) {
-  if (!拖动中.value) {
-    return;
-  }
-  拖动位移.value = Math.max(0, 事件.clientY - 起点纵坐标);
-}
-
-function 结束拖动(事件: PointerEvent) {
-  if (!拖动中.value) {
-    return;
-  }
-  const 把手 = 事件.currentTarget as HTMLElement | null;
-  把手?.releasePointerCapture?.(事件.pointerId);
-  const 该收起 = 拖动位移.value > 80;
-  拖动中.value = false;
-  拖动位移.value = 0;
-  if (该收起) {
-    // 下拉关闭与点击遮罩关闭走同一段收尾逻辑
-    关抽屉();
-  }
-}
 </script>
 
 <style lang="scss" scoped>
