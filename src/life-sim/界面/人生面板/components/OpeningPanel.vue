@@ -114,7 +114,7 @@
 <script setup lang="ts">
 import { reactive, ref } from 'vue';
 import { 结算前确认 } from '../结算提醒';
-import { use待发送 } from '../待发送';
+import { 设开局 } from '../待发送';
 import { useDataStore } from '../store';
 import ClaudeMark from './ClaudeMark.vue';
 
@@ -146,7 +146,6 @@ interface Template {
 }
 
 const store = useDataStore();
-const 待发送 = use待发送();
 
 const TABS = [
   { key: 'tpl', label: '模板开局' },
@@ -353,9 +352,9 @@ async function begin() {
   hint.value = '';
 
   writeVariables();
-  待发送.设开局(拼开局声明());
+  设开局(拼开局声明());
 
-  // 声明已由 待发送 写进酒馆输入框，玩家自己按发送；这里只提醒还没选选项的事件
+  // 声明已由界面追加进输入框，玩家自己按发送；这里只提醒还没选选项的事件
   await 结算前确认(store.data.事件);
 }
 </script>

@@ -29,22 +29,10 @@ import SettingsPage from './components/设置页.vue';
 import VariableManager from './components/变量管理.vue';
 import { 设置状态 } from './设置';
 import { useDataStore } from './store';
-import { 声明仍在输入框 } from './发送';
-import { use待发送 } from './待发送';
 import { 视图键 } from './视图';
 import type { 视图名 } from './视图';
 
 type 一级名称 = '游戏' | '变量管理' | '设置';
-
-// 酒馆发出消息之前会清空输入框。界面写的声明若已不在输入框里，说明它随这条消息发出去了，
-// 此刻才清空待发送；斜杠命令与快速回复不走输入框，声明仍在，玩家的选择不该被清掉
-const 待发送 = use待发送();
-const 停发送监听 = eventOn(tavern_events.MESSAGE_SENT, () => {
-  if (!声明仍在输入框()) {
-    待发送.发送后清空();
-  }
-});
-onUnmounted(() => 停发送监听.stop());
 
 const store = useDataStore();
 

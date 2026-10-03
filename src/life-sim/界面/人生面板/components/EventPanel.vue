@@ -15,7 +15,6 @@
             v-for="option in optionList(ev)"
             :key="option.key"
             class="ls-option"
-            :class="{ 'is-picked': 选中序号(name) === String(option.index) }"
             type="button"
             @click="pickOption(name, option)"
           >
@@ -28,7 +27,7 @@
           <!-- 固定第 5 条「其他」：四条之后固定追加，点开在下方展开手写输入区 -->
           <button
             class="ls-option ls-option-other"
-            :class="{ 'is-picked': 选中序号(name) === '其他', 'is-open': 展开[name] }"
+            :class="{ 'is-open': 展开[name] }"
             type="button"
             @click="切换其他(name)"
           >
@@ -82,8 +81,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, reactive } from 'vue';
-import { 待发送更新事件, use待发送 } from '../待发送';
+import { computed, reactive } from 'vue';
+import { 选选项 } from '../待发送';
 
 type Option = {
   动作: string;
@@ -116,9 +115,7 @@ const FATE_WAYS = [
   { key: '改判', label: '改判为成功', cost: 3 },
 ];
 
-const 待发送 = use待发送();
-
-// 手写输入区的展开状态与草稿都只属于本组件，选中态一律以待发送状态为准
+// 手写输入区的展开状态与草稿都只属于本组件
 const 展开 = reactive<Record<string, boolean>>({});
 const 手写 = reactive<Record<string, string>>({});
 
@@ -145,15 +142,7 @@ function optionList(ev: Event) {
   return list;
 }
 
-/* ── 待发送状态的读写 ── */
-
-function 查选择(事件名: string) {
-  return 待发送.状态.value.选择.find(项 => 项.事件 === 事件名);
-}
-
-function 选中序号(事件名: string) {
-  return String(查选择(事件名)?.选项 || '');
-}
+/* ── 追加进输入框 ── */
 
 /** 每个事件各自选中的命运点方式：先点命运点，再点选项，那条选项就带上它 */
 const 选点方式 = ref<Record<string, string>>({});
@@ -162,14 +151,9 @@ function 选中命运点(事件名: string) {
   return 选点方式.value[事件名] ?? '';
 }
 
-function 广播() {
-  window.dispatchEvent(new CustomEvent(待发送更新事件));
-}
-
-// 点选项即接在末尾记一条，带上该事件当前选中的命运点方式
+// 点选项即往输入框末尾追加一条，带上该事件当前选中的命运点方式
 function pickOption(事件名: string, option: { index: number }) {
-  待发送.选选项(事件名, String(option.index), '', 选中命运点(事件名));
-  广播();
+  选选项(事件名, String(option.index), '', 选中命运点(事件名));
 }
 
 // 命运点只受余量限制：先点它、再点选项即可带上
@@ -183,7 +167,6 @@ function pickFate(事件名: string, 命运点: string) {
     ...选点方式.value,
     [事件名]: 选中命运点(事件名) === 命运点 ? '' : 命运点,
   };
-  广播();
 }
 
 /* ── 「其他」的手写行动 ── */
@@ -204,32 +187,8 @@ function 确定其他(事件名: string) {
   if (!文本) {
     return;
   }
-  待发送.选选项(事件名, '其他', 文本, 选中命运点(事件名));
-  广播();
+  选选项(事件名, '其他', 文本, 选中命运点(事件名));
 }
-
-// 待发送里已记录手写行动时回填草稿；已有草稿时不动，以免覆盖玩家正在修改的内容
-function 回填手写() {
-  for (const 项 of 待发送.状态.value.选择) {
-    if (项.选项 === '其他' && 项.行动原文 && !手写[项.事件]) {
-      手写[项.事件] = String(项.行动原文);
-    }
-  }
-}
-
-function 同步() {
-  待发送.刷新();
-  回填手写();
-}
-
-onMounted(() => {
-  同步();
-  window.addEventListener(待发送更新事件, 同步);
-});
-
-onUnmounted(() => {
-  window.removeEventListener(待发送更新事件, 同步);
-});
 </script>
 
 <style lang="scss" scoped>
@@ -322,16 +281,10 @@ onUnmounted(() => {
   }
 }
 
-.ls-option.is-picked {
-  border-color: var(--ls-accent-line);
-  background: var(--ls-accent-soft);
-}
-
-@media (hover: hover) {
-  .ls-option.is-picked:hover {
-    border-color: var(--ls-accent-line);
-    background: var(--ls-accent-soft);
-  }
+/* 点选只往输入框追加一条，按钮不留选中态；按下时给一次瞬时反馈 */
+.ls-option:active:not(:disabled) {
+  border-color: var(--ls-border-strong);
+  background: var(--ls-surface-sunken);
 }
 
 .ls-option:disabled {
@@ -351,10 +304,6 @@ onUnmounted(() => {
   flex: 1 1 auto;
   font-size: 13.5px;
   color: var(--ls-text);
-}
-
-.ls-option.is-picked .ls-option-act {
-  color: var(--ls-accent-hover);
 }
 
 @media (hover: hover) {
@@ -392,18 +341,12 @@ onUnmounted(() => {
   text-align: right;
 }
 
-/* 选中态下把难度标签的底换成白，避免灰底色与橙底色相叠后颜色发灰 */
-.ls-option.is-picked .ls-option-difficulty {
-  background: var(--ls-surface);
-}
-
 /* 「其他」的序号位留空，只占宽度，以便与其余选项对齐；它不对应 选项="5" */
 .ls-option-other .ls-option-act {
   color: var(--ls-text-muted);
 }
 
-.ls-option-other.is-open .ls-option-act,
-.ls-option-other.is-picked .ls-option-act {
+.ls-option-other.is-open .ls-option-act {
   color: var(--ls-accent-hover);
 }
 

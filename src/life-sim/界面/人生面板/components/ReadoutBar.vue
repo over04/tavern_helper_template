@@ -34,11 +34,10 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { useDataStore } from '../store';
-import { 当前模式, 待发送更新事件, use待发送 } from '../待发送';
+import { 切模式 } from '../待发送';
 import AgeRing from './AgeRing.vue';
 
 const store = useDataStore();
-const 待发送 = use待发送();
 
 const props = defineProps<{
   time: {
@@ -93,12 +92,8 @@ function applySpan() {
 
 // 模式切换由界面直接改写变量，改完立即生效，下一次发送时附一次模式切换声明
 function enterSlow() {
-  // 基准取切换前的模式：先记下来，再改变量，最后清空待发送并重写输入框，
-  // 这样拼出的声明里才会带一条模式切换
-  const 基准 = 当前模式();
   store.data.时间.模式 = '分钟推进';
-  待发送.清空(基准);
-  window.dispatchEvent(new CustomEvent(待发送更新事件));
+  切模式('分钟推进');
 }
 </script>
 

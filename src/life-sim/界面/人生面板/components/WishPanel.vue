@@ -2,7 +2,7 @@
   <section class="ls-wishes">
     <div class="ls-wishes-head">
       <span class="ls-wishes-label">心向</span>
-      <span class="ls-wishes-hint">点一条即记入待发送，再点一次取消</span>
+      <span class="ls-wishes-hint">点一条即追加进输入框</span>
     </div>
 
     <div v-if="wishes.length" class="ls-wishes-row">
@@ -10,9 +10,8 @@
         v-for="(wish, index) in wishes"
         :key="`${wish}-${index}`"
         class="ls-wish"
-        :class="{ 'is-picked': 已选(wish) }"
         type="button"
-        @click="切换(wish)"
+        @click="增心向(wish)"
       >
         {{ wish }}
       </button>
@@ -33,41 +32,22 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref } from 'vue';
-import { 待发送更新事件, use待发送 } from '../待发送';
+import { ref } from 'vue';
+import { 增心向 } from '../待发送';
 
 defineProps<{
   wishes: string[];
 }>();
 
-const 待发送 = use待发送();
 const 新方向 = ref('');
-
-function 已选(方向: string) {
-  return 待发送.状态.value.心向.includes(方向);
-}
-
-function 广播() {
-  window.dispatchEvent(new CustomEvent(待发送更新事件));
-}
-
-function 切换(方向: string) {
-  if (已选(方向)) {
-    待发送.移除心向(方向);
-  } else {
-    待发送.增心向(方向);
-  }
-  广播();
-}
 
 function 加入() {
   const 文本 = 新方向.value.trim();
   if (!文本) {
     return;
   }
-  待发送.增心向(文本);
+  增心向(文本);
   新方向.value = '';
-  广播();
 }
 
 // 输入法选字时的回车不算加入
@@ -77,19 +57,6 @@ function 回车加入(event: KeyboardEvent) {
   }
   加入();
 }
-
-function 同步() {
-  待发送.刷新();
-}
-
-onMounted(() => {
-  同步();
-  window.addEventListener(待发送更新事件, 同步);
-});
-
-onUnmounted(() => {
-  window.removeEventListener(待发送更新事件, 同步);
-});
 </script>
 
 <style lang="scss" scoped>
@@ -135,20 +102,6 @@ onUnmounted(() => {
 
 @media (hover: hover) {
   .ls-wish:hover:not(:disabled) {
-    background: var(--ls-accent-soft);
-    border-color: var(--ls-accent-line);
-    color: var(--ls-accent-hover);
-  }
-}
-
-.ls-wish.is-picked {
-  background: var(--ls-accent-soft);
-  border-color: var(--ls-accent-line);
-  color: var(--ls-accent-hover);
-}
-
-@media (hover: hover) {
-  .ls-wish.is-picked:hover {
     background: var(--ls-accent-soft);
     border-color: var(--ls-accent-line);
     color: var(--ls-accent-hover);

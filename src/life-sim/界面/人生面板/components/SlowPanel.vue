@@ -50,7 +50,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { useDataStore } from '../store';
-import { 当前模式, 待发送更新事件, use待发送 } from '../待发送';
+import { 切模式 } from '../待发送';
 import FocusRing from './FocusRing.vue';
 import PanelTabs from './PanelTabs.vue';
 import RelationBar from './RelationBar.vue';
@@ -60,7 +60,6 @@ import SkillPanel from './SkillPanel.vue';
 type Ability = { 层级: number; 进度: number; 上限: number; 类?: string; 教育质量?: number };
 
 const store = useDataStore();
-const 待发送 = use待发送();
 
 // 时间头常驻页签之外，时刻是慢速模式的核心信息
 const TABS = [
@@ -135,11 +134,8 @@ const relationEntries = computed(() => Object.entries(props.relations ?? {}));
 
 // 模式切换由界面直接改写变量，改完立即生效，下一次发送时附一次模式切换声明
 function backToMonthly() {
-  // 基准取切换前的模式：先记下来，再改变量，最后清空待发送并重写输入框
-  const 基准 = 当前模式();
   store.data.时间.模式 = '月推进';
-  待发送.清空(基准);
-  window.dispatchEvent(new CustomEvent(待发送更新事件));
+  切模式('月推进');
 }
 </script>
 

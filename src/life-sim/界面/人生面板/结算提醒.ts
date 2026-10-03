@@ -3,11 +3,12 @@
  *
  * 「以此生开始」经过这一处判断；开局时事件表为空，自然不会提醒。
  * 确认框用酒馆自己的弹窗，内容里带一个「以后不再提醒」勾选，勾上后关掉设置里的开关。
+ *
+ * 已选了什么以输入框为准：界面不另存一份已选状态。
  */
 
+import { 取输入框 } from './发送';
 import { 设置状态, 写设置 } from './设置';
-import { use待发送 } from './待发送';
-import type { 待发送选择 } from './待发送';
 
 /** 取酒馆那一份文档：界面跑在楼层 iframe 里，弹窗要挂在酒馆主文档上才认得出来 */
 const 取宿主文档 = (): Document => {
@@ -19,9 +20,21 @@ const 取宿主文档 = (): Document => {
   }
 };
 
+/** 还原属性值的转义；&amp; 必须最后还原，否则 &amp;lt; 会被先还原成 &lt; 再还原成 < */
+const 反转义 = (值: string): string =>
+  值.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&amp;/g, '&');
+
+/** 输入框里已经写下的选择所对应的事件名 */
+const 已选事件 = (): Set<string> => {
+  const 值 = String(取输入框()?.value ?? '');
+  return new Set(Array.from(值.matchAll(/<选择\s+事件="([^"]*)"/g), 命中 => 反转义(命中[1])));
+};
+
 /** 事件表里尚未选择选项的事件数 */
-const 未选条数 = (事件: Record<string, unknown> | undefined, 选择: 待发送选择[]): number =>
-  Object.keys(事件 ?? {}).filter(名 => !选择.some(项 => 项.事件 === 名)).length;
+const 未选条数 = (事件: Record<string, unknown> | undefined): number => {
+  const 已选 = 已选事件();
+  return Object.keys(事件 ?? {}).filter(名 => !已选.has(名)).length;
+};
 
 /** 弹确认框；玩家点「仍然结算」返回 true */
 async function 弹提醒(条数: number): Promise<boolean> {
@@ -57,10 +70,7 @@ async function 弹提醒(条数: number): Promise<boolean> {
 
 /** 需要提醒时弹确认框；不需要提醒、或玩家确认继续时返回 true */
 export async function 结算前确认(事件: Record<string, unknown> | undefined): Promise<boolean> {
-  const 待发送 = use待发送();
-  待发送.刷新();
-
-  const 条数 = 未选条数(事件, 待发送.状态.value.选择);
+  const 条数 = 未选条数(事件);
   if (!条数 || !设置状态.value.结算前提醒) {
     return true;
   }
