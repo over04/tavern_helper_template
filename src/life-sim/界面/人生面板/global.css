@@ -20,6 +20,8 @@
   --ls-surface: #ffffff;
   --ls-surface-sunken: #f5f4ee;
   --ls-surface-hover: #eeede5;
+  /* 生成浮层的遮罩：半透明而不是全遮，生成期间仍看得见内容往下走 */
+  --ls-遮罩: rgba(250, 249, 245, 0.86);
 
   /* ── 描边 ── */
   --ls-border: #e5e4df;
@@ -161,14 +163,21 @@
    壳内结构：顶栏 ＋ 主体（一级导航｜中间列｜右侧列）。
    ══════════════════════════════════════════ */
 
-/* 全屏时让整条高度链都撑满，壳才有 100% 可用；滚动交给壳内的各列，文档本身不滚 */
+/* 全屏时把整条高度链撑成宿主视口高，壳才有 100% 可用；滚动交给壳内的各列，文档本身不滚。
+   用宿主视口高而不是 100%：酒馆助手给每个楼层 iframe 注入了 adjust_iframe_height.js，
+   它持续按 body.scrollHeight 改写承载 iframe 的高度，而且是单属性赋值，
+   会把我们写在承载元素上的 height 连同 !important 一起抹掉。
+   高度链取 --TH-viewport-height 时 body.scrollHeight 就等于铺满高度，它写出的值与目标一致，冲突消失。
+   --TH-viewport-height 由酒馆助手的 adjust_viewport.js 写在 html 的行内样式上；取不到时退回 100%。 */
 html.ls-全屏,
 html.ls-全屏 body,
 html.ls-全屏 #ls-app {
-  height: 100%;
+  height: var(--TH-viewport-height, 100%);
 }
 
-html.ls-全屏 {
+/* 壳内部的滚动已经由各列各自承担，根容器与文档本身都不再需要溢出 */
+html.ls-全屏,
+html.ls-全屏 #ls-app {
   overflow: hidden;
 }
 
@@ -182,6 +191,8 @@ html.ls-全屏 {
 }
 
 .ls-fs {
+  /* 生成浮层用绝对定位盖住整个壳，壳要作为它的定位参照 */
+  position: relative;
   display: flex;
   flex-direction: column;
   width: 100%;

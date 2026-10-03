@@ -64,6 +64,9 @@
         </section>
       </div>
     </div>
+
+    <!-- 生成浮层：只在全屏壳里显示，盖住壳但不盖住酒馆页面 -->
+    <GenerationOverlay />
   </div>
 </template>
 
@@ -72,6 +75,7 @@ import './global.css';
 
 // 组件标签必须以字母开头，中文文件名的组件只能另起英文名再引入
 import GamePanel from './components/游戏面板.vue';
+import GenerationOverlay from './components/生成浮层.vue';
 import InputPane from './components/输入区.vue';
 import OpeningPanel from './components/OpeningPanel.vue';
 import PrimaryNav from './components/一级导航.vue';
@@ -82,12 +86,16 @@ import VariableManager from './components/变量管理.vue';
 import { 设置状态 } from './设置';
 import { useDataStore } from './store';
 import { use全屏 } from './全屏';
+import { use生成状态 } from './生成状态';
 import { 视图键 } from './视图';
 import type { 视图名 } from './视图';
 
 type 一级名称 = '游戏' | '变量管理' | '设置';
 
 const { 是否全屏: 全屏, 全屏失败, 切换全屏 } = use全屏();
+
+// 生成状态在 App 这一层接入：界面不在全屏时也在维护状态，切进全屏能立刻显示浮层
+use生成状态();
 
 const store = useDataStore();
 
