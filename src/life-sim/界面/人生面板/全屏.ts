@@ -187,6 +187,22 @@ const 还原视口声明 = () => {
   }
 };
 
+/**
+ * 从酒馆自己的底部输入区推算底部安全区。
+ *
+ * iOS 的 env(safe-area-inset-bottom) 在两种情况下给不出真值：界面跑在 iframe 里时只认顶层文档，
+ * 顶层文档的 viewport 声明没有 viewport-fit 时也是 0。酒馆的输入区贴在视口底部，
+ * 它的下沿到视口底边的距离就是系统占掉的那一段，拿它兜底。
+ */
+const 推算底部安全区 = (文档: Document, 视图: Window): number => {
+  const 输入区 = 文档.getElementById('send_form') ?? 文档.getElementById('form_sheld');
+  if (!输入区) {
+    return 0;
+  }
+  const 盒 = 输入区.getBoundingClientRect();
+  return Math.max(0, Math.round(视图.innerHeight - 盒.bottom));
+};
+
 /** 读宿主文档的真实安全区：在宿主文档里挂一个探针元素，读它的计算值 */
 const 读安全区 = (): { 顶: number; 底: number } => {
   const 文档 = 取宿主文档();
@@ -206,7 +222,7 @@ const 读安全区 = (): { 顶: number; 底: number } => {
   const 底 = Number.parseFloat(计算.paddingBottom) || 0;
   探针.remove();
 
-  return { 顶, 底 };
+  return { 顶, 底: 底 || 推算底部安全区(文档, 视图) };
 };
 
 /**
@@ -220,6 +236,8 @@ const 应用安全区 = () => {
     return;
   }
   补视口声明();
+  // 改完 viewport 声明要强制一次重排，否则同一次任务里读到的 env() 还是旧值
+  void 取宿主文档().documentElement.offsetHeight;
   const { 顶, 底 } = 读安全区();
   根.style.setProperty('--ls-safe-top', `${顶}px`);
   根.style.setProperty('--ls-safe-bottom', `${底}px`);

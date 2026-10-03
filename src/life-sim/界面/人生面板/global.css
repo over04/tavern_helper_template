@@ -216,7 +216,7 @@ html.ls-全屏 #ls-app {
   display: flex;
   align-items: center;
   gap: 12px;
-  height: calc(52px + var(--ls-safe-top));
+  height: calc(44px + var(--ls-safe-top));
   padding: var(--ls-safe-top) 18px 0;
   background: var(--ls-surface);
   border-bottom: 1px solid var(--ls-border);
