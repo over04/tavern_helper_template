@@ -12,7 +12,6 @@
         class="ls-wish"
         :class="{ 'is-picked': 已选(wish) }"
         type="button"
-        :disabled="只读"
         @click="切换(wish)"
       >
         {{ wish }}
@@ -26,10 +25,9 @@
         class="ls-wish-input"
         type="text"
         placeholder="写一条新的方向"
-        :disabled="只读"
         @keydown.enter="回车加入"
       />
-      <button class="ls-wish-add-btn" type="button" :disabled="只读 || !新方向.trim()" @click="加入">加入</button>
+      <button class="ls-wish-add-btn" type="button" :disabled="!新方向.trim()" @click="加入">加入</button>
     </div>
   </section>
 </template>
@@ -38,9 +36,8 @@
 import { onMounted, onUnmounted, ref } from 'vue';
 import { 待发送更新事件, use待发送 } from '../待发送';
 
-const props = defineProps<{
+defineProps<{
   wishes: string[];
-  只读?: boolean;
 }>();
 
 const 待发送 = use待发送();
@@ -55,9 +52,6 @@ function 广播() {
 }
 
 function 切换(方向: string) {
-  if (props.只读) {
-    return;
-  }
   if (已选(方向)) {
     待发送.移除心向(方向);
   } else {
@@ -68,7 +62,7 @@ function 切换(方向: string) {
 
 function 加入() {
   const 文本 = 新方向.value.trim();
-  if (props.只读 || !文本) {
+  if (!文本) {
     return;
   }
   待发送.增心向(文本);

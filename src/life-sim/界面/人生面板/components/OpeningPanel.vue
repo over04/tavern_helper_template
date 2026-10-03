@@ -367,12 +367,12 @@ async function begin() {
   display: flex;
   flex-direction: column;
   /* 楼层 iframe 的 html/body 被酒馆助手注入 overflow:hidden!important，整页无法滚动，
-     面板需自行承担滚动：这里限住高度，正文区域负责滚动 */
+     面板需自行承担滚动：这里限住高度，面板内容区负责滚动 */
   flex: 1;
   min-height: 0;
   width: 100%;
-  /* 开局时正文区独占整个宽列，面板限宽居中，列宽跟随设置里的阅读区上限 */
-  max-width: var(--ls-read-width);
+  /* 面板限宽居中，宽度取全局的 --ls-panel-width */
+  max-width: var(--ls-panel-width);
   margin: 0 auto;
   background: var(--ls-surface);
   border: 1px solid var(--ls-border);

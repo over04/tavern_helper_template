@@ -3,7 +3,7 @@
     <div class="ls-game-体" :class="{ 'ls-card': 需要卡片 }">
       <EndPanel v-if="视图 === '终章'" :finale="数据.终章" />
 
-      <div v-else-if="视图 === '分钟推进'" class="ls-game-只读范围" :class="{ 'ls-game--只读': 只读 }">
+      <div v-else-if="视图 === '分钟推进'">
         <SlowPanel
           :time="数据.时间"
           :vitals="数据.状态"
@@ -15,14 +15,14 @@
       </div>
 
       <template v-else-if="视图 === '月推进'">
-        <div class="ls-game-只读范围" :class="{ 'ls-game--只读': 只读 }">
+        <div>
           <ReadoutBar :time="数据.时间" :sex="数据._性别" :name="数据.姓名" />
         </div>
 
         <PanelTabs v-model="active" :tabs="tabs">
           <template v-if="active === 'event'">
-            <EventPanel :events="数据.事件" :fate="数据.命运点" :只读="只读" />
-            <WishPanel :wishes="数据.心向" :只读="只读" />
+            <EventPanel :events="数据.事件" :fate="数据.命运点" />
+            <WishPanel :wishes="数据.心向" />
           </template>
 
           <ArchivePanel
@@ -61,10 +61,8 @@ import { 视图键 } from '../视图';
 
 const store = useDataStore();
 
+// 面板始终操作当前楼层的变量
 const 数据 = computed(() => store.data);
-
-// 回看历史楼层随正文区一起去掉了，面板始终操作当前楼层的变量
-const 只读 = computed(() => false);
 
 const TABS = [
   { key: 'event', label: '事件' },
@@ -92,10 +90,6 @@ const 需要卡片 = computed(() => 视图.value === '月推进' || 视图.value
 </script>
 
 <style lang="scss" scoped>
-.ls-panel-pending {
-  margin: 12px 0 0;
-}
-
 .ls-game {
   display: flex;
   flex-direction: column;
@@ -120,49 +114,5 @@ const 需要卡片 = computed(() => 视图.value === '月推进' || 视图.value
   .ls-card {
     border-radius: var(--ls-r-sm);
   }
-}
-
-/* ── 回看提示条 ── */
-.ls-game-回看 {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  padding: 7px 10px 7px 12px;
-  border: 1px solid var(--ls-border);
-  border-radius: var(--ls-r-sm);
-  background: var(--ls-caution-soft);
-  color: var(--ls-caution);
-  font-size: 12.5px;
-}
-
-.ls-game-回看按钮 {
-  flex: none;
-  padding: 4px 11px;
-  border: 1px solid var(--ls-border-strong);
-  border-radius: var(--ls-r-sm);
-  background: var(--ls-surface);
-  color: var(--ls-text-body);
-  font-size: 12.5px;
-  font-weight: 500;
-  cursor: pointer;
-}
-
-@media (hover: hover) {
-  .ls-game-回看按钮:hover {
-    background: var(--ls-surface-hover);
-    border-color: var(--ls-text-faint);
-    color: var(--ls-text);
-  }
-}
-
-/* 回看只读：读数条与慢速面板里的按钮、滑块一律置灰。
-   事件选项与心向的置灰由各自组件按 只读 属性处理，这里不重复。 */
-.ls-game--只读 :deep(button),
-.ls-game--只读 :deep(input),
-.ls-game--只读 :deep(select),
-.ls-game--只读 :deep(textarea) {
-  pointer-events: none;
-  opacity: 0.5;
 }
 </style>

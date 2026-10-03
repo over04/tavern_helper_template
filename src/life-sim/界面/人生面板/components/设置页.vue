@@ -1,6 +1,6 @@
 <script lang="ts">
-/** 设置页左侧的三个分组 */
-type 分组键 = '阅读' | '提醒' | '动效';
+/** 设置页左侧的分组 */
+type 分组键 = '提醒' | '动效';
 </script>
 
 <script setup lang="ts">
@@ -10,12 +10,11 @@ import { 读设置, 写设置 } from '../设置';
 const 设置值 = reactive(读设置());
 
 const 分组列表: { 键: 分组键; 名称: string; 摘要: string }[] = [
-  { 键: '阅读', 名称: '阅读区样式', 摘要: '字号、行高与正文列宽上限' },
-  { 键: '提醒', 名称: '结算前提醒', 摘要: '事件尚未选择选项时，点「结算本回合」先弹一次确认' },
+  { 键: '提醒', 名称: '结算前提醒', 摘要: '事件尚未选择选项时，点「以此生开始」先弹一次确认' },
   { 键: '动效', 名称: '动效', 摘要: '入场淡入与页签浮现' },
 ];
 
-const 当前键 = ref<分组键>('阅读');
+const 当前键 = ref<分组键>('提醒');
 
 const 当前 = computed(() => 分组列表.find(组 => 组.键 === 当前键.value) ?? 分组列表[0]);
 
@@ -27,28 +26,6 @@ function 保存() {
 function 改开关(键: '结算前提醒' | '动效', 值: boolean) {
   设置值[键] = 值;
   保存();
-}
-
-/** 输入过程中只写回完整且范围内的值，未完成的输入与越界值留到失焦时统一处理 */
-function 改数(键: '字号' | '行高' | '列宽上限', 事件: Event, 下限: number, 上限: number) {
-  const 输入 = 事件.target as HTMLInputElement;
-  const 原文 = 输入.value.trim();
-  if (原文 === '') {
-    return;
-  }
-  const 数 = Number(原文);
-  if (!Number.isFinite(数)) {
-    return;
-  }
-  const 结果 = Math.min(上限, Math.max(下限, 数));
-  if (事件.type === 'input' && (String(数) !== 原文 || 数 !== 结果)) {
-    return;
-  }
-  设置值[键] = 结果;
-  保存();
-  if (事件.type === 'change') {
-    输入.value = String(结果);
-  }
 }
 </script>
 
@@ -74,72 +51,10 @@ function 改数(键: '字号' | '行高' | '列宽上限', 事件: Event, 下限
       </header>
 
       <div :key="当前.键" class="ls-set-body">
-        <template v-if="当前键 === '阅读'">
-          <div class="ls-set-row">
-            <span class="ls-set-label">
-              字号
-              <span class="ls-set-hint">正文的字体大小，14 至 22 像素</span>
-            </span>
-            <div class="ls-set-input">
-              <input
-                class="ls-set-num"
-                type="number"
-                min="14"
-                max="22"
-                step="1"
-                :value="设置值.字号"
-                @input="改数('字号', $event, 14, 22)"
-                @change="改数('字号', $event, 14, 22)"
-              />
-              <span class="ls-set-unit">像素</span>
-            </div>
-          </div>
-
-          <div class="ls-set-row">
-            <span class="ls-set-label">
-              行高
-              <span class="ls-set-hint">行距与字号的比例，1.4 至 2.2 倍</span>
-            </span>
-            <div class="ls-set-input">
-              <input
-                class="ls-set-num"
-                type="number"
-                min="1.4"
-                max="2.2"
-                step="0.1"
-                :value="设置值.行高"
-                @input="改数('行高', $event, 1.4, 2.2)"
-                @change="改数('行高', $event, 1.4, 2.2)"
-              />
-              <span class="ls-set-unit">倍</span>
-            </div>
-          </div>
-
-          <div class="ls-set-row">
-            <span class="ls-set-label">
-              列宽上限
-              <span class="ls-set-hint">正文列的宽度上限，600 至 1200 像素</span>
-            </span>
-            <div class="ls-set-input">
-              <input
-                class="ls-set-num"
-                type="number"
-                min="600"
-                max="1200"
-                step="20"
-                :value="设置值.列宽上限"
-                @input="改数('列宽上限', $event, 600, 1200)"
-                @change="改数('列宽上限', $event, 600, 1200)"
-              />
-              <span class="ls-set-unit">像素</span>
-            </div>
-          </div>
-        </template>
-
-        <div v-else-if="当前键 === '提醒'" class="ls-set-row">
+        <div v-if="当前键 === '提醒'" class="ls-set-row">
           <span class="ls-set-label">
             事件未选择选项时先弹一次确认
-            <span class="ls-set-hint">事件表里还有事件尚未选择选项时，点「结算本回合」先弹一次确认</span>
+            <span class="ls-set-hint">事件表里还有事件尚未选择选项时，点「以此生开始」先弹一次确认</span>
           </span>
           <div class="ls-set-input">
             <button

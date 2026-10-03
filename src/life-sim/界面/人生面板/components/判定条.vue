@@ -33,7 +33,7 @@ import { 读快照, 楼层上下文键 } from '../正文';
 
 const props = defineProps<{ 序号: number }>();
 
-// 楼层条提供所在楼层；没有它就没有可以取判定数据的楼层，整块不渲染
+// 判定条脚本提供所在楼层；没有它就没有可以取判定数据的楼层，整块不渲染
 const 楼层上下文 = inject(楼层上下文键, null);
 
 const 命运点说明: Record<string, string> = {

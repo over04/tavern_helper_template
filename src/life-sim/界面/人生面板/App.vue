@@ -7,12 +7,12 @@
   </div>
 
   <!-- 聊天层：面板就是聊天里的一块。正文由酒馆自己渲染，这里只放状态与操作 -->
-  <div v-else class="ls-panel" :class="{ 'ls-fs--动效': 设置.动效 }">
+  <div v-else class="ls-panel" :class="{ 'ls-动效': 设置.动效 }">
     <div class="ls-panel-头">
       <span class="ls-panel-标题">模拟人生</span>
       <span class="ls-panel-读数">{{ 读数 }}</span>
     </div>
-    <PrimaryNav v-model="一级" :纵向="false" />
+    <PrimaryNav v-model="一级" />
     <GamePanel v-if="一级 === '游戏'" />
     <VariableManager v-else-if="一级 === '变量管理'" />
     <SettingsPage v-else />
@@ -24,9 +24,6 @@ import './global.css';
 
 // 组件标签必须以字母开头，中文文件名的组件只能另起英文名再引入
 import GamePanel from './components/游戏面板.vue';
-import GenerationOverlay from './components/生成浮层.vue';
-import InputPane from './components/输入区.vue';
-import OpeningPanel from './components/OpeningPanel.vue';
 import PrimaryNav from './components/一级导航.vue';
 import SettingsPage from './components/设置页.vue';
 import VariableManager from './components/变量管理.vue';
@@ -63,7 +60,7 @@ onErrorCaptured(错误 => {
  * 变量是否可用。
  *
  * 本组件的 computed 也要读 store.data，而 onErrorCaptured 只捕获子组件的错误，
- * 所以变量没就绪时必须在这里先拦住，否则读数、顶栏与三列主区会一起渲染成空白。
+ * 所以变量没就绪时必须在这里先拦住，否则读数与面板内容会一起渲染成空白。
  */
 const 数据就绪 = computed(() => {
   try {

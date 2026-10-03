@@ -20,8 +20,6 @@
   --ls-surface: #ffffff;
   --ls-surface-sunken: #f5f4ee;
   --ls-surface-hover: #eeede5;
-  /* 生成浮层的遮罩：半透明而不是全遮，生成期间仍看得见内容增长 */
-  --ls-遮罩: rgba(250, 249, 245, 0.86);
 
   /* ── 描边 ── */
   --ls-border: #e5e4df;
@@ -73,19 +71,18 @@
   background-color: var(--ls-bg);
 }
 
-/* 安全区上下边距。
-   声明在根容器上：.ls-fs 是它的子元素，若跟着声明一份，
-   会把这里的值覆盖掉，顶栏与底部导航就都读不到安全区。
-   全屏时由 全屏.ts 改写：顶部取「安全区」与「酒馆顶栏占位」中较大的那个，
-   因为常驻承载的层级低于酒馆顶栏，顶栏会盖在界面壳之上，壳要让出它的高度。 */
+/* 安全区上下边距。声明在根容器上，子元素按继承取值 */
 #ls-app {
   /* TauriTavern 会把宿主的 --tt-inset-* 桥接进 iframe 的 :root（见它的 docs/API/Layout.md），
      它的 WebView 里 env(safe-area-inset-*) 拿不到值，所以契约变量优先，没有才退回 env()。 */
   --ls-safe-top: var(--tt-inset-top, env(safe-area-inset-top, 0px));
   --ls-safe-bottom: var(--tt-inset-bottom, env(safe-area-inset-bottom, 0px));
+
+  /* 面板限宽默认值：开局面板与终章卡按它居中 */
+  --ls-panel-width: 760px;
 }
 
-/* 排版挂在两个根容器上，判定条与全屏壳的文字才不会退回宿主文档的字体 */
+/* 排版挂在两个根容器上，判定条的文字才不会退回宿主文档的字体 */
 :where(#ls-app, .ls-judge-root) {
   font-family: var(--ls-f-ui);
   color: var(--ls-text);
@@ -145,7 +142,7 @@
 }
 
 /* 关闭动效时，入场淡入与页签浮现都不播。作用范围限定在界面根元素内 */
-:where(.ls-panel, .ls-fs):not(.ls-fs--动效) :where(*) {
+:where(.ls-panel):not(.ls-动效) :where(*) {
   animation: none !important;
 }
 
@@ -160,222 +157,3 @@
   }
 }
 
-/* ══════════════════════════════════════════
-   全屏壳
-   全屏由界面在酒馆主文档里另建一个常驻 iframe 承载，里面跑同一份产物、渲染这一段；
-   承载方式与三个实施条件见 全屏.ts 与 常驻.ts。楼层里的紧凑面板另有一套样式。
-   壳内结构：顶栏 ＋ 主体（一级导航｜中间列｜右侧列）。
-   ══════════════════════════════════════════ */
-
-/* 全屏时把整条高度链设为宿主视口高，壳才有 100% 可用；滚动交给壳内的各列，文档本身不滚。
-   高度链必须取宿主视口高而不是 100%，原因是常驻承载里 html 的计算高度为 0，
-   写 100% 会解析成 0；这条规则在常驻承载与兜底铺满两条路径下都成立。
-   --TH-viewport-height 由酒馆助手的视口脚本写在 html 的行内样式上；取不到时退回 100%。 */
-html.ls-全屏,
-html.ls-全屏 body,
-html.ls-全屏 #ls-app {
-  height: var(--TH-viewport-height, 100%);
-}
-
-/* 壳内部的滚动已经由各列各自承担，根容器与文档本身都不再需要溢出 */
-html.ls-全屏,
-html.ls-全屏 #ls-app {
-  overflow: hidden;
-}
-
-/* 阅读区默认值：App.vue 按设置把它们覆盖为行内样式，正文区与楼层条直接读取 */
-#ls-app,
-.ls-fs {
-  --ls-read-size: 16px;
-  --ls-read-leading: 1.8;
-  --ls-read-width: 760px;
-  --ls-fs-导航高: 56px;
-}
-
-.ls-fs {
-  /* 生成浮层用绝对定位盖住整个壳，壳要作为它的定位参照 */
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  height: 100%;
-  min-height: 0;
-  background: var(--ls-bg);
-}
-
-.ls-fs-壳 {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  min-height: 0;
-}
-
-/* ── 顶栏 ── */
-/* 顶栏不再占布局高度：整条占掉一行会在手机上顶出一大块空白。
-   标题与读数在正文里各有一份（窄屏读数条就在中列顶部），这里只把退出按钮浮在右上角。 */
-.ls-fs-顶栏 {
-  position: absolute;
-  top: calc(var(--ls-safe-top) + 6px);
-  right: 12px;
-  z-index: 25;
-  display: flex;
-  align-items: center;
-  padding: 0;
-  background: transparent;
-  border-bottom: none;
-}
-
-.ls-fs-标题,
-.ls-fs-读数 {
-  display: none;
-}
-
-.ls-fs-标题 {
-  flex: none;
-  font-size: 14px;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-}
-
-.ls-fs-读数 {
-  flex: 1;
-  min-width: 0;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  color: var(--ls-text-muted);
-  font-size: 12.5px;
-  font-variant-numeric: tabular-nums;
-}
-
-/* 纯图标按钮：只有图标，说明文字作为悬停提示；悬停只改底色与颜色，不动位置 */
-.ls-fs-退出按钮 {
-  flex: none;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 30px;
-  height: 30px;
-  border: none;
-  border-radius: var(--ls-r-sm);
-  background: transparent;
-  color: var(--ls-text-muted);
-  font-size: 13px;
-  cursor: pointer;
-}
-
-@media (hover: hover) {
-  .ls-fs-退出按钮:hover {
-    background: var(--ls-surface-hover);
-    color: var(--ls-text);
-  }
-}
-
-/* ── 主体：三列网格 ── */
-.ls-fs-主体 {
-  flex: 1;
-  min-height: 0;
-  display: grid;
-  /* 中间列设 400px 下限：1280 宽度下按 1/3 分只剩 370px，读数条与事件卡片会被压到换行 */
-  grid-template-columns: auto minmax(400px, 1fr) minmax(0, 2fr);
-  gap: 14px;
-  padding: 14px;
-}
-
-.ls-fs-导航 {
-  align-self: start;
-}
-
-.ls-fs-中列,
-.ls-fs-右列 {
-  min-width: 0;
-  min-height: 0;
-}
-
-.ls-fs-中列 {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  overflow-y: auto;
-}
-
-/* 变量管理与设置占满中间与右侧两列 */
-.ls-fs-中列--通栏 {
-  grid-column: 2 / -1;
-}
-
-.ls-fs-右列 {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.ls-fs-右列 > .ls-fs-正文 {
-  flex: 1;
-  min-height: 0;
-}
-
-.ls-fs-右列 > .ls-fs-输入,
-.ls-fs-右列 > .ls-fs-结算 {
-  flex: none;
-}
-
-/* 开局时中间列不渲染，正文区横跨中间与右侧两列；否则右列会被自动放进第 2 列，第 3 列完全空置 */
-.ls-fs-右列--通栏 {
-  grid-column: 2 / -1;
-  overflow-y: auto;
-}
-
-/* ── 窄屏：正文在上、一级导航变成底部一排常驻，
-      两种宽度都是点页签直接切页面 ──
-   断点与 App.vue 的 useMediaQuery('(min-width: 1024px)') 互补，改动须同步 */
-@media (max-width: 1023px) {
-  /* 整块由主体滚，导航用 sticky 钉在底部，页面切换与滚动互不干扰。
-     底部不留内边距：容器的 padding-bottom 不会因为最后一个子元素带负 margin 就消失，
-     留着它导航就会停在视口上方 12px 处，露出一条空隙。 */
-  .ls-fs-主体 {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    padding: 12px 12px 0;
-    overflow-y: auto;
-  }
-
-  /* 内容比视口短时靠 margin-top: auto 把导航推到底部，比视口长时 sticky 把它钉住。
-     高度把安全区算进去、内边距另算：全局是 border-box，写在 height 里会从 56px 里扣，
-     iOS 安全区 34px 时三个页签只剩 22px 可用，文字会被挤在一起。
-     安全区由 #ls-app 上的 --ls-safe-bottom 给出：TauriTavern 的 --tt-inset-* 契约优先，
-     没有才退回 env()。 */
-  .ls-fs-导航 {
-    position: sticky;
-    bottom: 0;
-    order: 3;
-    margin: auto -12px 0;
-    align-self: stretch;
-    flex: none;
-    height: calc(var(--ls-fs-导航高) + var(--ls-safe-bottom));
-    padding-bottom: var(--ls-safe-bottom);
-    border-top: 1px solid var(--ls-border);
-    background: var(--ls-surface);
-    z-index: 5;
-  }
-
-  /* 窄屏一列排开，右列与中列都是自然高度，不再各自成为滚动容器 */
-  .ls-fs-右列 {
-    order: 1;
-    flex: none;
-    gap: 12px;
-  }
-
-  .ls-fs-中列 {
-    order: 2;
-    flex: none;
-    overflow: visible;
-  }
-
-  /* 通栏在两列网格里才有意义，窄屏是单列 */
-  .ls-fs-中列--通栏,
-  .ls-fs-右列--通栏 {
-    grid-column: auto;
-  }
-}

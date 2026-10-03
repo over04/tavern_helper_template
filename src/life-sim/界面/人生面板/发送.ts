@@ -92,12 +92,3 @@ export const 写输入框 = (声明: string) => {
   // 让酒馆的输入框界面跟着更新
   框.dispatchEvent(new Event('input', { bubbles: true }));
 };
-
-/** 触发酒馆自己的发送按钮 */
-export const 触发发送 = () => {
-  try {
-    取宿主文档().querySelector<HTMLButtonElement>('#send_but')?.click();
-  } catch (错误) {
-    console.error('人生面板：触发发送失败', 错误);
-  }
-};

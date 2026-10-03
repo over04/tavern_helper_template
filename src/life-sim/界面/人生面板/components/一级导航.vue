@@ -1,5 +1,5 @@
 <template>
-  <nav class="ls-nav" :class="纵向 ? 'ls-nav--纵向' : 'ls-nav--横向'" role="tablist" aria-label="一级导航">
+  <nav class="ls-nav" role="tablist" aria-label="一级导航">
     <button
       v-for="项 in 全部项目"
       :key="项.名称"
@@ -28,8 +28,6 @@ const 项目表: { 名称: 一级名称; 图标: string }[] = [
 
 const 属性 = defineProps<{
   modelValue: 一级名称;
-  /** 宽屏为 true：最左竖排；窄屏为 false：底部一排 */
-  纵向: boolean;
 }>();
 
 const 全部项目 = 项目表;
@@ -38,15 +36,20 @@ defineEmits<{ 'update:modelValue': [名称: 一级名称] }>();
 </script>
 
 <style lang="scss" scoped>
+/* 面板头部下方一排，图标与文字同排 */
 .ls-nav {
   display: flex;
+  flex-direction: row;
   gap: 4px;
 }
 
 .ls-nav-项目 {
+  flex: 1;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 6px;
+  padding: 7px 4px;
   border: none;
   border-radius: var(--ls-r-sm);
   background: transparent;
@@ -70,37 +73,6 @@ defineEmits<{ 'update:modelValue': [名称: 一级名称] }>();
 .ls-nav-文字 {
   line-height: 1.2;
   white-space: nowrap;
-}
-
-/* ── 纵向：最左竖排，图标在上、文字在下 ── */
-.ls-nav--纵向 {
-  flex-direction: column;
-  gap: 6px;
-  padding: 8px;
-  background: var(--ls-surface);
-  border: 1px solid var(--ls-border);
-  border-radius: var(--ls-r-md);
-}
-
-.ls-nav--纵向 .ls-nav-项目 {
-  flex-direction: column;
-  gap: 5px;
-  width: 62px;
-  padding: 10px 2px;
-}
-
-/* ── 横向：底部一排，图标与文字同排 ── */
-.ls-nav--横向 {
-  flex-direction: row;
-  align-items: stretch;
-  height: 100%;
-}
-
-.ls-nav--横向 .ls-nav-项目 {
-  flex: 1;
-  flex-direction: row;
-  gap: 6px;
-  padding: 0 4px;
 }
 
 /* ── 选中态 ── */

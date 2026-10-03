@@ -39,7 +39,7 @@ defineProps<{
   display: flex;
   flex-direction: column;
   width: 100%;
-  max-width: var(--ls-read-width);
+  max-width: var(--ls-panel-width);
   margin: 0 auto;
   background: var(--ls-surface);
   border: 1px solid var(--ls-border);

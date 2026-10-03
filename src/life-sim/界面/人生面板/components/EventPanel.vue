@@ -17,7 +17,6 @@
             class="ls-option"
             :class="{ 'is-picked': 选中序号(name) === String(option.index) }"
             type="button"
-            :disabled="只读"
             @click="pickOption(name, option)"
           >
             <span class="ls-option-index">{{ option.index }}</span>
@@ -26,12 +25,11 @@
             <span v-if="option.cost" class="ls-option-cost">{{ option.cost }}</span>
           </button>
 
-          <!-- 常驻第 5 条「其他」：四条之后固定追加，点开在下方展开手写输入区 -->
+          <!-- 固定第 5 条「其他」：四条之后固定追加，点开在下方展开手写输入区 -->
           <button
             class="ls-option ls-option-other"
             :class="{ 'is-picked': 选中序号(name) === '其他', 'is-open': 展开[name] }"
             type="button"
-            :disabled="只读"
             @click="切换其他(name)"
           >
             <span class="ls-option-index" aria-hidden="true"></span>
@@ -45,15 +43,14 @@
               rows="2"
               placeholder="写下你想做的事，随消息一起交给模型判定"
               :value="手写[name] ?? ''"
-              :disabled="只读"
               @input="写手写(name, $event)"
             ></textarea>
             <div class="ls-other-foot">
-              <span class="ls-other-hint">写好后点「确定」作为本条事件的选项；再点一次「其他」即取消</span>
+              <span class="ls-other-hint">写好后点「确定」作为本条事件的选项</span>
               <button
                 class="ls-other-save"
                 type="button"
-                :disabled="只读 || !(手写[name] ?? '').trim()"
+                :disabled="!(手写[name] ?? '').trim()"
                 @click="确定其他(name)"
               >
                 确定
@@ -71,7 +68,7 @@
               class="ls-fate-btn"
               :class="{ 'is-picked': 选中命运点(name) === way.key }"
               type="button"
-              :disabled="只读 || !canUseFate(name, way.cost)"
+              :disabled="!canUseFate(name, way.cost)"
               @click="pickFate(name, way.key)"
             >
               <span class="ls-fate-act">{{ way.label }}</span>
@@ -108,7 +105,6 @@ type Event = {
 const props = defineProps<{
   events: Record<string, Event>;
   fate: number;
-  只读?: boolean;
 }>();
 
 // 选项键固定为 一~四：界面显示的序号即判定脚本取用 stat.事件[名].选项[键] 的序号，两处顺序必须一致
@@ -172,9 +168,6 @@ function 广播() {
 
 // 点选项即接在末尾记一条，带上该事件当前选中的命运点方式
 function pickOption(事件名: string, option: { index: number }) {
-  if (props.只读) {
-    return;
-  }
   待发送.选选项(事件名, String(option.index), '', 选中命运点(事件名));
   广播();
 }
@@ -186,9 +179,6 @@ function canUseFate(_事件名: string, cost: number) {
 
 // 再点同一种方式即取消，换一种即改选
 function pickFate(事件名: string, 命运点: string) {
-  if (props.只读) {
-    return;
-  }
   选点方式.value = {
     ...选点方式.value,
     [事件名]: 选中命运点(事件名) === 命运点 ? '' : 命运点,
@@ -201,9 +191,6 @@ function pickFate(事件名: string, 命运点: string) {
 // 「其他」是手写输入区的开合开关。收起不再撤销已记录的那条：
 // 撤销判断同样要在两处维护，去掉它，加错了由玩家自己删
 function 切换其他(事件名: string) {
-  if (props.只读) {
-    return;
-  }
   展开[事件名] = !展开[事件名];
 }
 
@@ -214,7 +201,7 @@ function 写手写(事件名: string, event: globalThis.Event) {
 
 function 确定其他(事件名: string) {
   const 文本 = String(手写[事件名] || '').trim();
-  if (props.只读 || !文本) {
+  if (!文本) {
     return;
   }
   待发送.选选项(事件名, '其他', 文本, 选中命运点(事件名));
