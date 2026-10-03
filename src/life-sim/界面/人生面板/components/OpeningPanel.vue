@@ -114,7 +114,7 @@
 <script setup lang="ts">
 import { reactive, ref } from 'vue';
 import { 结算前确认 } from '../结算提醒';
-import { 设开局 } from '../追加';
+import { 设开局, 转义文本 } from '../追加';
 import { useDataStore } from '../store';
 import ClaudeMark from './ClaudeMark.vue';
 
@@ -338,7 +338,7 @@ function 拼开局声明(): string {
     `<天赋 智商="${form.iq}" 情商="${form.eq}" 体质="${form.phy}" 颜值="${form.look}" 意志="${form.will}" 幸运="${form.luck}"/>`,
   ];
   const 背景 = form.bg.trim();
-  段.push(背景 ? `<背景>${背景}</背景>` : '<背景 随机="true"/>');
+  段.push(背景 ? `<背景>${转义文本(背景)}</背景>` : '<背景 随机="true"/>');
   段.push('</开局>');
   return 段.join('\n');
 }

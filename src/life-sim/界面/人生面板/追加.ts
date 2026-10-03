@@ -49,8 +49,9 @@ export const 追加输入框 = (内容: string) => {
 const 转义属性 = (值: string): string =>
   值.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
-/** 元素内容：转义 & 与尖括号 */
-const 转义文本 = (值: string): string =>
+/** 元素内容：转义 & 与尖括号。开局背景的拼装同样走这里，
+ *  否则玩家文本里的尖括号会破坏标签结构，让整段声明落不进正则 */
+export const 转义文本 = (值: string): string =>
   值.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
 /** 追加一条事件选项；手写行动写成带正文的形态 */

@@ -36,9 +36,15 @@ const 未选条数 = (事件: Record<string, unknown> | undefined): number => {
   return Object.keys(事件 ?? {}).filter(名 => !已选.has(名)).length;
 };
 
+/**
+ * 酒馆在 iframe 里注入的 `SillyTavern` 比 @types 里的声明多一个 `getContext`：
+ * 酒馆助手的 predefine.js 把它写成 `{ ...getContext(), getContext }`，而 @types 里只声明了上下文本身的字段。
+ */
+type 带取上下文 = typeof SillyTavern & { getContext: () => typeof SillyTavern };
+
 /** 弹确认框；玩家点「仍然结算」返回 true */
 async function 弹提醒(条数: number): Promise<boolean> {
-  const 上下文 = SillyTavern.getContext();
+  const 上下文 = (SillyTavern as 带取上下文).getContext();
   // 弹窗与它里面的元素都要建在酒馆那一份文档里，酒馆才能识别
   const 文档 = 取宿主文档();
 
