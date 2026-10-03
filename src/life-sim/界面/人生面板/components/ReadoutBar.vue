@@ -34,7 +34,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { useDataStore } from '../store';
-import { 切模式 } from '../待发送';
+import { 切模式 } from '../追加';
 import AgeRing from './AgeRing.vue';
 
 const store = useDataStore();

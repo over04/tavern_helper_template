@@ -33,7 +33,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import { 增心向 } from '../待发送';
+import { 增心向 } from '../追加';
 
 defineProps<{
   wishes: string[];

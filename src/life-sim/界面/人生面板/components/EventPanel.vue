@@ -82,7 +82,7 @@
 
 <script setup lang="ts">
 import { computed, reactive } from 'vue';
-import { 选选项 } from '../待发送';
+import { 选选项 } from '../追加';
 
 type Option = {
   动作: string;

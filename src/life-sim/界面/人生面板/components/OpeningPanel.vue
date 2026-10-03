@@ -114,7 +114,7 @@
 <script setup lang="ts">
 import { reactive, ref } from 'vue';
 import { 结算前确认 } from '../结算提醒';
-import { 设开局 } from '../待发送';
+import { 设开局 } from '../追加';
 import { useDataStore } from '../store';
 import ClaudeMark from './ClaudeMark.vue';
 

@@ -50,7 +50,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { useDataStore } from '../store';
-import { 切模式 } from '../待发送';
+import { 切模式 } from '../追加';
 import FocusRing from './FocusRing.vue';
 import PanelTabs from './PanelTabs.vue';
 import RelationBar from './RelationBar.vue';
