@@ -87,6 +87,7 @@ import { 设置状态 } from './设置';
 import { useDataStore } from './store';
 import { use全屏 } from './全屏';
 import { use生成状态 } from './生成状态';
+import { use待发送 } from './待发送';
 import { 视图键 } from './视图';
 import type { 视图名 } from './视图';
 
@@ -96,6 +97,13 @@ const { 是否全屏: 全屏, 全屏失败, 切换全屏 } = use全屏();
 
 // 生成状态在 App 这一层接入：界面不在全屏时也在维护状态，切进全屏能立刻显示浮层
 use生成状态();
+
+// 发送成功后清空待发送状态：声明已经随消息发出去了，下一轮从干净状态开始
+const 待发送 = use待发送();
+const 停发送监听 = eventOn(tavern_events.MESSAGE_SENT, () => {
+  待发送.清空();
+});
+onUnmounted(() => 停发送监听.stop());
 
 const store = useDataStore();
 

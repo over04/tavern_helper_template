@@ -108,6 +108,20 @@ const 清快照 = () => {
   delete 快照箱()[快照键];
 };
 
+/** 全屏标记：记在宿主 window 上。界面被酒馆助手重建时本文档整体重载、模块状态清零，
+ *  新文档靠这个标记知道自己原本处于全屏，从而立刻恢复，而不是退回楼层里的紧凑面板。 */
+const 全屏态键 = '__ls全屏态';
+
+const 读全屏态 = () => 快照箱()[全屏态键] === true;
+
+const 写全屏态 = (值: boolean) => {
+  if (值) {
+    快照箱()[全屏态键] = true;
+  } else {
+    delete 快照箱()[全屏态键];
+  }
+};
+
 /** 把快照写回：元素已经不在文档里就跳过（旧承载 iframe 被重渲染时会被移除） */
 const 写回快照 = (快照: 全屏快照) => {
   for (const { 元素, cssText } of 快照.样式) {
@@ -458,6 +472,7 @@ export const 切换全屏 = () => {
     document.documentElement.classList.remove('ls-全屏');
     是否全屏.value = false;
     全屏失败.value = '';
+    写全屏态(false);
     return;
   }
 
@@ -473,6 +488,30 @@ export const 切换全屏 = () => {
 
   应用安全区();
   是否全屏.value = true;
+  写全屏态(true);
+};
+
+/**
+ * 界面被酒馆助手重建后按标记恢复全屏，在 createApp 之前调用。
+ *
+ * 铺满操作的是承载 iframe，不依赖 #ls-app，因此可以在界面渲染之前执行；
+ * `ls-全屏` 类也必须在这里就挂上，否则高度链没撑满，重建后会先闪一下紧凑面板。
+ */
+export const 恢复全屏 = () => {
+  if (!读全屏态()) {
+    return;
+  }
+
+  document.documentElement.classList.add('ls-全屏');
+  if (铺满()) {
+    应用安全区();
+    是否全屏.value = true;
+    return;
+  }
+
+  // 恢复失败就退回紧凑面板，并把标记清掉，免得每次重建都白试一遍
+  document.documentElement.classList.remove('ls-全屏');
+  写全屏态(false);
 };
 
 /** 接入全屏状态与安全区监听；在组件 setup 里调用 */
