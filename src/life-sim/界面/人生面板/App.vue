@@ -65,8 +65,9 @@
           class="ls-fs-右列"
           :class="{ 'ls-fs-右列--通栏': 正文独占 }"
         >
-          <!-- 开局的正文区照常渲染：生成过之后正文里就有楼层，开局也要能翻页看历史 -->
-          <StoryPane class="ls-fs-正文" />
+          <!-- 开局只有开场白时不出正文区：那时它只有一条楼层，多跑一次嵌套文档还容易闪。
+               生成过之后正文里就有楼层了，开局也要能翻页看历史 -->
+          <StoryPane v-if="视图 !== '开局' || 末层号 > 0" class="ls-fs-正文" />
           <OpeningPanel v-if="视图 === '开局'" class="ls-fs-开场" />
           <!-- 输入框与结算按钮都只在各自的推进模式出现：月推进靠结构化选项，不需要自由输入 -->
           <InputPane v-if="视图 === '分钟推进'" class="ls-fs-输入" />
@@ -112,6 +113,12 @@ use生成状态();
 // 酒馆发出消息之前会清空输入框。界面写的声明若已不在输入框里，说明它随这条消息发出去了，
 // 此刻才清空待发送；斜杠命令与快速回复不走输入框，声明仍在，玩家的选择不该被清掉
 const 待发送 = use待发送();
+/** 聊天里最后一层的楼层号。开局只有开场白时为 0，生成过之后才大于 0 */
+const 末层号 = ref(getLastMessageId());
+const 停楼层监听 = eventOn(tavern_events.MESSAGE_RECEIVED, () => {
+  末层号.value = getLastMessageId();
+});
+onUnmounted(() => 停楼层监听.stop());
 const 停发送监听 = eventOn(tavern_events.MESSAGE_SENT, () => {
   if (!声明仍在输入框()) {
     待发送.发送后清空();
