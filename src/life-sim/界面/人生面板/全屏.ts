@@ -171,6 +171,26 @@ const 铺满 = (): boolean => {
     }
   }
 
+  // 祖先里凡是构成层叠上下文的，会把承载元素的 z-index 困在里面：2147483000 只在那层上下文内部有效，
+  // 对上下文之外（酒馆的顶栏与底部输入区）只剩上下文自己那一层的层级，于是尺寸铺满了却还被压住。
+  // 把这类祖先的 z-index 与 isolation 也清成 auto，承载元素就能在根层叠上下文里直接与它们比大小。
+  // 快照由 记下 在第一次调用时取，此处两个属性都在快照之后才改，还原时一并写回。
+  for (let 元素: HTMLElement | null = 承载; 元素; 元素 = 上一层(元素)) {
+    if (元素 === 承载) {
+      continue;
+    }
+    const 样式 = 元素.ownerDocument.defaultView?.getComputedStyle(元素);
+    if (!样式) {
+      continue;
+    }
+    if (样式.isolation !== 'isolate' && !(样式.position !== 'static' && 样式.zIndex !== 'auto')) {
+      continue;
+    }
+    记下(元素);
+    元素.style.setProperty('z-index', 'auto', 'important');
+    元素.style.setProperty('isolation', 'auto', 'important');
+  }
+
   // 锁住宿主文档的滚动，避免界面下方的内容跟着滚动
   const 文档 = 取宿主文档();
   for (const 元素 of [文档.documentElement, 文档.body]) {
@@ -198,6 +218,16 @@ const 铺满 = (): boolean => {
     );
   };
 
+  // 铺满不等于看得见：酒馆的顶栏与底部输入区是 fixed 浮层，层级高过承载元素时界面会被压在下面。
+  // 命中测试直接问「界面正上方那一层是谁」，比读 z-index 可靠。
+  const 挡住界面的 = () => {
+    if (!视口宽 || !视口高) {
+      return null;
+    }
+    const 命中 = 承载.ownerDocument.elementFromPoint(视口宽 / 2, 2);
+    return 命中 && 命中 !== 承载 ? 命中 : null;
+  };
+
   if (!盖住了()) {
     // 百分比可能解析不到视口（祖先仍在构成包含块时就是如此），补一层按视口算出的像素尺寸
     承载.style.setProperty('width', `${视口宽}px`, 'important');
@@ -210,6 +240,13 @@ const 铺满 = (): boolean => {
     全屏失败.value =
       `承载界面的 iframe 没能铺满视口：实际 ${Math.round(盒.width)}×${Math.round(盒.height)}，` +
       `视口 ${视口宽}×${视口高}；${挡路 || '未找到构成包含块的祖先'}`;
+    还原();
+    return false;
+  }
+
+  const 压住界面的 = 挡住界面的();
+  if (压住界面的) {
+    全屏失败.value = `承载界面的 iframe 铺满了视口，但被上层元素压住：${描述(压住界面的)}`;
     还原();
     return false;
   }
