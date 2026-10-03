@@ -38,7 +38,7 @@
 
       <div class="ls-fs-主体" :class="{ 'ls-fs-主体--抽屉开': 抽屉开 }">
         <div class="ls-fs-导航" @click="点导航">
-          <PrimaryNav v-model="一级" :纵向="宽屏" :隐藏游戏="视图 === '开局'" />
+          <PrimaryNav v-model="一级" :纵向="宽屏" />
         </div>
 
         <section

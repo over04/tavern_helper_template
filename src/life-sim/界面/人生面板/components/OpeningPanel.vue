@@ -371,6 +371,10 @@ async function begin() {
 .ls-opening {
   display: flex;
   flex-direction: column;
+  /* 楼层 iframe 的 html/body 被酒馆助手注入 overflow:hidden!important，整页滚不动，
+     面板要自己收下滚动：这里限住高度，正文那一块负责滚 */
+  flex: 1;
+  min-height: 0;
   width: 100%;
   /* 开局时正文区独占整个宽列，面板限宽居中，列宽跟随设置里的阅读区上限 */
   max-width: var(--ls-read-width);
@@ -433,6 +437,10 @@ async function begin() {
   display: flex;
   flex-direction: column;
   gap: 14px;
+  /* 滚动落在这一块：头部与底部按钮留在视野里，中间的开局模板自己滚 */
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
   padding: 16px;
 }
 

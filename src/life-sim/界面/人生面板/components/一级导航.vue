@@ -30,13 +30,9 @@ const 属性 = defineProps<{
   modelValue: 一级名称;
   /** 宽屏为 true：最左竖排；窄屏为 false：底部一排 */
   纵向: boolean;
-  /** 开局时游戏面板不渲染，游戏页签一并隐藏 */
-  隐藏游戏?: boolean;
 }>();
 
-const 全部项目 = computed(() =>
-  属性.隐藏游戏 ? 项目表.filter(项 => 项.名称 !== '游戏') : 项目表,
-);
+const 全部项目 = 项目表;
 
 defineEmits<{ 'update:modelValue': [名称: 一级名称] }>();
 </script>

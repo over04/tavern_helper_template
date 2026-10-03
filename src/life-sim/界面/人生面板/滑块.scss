@@ -31,6 +31,9 @@
     appearance: none;
     width: 14px;
     height: 14px;
+    /* 元素自身高度被压成 4px，缩略图 14px。Blink 给缩略图的默认居中偏移是按原生轨道高度算的，
+       这里不再成立，圆点会整体下坠；全局 box-sizing 是 border-box，故偏移取 (4 - 14) / 2。 */
+    margin-top: -5px;
     border-radius: 50%;
     background: var(--ls-accent);
     border: 2px solid var(--ls-surface);
