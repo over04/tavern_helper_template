@@ -6,78 +6,16 @@
     <pre v-if="异常详情" class="ls-变量异常-详情">{{ 异常详情 }}</pre>
   </div>
 
-  <!-- 聊天层：面板就是聊天里的一块。点「全屏」由界面另建一个常驻 iframe 承载全屏壳，
-       承载方式见 全屏.ts 与 常驻.ts。嵌套实例（界面被套在正文区的嵌套 iframe 里）
-       只渲染这一块面板，不给全屏入口 -->
-  <div v-else-if="!全屏" class="ls-panel" :class="{ 'ls-fs--动效': 设置.动效 }">
+  <!-- 聊天层：面板就是聊天里的一块。正文由酒馆自己渲染，这里只放状态与操作 -->
+  <div v-else class="ls-panel" :class="{ 'ls-fs--动效': 设置.动效 }">
     <div class="ls-panel-头">
       <span class="ls-panel-标题">模拟人生</span>
-      <button
-        v-if="!嵌套"
-        class="ls-panel-全屏"
-        type="button"
-        title="全屏"
-        aria-label="全屏"
-        @click="切换全屏"
-      >
-        <i class="fa-solid fa-expand" aria-hidden="true"></i>
-      </button>
+      <span class="ls-panel-读数">{{ 读数 }}</span>
     </div>
-    <!-- 全屏承载没能建立、或铺满自检失败时把原因写在这里：实际设备上拿不到控制台，这行字就是线索 -->
-    <p v-if="全屏失败" class="ls-panel-全屏失败">{{ 全屏失败 }}</p>
-    <GamePanel />
-  </div>
-
-  <!-- 全屏：顶栏、一级导航与三列主区 -->
-  <div v-else class="ls-fs" :class="{ 'ls-fs--动效': 设置.动效 }" :style="阅读区样式">
-    <div class="ls-fs-壳">
-      <header class="ls-fs-顶栏">
-        <span class="ls-fs-标题">模拟人生</span>
-        <span class="ls-fs-读数">{{ 读数 }}</span>
-        <button
-          class="ls-fs-退出按钮"
-          type="button"
-          title="退出全屏"
-          aria-label="退出全屏"
-          @click="切换全屏"
-        >
-          <i class="fa-solid fa-compress" aria-hidden="true"></i>
-        </button>
-      </header>
-
-      <div class="ls-fs-主体">
-        <div class="ls-fs-导航">
-          <PrimaryNav v-model="一级" :纵向="宽屏" />
-        </div>
-
-        <section
-          v-if="!正文独占"
-          class="ls-fs-中列"
-          :class="{ 'ls-fs-中列--通栏': 一级 !== '游戏' }"
-        >
-          <GamePanel v-if="一级 === '游戏'" />
-          <VariableManager v-else-if="一级 === '变量管理'" />
-          <SettingsPage v-else />
-        </section>
-
-        <section
-          v-if="一级 === '游戏'"
-          class="ls-fs-右列"
-          :class="{ 'ls-fs-右列--通栏': 正文独占 }"
-        >
-          <!-- 开局只有开场白时不出正文区：那时它只有一条楼层，多跑一次嵌套文档还容易闪。
-               生成过之后正文里就有楼层了，开局也要能翻页看历史 -->
-          <StoryPane v-if="视图 !== '开局' || 末层号 > 0" class="ls-fs-正文" />
-          <OpeningPanel v-if="视图 === '开局'" class="ls-fs-开场" />
-          <!-- 输入框与结算按钮都只在各自的推进模式出现：月推进靠结构化选项，不需要自由输入 -->
-          <InputPane v-if="视图 === '分钟推进'" class="ls-fs-输入" />
-          <SettleBar v-else-if="视图 === '月推进'" class="ls-fs-结算" />
-        </section>
-      </div>
-    </div>
-
-    <!-- 生成浮层：只在全屏壳里显示，覆盖壳但不覆盖酒馆页面 -->
-    <GenerationOverlay />
+    <PrimaryNav v-model="一级" :纵向="false" />
+    <GamePanel v-if="一级 === '游戏'" />
+    <VariableManager v-else-if="一级 === '变量管理'" />
+    <SettingsPage v-else />
   </div>
 </template>
 
@@ -90,14 +28,10 @@ import GenerationOverlay from './components/生成浮层.vue';
 import InputPane from './components/输入区.vue';
 import OpeningPanel from './components/OpeningPanel.vue';
 import PrimaryNav from './components/一级导航.vue';
-import SettleBar from './components/结算栏.vue';
 import SettingsPage from './components/设置页.vue';
-import StoryPane from './components/正文区.vue';
 import VariableManager from './components/变量管理.vue';
 import { 设置状态 } from './设置';
 import { useDataStore } from './store';
-import { use全屏, 是否嵌套 } from './全屏';
-import { use生成状态 } from './生成状态';
 import { 声明仍在输入框 } from './发送';
 import { use待发送 } from './待发送';
 import { 视图键 } from './视图';
@@ -105,20 +39,9 @@ import type { 视图名 } from './视图';
 
 type 一级名称 = '游戏' | '变量管理' | '设置';
 
-const { 是否全屏: 全屏, 全屏失败, 切换全屏 } = use全屏();
-
-// 生成状态在 App 这一层接入：界面不在全屏时也在维护状态，切进全屏能立刻显示浮层
-use生成状态();
-
 // 酒馆发出消息之前会清空输入框。界面写的声明若已不在输入框里，说明它随这条消息发出去了，
 // 此刻才清空待发送；斜杠命令与快速回复不走输入框，声明仍在，玩家的选择不该被清掉
 const 待发送 = use待发送();
-/** 聊天里最后一层的楼层号。开局只有开场白时为 0，生成过之后才大于 0 */
-const 末层号 = ref(getLastMessageId());
-const 停楼层监听 = eventOn(tavern_events.MESSAGE_RECEIVED, () => {
-  末层号.value = getLastMessageId();
-});
-onUnmounted(() => 停楼层监听.stop());
 const 停发送监听 = eventOn(tavern_events.MESSAGE_SENT, () => {
   if (!声明仍在输入框()) {
     待发送.发送后清空();
@@ -179,14 +102,7 @@ provide(视图键, 视图);
 /* ── 设置：模块级响应式单例，设置页写回后这里立刻跟着变 ── */
 const 设置 = 设置状态;
 
-// 阅读区样式交给正文区读取：字号、行高、列宽上限
-const 阅读区样式 = computed(() => ({
-  '--ls-read-size': `${设置.value.字号}px`,
-  '--ls-read-leading': String(设置.value.行高),
-  '--ls-read-width': `${设置.value.列宽上限}px`,
-}));
-
-/* ── 顶栏读数：终章显示结算，分钟推进显示时刻，其余显示姓名、回合与年龄 ── */
+/* ── 面板读数：终章显示结算，分钟推进显示时刻，其余显示姓名、回合与年龄 ── */
 const 补零 = (值: number) => String(值).padStart(2, '0');
 
 const 读数 = computed(() => {
@@ -207,14 +123,8 @@ const 读数 = computed(() => {
   return 名字 ? `${名字} · ${段落.join(' · ')}` : 段落.join(' · ');
 });
 
-/* ── 一级导航：宽屏竖排在最左，窄屏横排在最下；两种宽度都是点页签直接切页面 ── */
+/* ── 一级导航：三个页签直接切页面 ── */
 const 一级 = ref<一级名称>('游戏');
-
-// 与 global.css 里 (max-width: 1023px) 的那段互补，改动须同步
-const 宽屏 = useMediaQuery('(min-width: 1024px)');
-
-/** 正文区独占整宽：开局时中间列不渲染；终章要让出中间列放结算卡，右侧列才放得下正文区 */
-const 正文独占 = computed(() => 一级.value === '游戏' && 视图.value === '开局');
 </script>
 
 <style lang="scss" scoped>

@@ -1,11 +1,5 @@
 <template>
   <div class="ls-game">
-    <!-- 回看历史楼层时置顶提示，点「回到当前」退回最新楼层 -->
-    <div v-if="回看中" class="ls-game-回看">
-      <span class="ls-game-回看文字">回看中 · 第 {{ 回看层 }} 层</span>
-      <button class="ls-game-回看按钮" type="button" @click="回到当前">回到当前</button>
-    </div>
-
     <div class="ls-game-体" :class="{ 'ls-card': 需要卡片 }">
       <EndPanel v-if="视图 === '终章'" :finale="数据.终章" />
 
@@ -48,9 +42,6 @@
 
       <OpeningPanel v-else />
     </div>
-
-    <!-- 紧凑面板里的待发送命令放在面板底部 -->
-    <PendingBar v-if="!全屏" class="ls-panel-pending" />
   </div>
 </template>
 
@@ -64,26 +55,16 @@ import ReadoutBar from './ReadoutBar.vue';
 import SkillPanel from './SkillPanel.vue';
 import SlowPanel from './SlowPanel.vue';
 import TalentPanel from './TalentPanel.vue';
-import PendingBar from './待发送命令.vue';
 import WishPanel from './WishPanel.vue';
-import { 回看层, 回看数据 } from '../回看';
-import { 是否全屏 } from '../全屏';
 import { useDataStore } from '../store';
 import { 视图键 } from '../视图';
 
 const store = useDataStore();
-const 全屏 = 是否全屏;
 
-/* ── 回看：读历史楼层的变量快照，读不到时退回当前变量，但仍然只读 ── */
-const 回看中 = computed(() => 回看层.value !== null && 回看层.value !== undefined);
+const 数据 = computed(() => store.data);
 
-const 只读 = computed(() => 回看中.value);
-
-const 数据 = computed(() => (回看中.value && 回看数据.value ? 回看数据.value : store.data));
-
-function 回到当前() {
-  回看层.value = null;
-}
+// 回看历史楼层随正文区一起去掉了，面板始终操作当前楼层的变量
+const 只读 = computed(() => false);
 
 const TABS = [
   { key: 'event', label: '事件' },

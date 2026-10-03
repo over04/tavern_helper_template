@@ -7,7 +7,15 @@
  * 拼装只有这一处实现。
  */
 
-import { 取父文档, 取宿主文档 } from './全屏';
+/** 取酒馆那一份文档：界面跑在楼层 iframe 里，输入框与发送键都在主文档上 */
+const 取宿主文档 = (): Document => {
+  try {
+    const 视图 = window.parent;
+    return 视图 && 视图 !== window ? 视图.document : document;
+  } catch {
+    return document;
+  }
+};
 
 /** 酒馆主文档里的输入框 */
 export const 取输入框 = (): HTMLTextAreaElement | null => {

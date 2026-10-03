@@ -6,9 +6,18 @@
  */
 
 import { 设置状态, 写设置 } from './设置';
-import { 取宿主文档 } from './全屏';
 import { use待发送 } from './待发送';
 import type { 待发送选择 } from './待发送';
+
+/** 取酒馆那一份文档：界面跑在楼层 iframe 里，弹窗要挂在酒馆主文档上才认得出来 */
+const 取宿主文档 = (): Document => {
+  try {
+    const 视图 = window.parent;
+    return 视图 && 视图 !== window ? 视图.document : document;
+  } catch {
+    return document;
+  }
+};
 
 /** 事件表里尚未选择选项的事件数 */
 const 未选条数 = (事件: Record<string, unknown> | undefined, 选择: 待发送选择[]): number =>

@@ -159,52 +159,52 @@ function 选中序号(事件名: string) {
   return String(查选择(事件名)?.选项 || '');
 }
 
+/** 每个事件各自选中的命运点方式：先点命运点，再点选项，那条选项就带上它 */
+const 选点方式 = ref<Record<string, string>>({});
+
 function 选中命运点(事件名: string) {
-  return String(查选择(事件名)?.命运点 || '');
+  return 选点方式.value[事件名] ?? '';
 }
 
 function 广播() {
   window.dispatchEvent(new CustomEvent(待发送更新事件));
 }
 
-// 再点一次已选中的条目即撤销选择
+// 点选项即接在末尾记一条，带上该事件当前选中的命运点方式
 function pickOption(事件名: string, option: { index: number }) {
   if (props.只读) {
     return;
   }
-  if (选中序号(事件名) === String(option.index)) {
-    待发送.移除选择(事件名);
-  } else {
-    待发送.选选项(事件名, String(option.index));
-  }
+  待发送.选选项(事件名, String(option.index), '', 选中命运点(事件名));
   广播();
 }
 
-// 命运点必须与选项记在同一条选择里，判定脚本才结算；没点选项时按钮一律置灰
-function canUseFate(事件名: string, cost: number) {
-  return Boolean(选中序号(事件名)) && 余量.value >= cost;
+// 命运点只受余量限制：先点它、再点选项即可带上
+function canUseFate(_事件名: string, cost: number) {
+  return 余量.value >= cost;
 }
 
+// 再点同一种方式即取消，换一种即改选
 function pickFate(事件名: string, 命运点: string) {
   if (props.只读) {
     return;
   }
-  待发送.设命运点(事件名, 选中命运点(事件名) === 命运点 ? '' : 命运点);
+  选点方式.value = {
+    ...选点方式.value,
+    [事件名]: 选中命运点(事件名) === 命运点 ? '' : 命运点,
+  };
   广播();
 }
 
 /* ── 「其他」的手写行动 ── */
 
-// 「其他」是手写输入区的开合开关；收起时若这条手写行动已记录，一并取消
+// 「其他」是手写输入区的开合开关。收起不再撤销已记录的那条：
+// 撤销判断同样要在两处维护，去掉它，加错了由玩家自己删
 function 切换其他(事件名: string) {
   if (props.只读) {
     return;
   }
   展开[事件名] = !展开[事件名];
-  if (!展开[事件名] && 选中序号(事件名) === '其他') {
-    待发送.移除选择(事件名);
-    广播();
-  }
 }
 
 // 参数类型取全局的 Event：本文件里的 Event 是事件条目，不是 DOM 事件
@@ -217,7 +217,7 @@ function 确定其他(事件名: string) {
   if (props.只读 || !文本) {
     return;
   }
-  待发送.选选项(事件名, '其他', 文本);
+  待发送.选选项(事件名, '其他', 文本, 选中命运点(事件名));
   广播();
 }
 
