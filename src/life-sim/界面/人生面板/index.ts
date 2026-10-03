@@ -45,7 +45,7 @@ function 就绪后(回调: () => void) {
   }
 
   try {
-    // pinia 已按 skill 的 tavern-helper-template §11.3 内联进产物，不再走 CDN
+    // pinia 由模板的 externals 规则指向 CDN（skill 的 tavern-helper-template §11.1）
     createApp(App).use(createPinia()).mount(宿主);
   } catch (错误) {
     报告失败(String((错误 as Error)?.message ?? 错误));

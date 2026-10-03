@@ -103,7 +103,7 @@ const tabs = computed(() =>
   TABS.map(tab => (tab.key === 'event' ? { ...tab, count: eventCount.value || undefined } : { ...tab })),
 );
 
-// 视图由 App.vue 统一判定后注入，这里不再自己算一份，避免两处规则不一致
+// 视图由 App.vue 统一判断后注入，这里不再自己算一份，避免两处规则不一致
 const 视图 = inject(视图键, ref('开局'));
 
 // 开局视图与终章结算自带纸面，不再套一层卡片

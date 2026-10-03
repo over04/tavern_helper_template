@@ -139,7 +139,7 @@ function 夹取(数: number) {
   return 结果;
 }
 
-function 兜底数() {
+function 下限默认值() {
   return typeof props.下限 === 'number' ? props.下限 : 0;
 }
 
@@ -165,8 +165,8 @@ function 数提交(事件: Event) {
   }
   const 输入 = 事件.target as HTMLInputElement;
   const 原文 = 输入.value.trim();
-  const 数 = 原文 === '' ? 兜底数() : Number(原文);
-  const 结果 = 夹取(Number.isFinite(数) ? 数 : 兜底数());
+  const 数 = 原文 === '' ? 下限默认值() : Number(原文);
+  const 结果 = 夹取(Number.isFinite(数) ? 数 : 下限默认值());
   输入.value = String(结果);
   提交(结果);
 }

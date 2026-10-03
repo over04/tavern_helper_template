@@ -66,7 +66,7 @@ const 片段表 = computed(() =>
   ),
 );
 
-/** 确认框用宿主窗口那一份：界面在楼层 iframe 里，弹窗要落在酒馆那一层 */
+/** 确认框用宿主窗口那一份：界面在楼层 iframe 里，弹窗要出现在酒馆那一层 */
 function 确认(文本: string): boolean {
   const 视图 = 取宿主文档().defaultView;
   return 视图 ? 视图.confirm(文本) : false;
