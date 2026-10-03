@@ -26,6 +26,12 @@
       <span class="ls-pin" :style="{ left: 判定.骰值 + '%' }">{{ 判定.骰值 }}</span>
     </div>
   </section>
+
+  <!-- 取不到判定数据时不留空白：把定位到的楼层与读到的字段状况写出来，一眼能看出断在哪一环 -->
+  <section v-else class="ls-judge ls-judge-空">
+    <span class="ls-judge-空-标题">本回合没有判定数据</span>
+    <span class="ls-judge-空-明细">{{ 诊断 }}</span>
+  </section>
 </template>
 
 <script setup lang="ts">
@@ -33,7 +39,7 @@ import { 读快照, 楼层上下文键 } from '../正文';
 
 const props = defineProps<{ 序号: number }>();
 
-// 判定条脚本提供所在楼层；没有它就没有可以取判定数据的楼层，整块不渲染
+// 判定条脚本提供所在楼层；没有它就没有可以取判定数据的楼层，整块退到诊断提示
 const 楼层上下文 = inject(楼层上下文键, null);
 
 const 命运点说明: Record<string, string> = {
@@ -42,16 +48,14 @@ const 命运点说明: Record<string, string> = {
   改判: '命运点：改判为成功',
 };
 
-const 判定 = computed(() => {
-  // 读一次变量版本，变量表变化时本组件才会重新取数
-  void 楼层上下文?.变量版本.value;
-
+// 所在楼层的变量快照，判定与诊断共用，只取一次
+const 快照 = computed(() => {
   const 楼层号 = 楼层上下文?.楼层.value?.楼层号;
-  if (楼层号 === undefined) {
-    return null;
-  }
+  return 楼层号 === undefined ? null : 读快照(楼层号);
+});
 
-  const 条目 = 读快照(楼层号)?.$参数?.本次判定?.[props.序号 - 1];
+const 判定 = computed(() => {
+  const 条目 = 快照.value?.$参数?.本次判定?.[props.序号 - 1];
   if (!条目?.事件) {
     return null;
   }
@@ -70,6 +74,20 @@ const 判定 = computed(() => {
     复核: String(条目.复核 ?? ''),
     成败: String(条目.结果 ?? ''),
   };
+});
+
+// 判定为空时说明断在哪一环：楼层没定位到、快照读不到，还是本次判定这个字段本身不成形
+const 诊断 = computed(() => {
+  const 楼层号 = 楼层上下文?.楼层.value?.楼层号;
+  if (楼层号 === undefined) {
+    return '未定位到所在楼层';
+  }
+  if (!快照.value) {
+    return `楼层 ${楼层号}：读不到变量快照`;
+  }
+  const 表 = 快照.value.$参数?.本次判定;
+  const 形态 = Array.isArray(表) ? `长度 ${表.length}` : 表 === undefined ? '字段不存在' : '不是数组';
+  return `楼层 ${楼层号} · 第 ${props.序号} 条 · 本次判定 ${形态}`;
 });
 
 // 四段各自的宽度，合计恰好 100。骰值越大越好，所以失败段紧贴大失败区、成功段紧贴大成功区，
@@ -102,6 +120,25 @@ const 段宽 = computed(() => {
   border-radius: var(--ls-r-md);
   background: var(--ls-surface);
   animation: ls-enter 0.4s var(--ls-ease-out) both;
+}
+
+/* 空态：只占一行，虚线描边配最轻的文字，与正常判定条区分开，也不喧宾夺主 */
+.ls-judge-空 {
+  gap: 3px;
+  padding: 9px 13px;
+  border-style: dashed;
+  background: var(--ls-surface-sunken);
+}
+
+.ls-judge-空-标题 {
+  font-size: 12.5px;
+  color: var(--ls-text-muted);
+}
+
+.ls-judge-空-明细 {
+  font-family: var(--ls-f-mono);
+  font-size: 11.5px;
+  color: var(--ls-text-faint);
 }
 
 .ls-judge-head {

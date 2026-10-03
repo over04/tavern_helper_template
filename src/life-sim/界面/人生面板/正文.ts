@@ -4,8 +4,7 @@
  * 只做数据整理，不持有界面状态。
  */
 
-import { ref } from 'vue';
-import type { ComputedRef, InjectionKey, Ref } from 'vue';
+import type { ComputedRef, InjectionKey } from 'vue';
 
 /** 一条楼层在渲染时需要的字段，取自酒馆助手的 `getChatMessages` */
 export type 楼层结构 = {
@@ -25,19 +24,14 @@ export type 楼层结构 = {
   消息页数: number;
 };
 
-/** 楼层上下文：判定条脚本向判定条组件传递所在楼层与变量版本 */
+/** 楼层上下文：判定条脚本向判定条组件传递所在楼层 */
 export type 楼层上下文结构 = {
   /** 所在楼层，随楼层数据刷新而变化 */
   楼层: ComputedRef<楼层结构 | null>;
-  /** 变量版本，变量表或楼层内容变化时自增 */
-  变量版本: Ref<number>;
 };
 
 /** 楼层上下文的注入键，由判定条脚本提供、判定条组件取用 */
 export const 楼层上下文键: InjectionKey<楼层上下文结构> = Symbol('人生面板楼层上下文');
-
-/** 变量版本：变量表或楼层内容变化时自增，判定条据此重新读取 `$参数.本次判定` */
-export const 变量版本 = ref(0);
 
 /**
  * 读取一段楼层。
