@@ -143,7 +143,7 @@ function 下限默认值() {
   return typeof props.下限 === 'number' ? props.下限 : 0;
 }
 
-/** 输入过程中只写回完整且范围内的值，中间态与越界值等失焦时再统一处理 */
+/** 输入过程中只写回完整且范围内的值，未完成的输入与越界值留到失焦时统一处理 */
 function 数输入(事件: Event) {
   if (props.只读) {
     return;

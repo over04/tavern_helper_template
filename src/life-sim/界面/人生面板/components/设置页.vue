@@ -29,7 +29,7 @@ function 改开关(键: '结算前提醒' | '动效', 值: boolean) {
   保存();
 }
 
-/** 输入过程中只写回完整且范围内的值，中间态与越界值等失焦时再统一处理 */
+/** 输入过程中只写回完整且范围内的值，未完成的输入与越界值留到失焦时统一处理 */
 function 改数(键: '字号' | '行高' | '列宽上限', 事件: Event, 下限: number, 上限: number) {
   const 输入 = 事件.target as HTMLInputElement;
   const 原文 = 输入.value.trim();

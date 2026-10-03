@@ -32,7 +32,7 @@ const 首屏条数 = 10;
 /** 每次向上加载的楼层条数 */
 const 每批条数 = 20;
 /** 距底部多少像素以内算作停在底部 */
-const 底部阈值 = 80;
+const 底部临界距离 = 80;
 
 const 滚动容器 = ref<HTMLElement | null>(null);
 const 楼层表 = ref<楼层结构[]>([]);
@@ -86,7 +86,7 @@ function 停在底部(): boolean {
   if (!容器) {
     return true;
   }
-  return 容器.scrollHeight - 容器.scrollTop - 容器.clientHeight <= 底部阈值;
+  return 容器.scrollHeight - 容器.scrollTop - 容器.clientHeight <= 底部临界距离;
 }
 
 async function 载入首屏() {

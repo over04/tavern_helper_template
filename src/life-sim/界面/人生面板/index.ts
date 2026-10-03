@@ -30,7 +30,7 @@ function 就绪后(回调: () => void) {
  *
  * 酒馆助手只在 iframe 创建时注入它当时已有的全局，而 `waitGlobalInitialized` 只等
  * `global_Mvu_initialized` 事件、不做轮询。重载页面时聊天先渲染、楼层 iframe 先建好，
- * MVU 那时还没就绪，事件也已经发过，于是这个 iframe 里永远等不到 Mvu——顶层的 Mvu 却是好的。
+ * MVU 那时还没就绪，事件也已经发过，于是这个 iframe 里永远等不到 Mvu——顶层窗口的 Mvu 则可正常取得。
  * 所以两条路一起等：本窗口拿到就用，拿不到就从顶层窗口取过来。
  */
 function 取Mvu(): { getMvuData?: unknown; events?: unknown } | null {

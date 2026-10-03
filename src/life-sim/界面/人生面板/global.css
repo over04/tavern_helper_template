@@ -179,8 +179,6 @@ html.ls-全屏 {
   --ls-read-leading: 1.8;
   --ls-read-width: 760px;
   --ls-fs-导航高: 56px;
-  /* 底部导航连同安全区的总高度：遮罩、抽屉与导航三处必须一致，统一从这里取 */
-  --ls-fs-底栏占位: calc(var(--ls-fs-导航高) + var(--ls-safe-bottom));
 }
 
 .ls-fs {
@@ -310,7 +308,7 @@ html.ls-全屏 {
 }
 
 /* ── 窄屏：正文在上、一级导航变成底部一排常驻，
-      两种宽度都是点页签直接切页面，窄屏没有抽屉 ──
+      两种宽度都是点页签直接切页面 ──
    断点与 App.vue 的 useMediaQuery('(min-width: 1024px)') 互补，改动须同步 */
 @media (max-width: 1023px) {
   /* 整块由主体滚，导航用 sticky 钉在底部，页面切换与滚动互不干扰 */

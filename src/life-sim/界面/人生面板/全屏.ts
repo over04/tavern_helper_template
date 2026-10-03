@@ -119,7 +119,7 @@ const 上一层 = (节点: Node): HTMLElement | null => {
   return 根 instanceof ShadowRoot ? (根.host as HTMLElement) : null;
 };
 
-/** 找出第一个仍在构成包含块的祖先：真机上出现「铺不满」时，诊断信息靠它指认现场 */
+/** 找出第一个仍在构成包含块的祖先：真机上出现「铺不满」时，诊断信息用它定位到具体是哪一个祖先元素 */
 const 找包含块祖先 = (元素: HTMLElement): string => {
   const 视图 = 元素.ownerDocument.defaultView;
   if (!视图) {
@@ -135,6 +135,21 @@ const 找包含块祖先 = (元素: HTMLElement): string => {
     }
   }
   return '';
+};
+
+/** 把一个元素及其祖先链上构成层叠上下文的部分清成 auto，并记进快照
+ *  只清 z-index 与 isolation：flex/grid 子项上的 z-index 同样构成层叠上下文，而它的 position 是 static，
+ *  只看 position 会漏掉酒馆的 #chat（display:flex 的子项、position:static、z-index:30）。 */
+const 清层叠 = (起点: HTMLElement | null) => {
+  for (let 元素: HTMLElement | null = 起点; 元素; 元素 = 上一层(元素)) {
+    const 样式 = 元素.ownerDocument.defaultView?.getComputedStyle(元素);
+    if (!样式 || (样式.isolation !== 'isolate' && 样式.zIndex === 'auto')) {
+      continue;
+    }
+    记下(元素);
+    元素.style.setProperty('z-index', 'auto', 'important');
+    元素.style.setProperty('isolation', 'auto', 'important');
+  }
 };
 
 const 铺满 = (): boolean => {
@@ -174,27 +189,11 @@ const 铺满 = (): boolean => {
     }
   }
 
-  // 祖先里凡是构成层叠上下文的，会把承载元素的 z-index 困在里面：2147483000 只在那层上下文内部有效，
-  // 对上下文之外（酒馆的顶栏与底部输入区）只剩上下文自己那一层的层级，于是尺寸铺满了却还被压住。
-  // 把这类祖先的 z-index 与 isolation 也清成 auto，承载元素就能在根层叠上下文里直接与它们比大小。
-  // 判定不能只看 position：flex/grid 子项上的 z-index 同样构成层叠上下文，而它的 position 是 static。
-  // 酒馆的 #chat 正是这种——display:flex 的子项、position:static、z-index:30，只看 position 就会漏掉它。
+  // 祖先里凡是构成层叠上下文的，会把承载元素的 z-index 限制在该上下文内部：2147483000 只在那层上下文内部有效，
+  // 对上下文之外（酒馆的顶栏与底部输入区）只相当于该上下文自身的层级，于是尺寸铺满了却还被压住。
+  // 把这类祖先的 z-index 与 isolation 也清成 auto，承载元素就能在根层叠上下文里直接与它们比较层级高低。
   // 快照由 记下 在第一次调用时取，此处两个属性都在快照之后才改，还原时一并写回。
-  for (let 元素: HTMLElement | null = 承载; 元素; 元素 = 上一层(元素)) {
-    if (元素 === 承载) {
-      continue;
-    }
-    const 样式 = 元素.ownerDocument.defaultView?.getComputedStyle(元素);
-    if (!样式) {
-      continue;
-    }
-    if (样式.isolation !== 'isolate' && 样式.zIndex === 'auto') {
-      continue;
-    }
-    记下(元素);
-    元素.style.setProperty('z-index', 'auto', 'important');
-    元素.style.setProperty('isolation', 'auto', 'important');
-  }
+  清层叠(上一层(承载));
 
   // 锁住宿主文档的滚动，避免界面下方的内容跟着滚动
   const 文档 = 取宿主文档();
@@ -206,7 +205,7 @@ const 铺满 = (): boolean => {
     元素.style.setProperty('overflow', 'hidden', 'important');
   }
 
-  // 读回实际矩形做自检：真机上偶尔有祖先仍在构成包含块、或样式被别处盖掉，铺满会静默失败
+  // 读回实际矩形做自检：真机上偶尔有祖先仍在构成包含块、或样式被别处盖掉，铺满会失败且不留任何提示
   const 视图 = 承载.ownerDocument.defaultView;
   const 视口宽 = 视图?.innerWidth ?? 0;
   // 手机浏览器上视觉视口可能比布局视口高，取两者较大的那个，自检才不会因为地址栏伸缩而误判
@@ -224,14 +223,33 @@ const 铺满 = (): boolean => {
     );
   };
 
-  // 铺满不等于看得见：酒馆的顶栏与底部输入区是 fixed 浮层，层级高过承载元素时界面会被压在下面。
-  // 命中测试直接问「界面正上方那一层是谁」，比读 z-index 可靠。
-  const 挡住界面的 = () => {
+  // 铺满不等于看得见：酒馆的顶栏与底部输入区是浮层，层级高过承载元素时界面会被压在下面。
+  // 必须沿四周都探一遍。只探一个点会漏掉另一侧的浮层：桌面布局挡路的是顶栏，
+  // 手机布局挡路的是底部输入区，探针留在顶部就会一路通过，尺寸明明铺满了却仍被压住。
+  const 探针位置 = (): [number, number, string][] => [
+    [2, 2, '左上'],
+    [视口宽 - 3, 2, '右上'],
+    [2, 视口高 - 3, '左下'],
+    [视口宽 - 3, 视口高 - 3, '右下'],
+    [视口宽 / 2, 2, '顶部'],
+    [视口宽 / 2, 视口高 - 3, '底部'],
+    [2, 视口高 / 2, '左侧'],
+    [视口宽 - 3, 视口高 / 2, '右侧'],
+    [视口宽 / 2, 视口高 / 2, '正中'],
+  ];
+
+  /** 探一圈，返回第一个压在界面之上的元素与它所在的方位 */
+  const 挡住界面的 = (): { 元素: HTMLElement; 方位: string } | null => {
     if (!视口宽 || !视口高) {
       return null;
     }
-    const 命中 = 承载.ownerDocument.elementFromPoint(视口宽 / 2, 2);
-    return 命中 && 命中 !== 承载 ? 命中 : null;
+    for (const [横, 纵, 方位] of 探针位置()) {
+      const 命中 = 承载.ownerDocument.elementFromPoint(横, 纵);
+      if (命中 && 命中 !== 承载) {
+        return { 元素: 命中 as HTMLElement, 方位 };
+      }
+    }
+    return null;
   };
 
   if (!盖住了()) {
@@ -250,9 +268,18 @@ const 铺满 = (): boolean => {
     return false;
   }
 
-  const 压住界面的 = 挡住界面的();
+  // 探到挡路的浮层就地清扫：它们多半是承载元素的兄弟分支（酒馆的底部输入区就不在祖先链上，
+  // 沿祖先链那一轮扫不到）。清掉它自己与它祖先链的 z-index 与 isolation 后再探，
+  // 最多三轮；仍压不住才判失败并报出方位，不再让尺寸铺满了却看不见的界面静默通过。
+  let 压住界面的 = 挡住界面的();
+  for (let 轮 = 0; 轮 < 3 && 压住界面的; 轮++) {
+    清层叠(压住界面的.元素);
+    压住界面的 = 挡住界面的();
+  }
+
   if (压住界面的) {
-    全屏失败.value = `承载界面的 iframe 铺满了视口，但被上层元素压住：${描述(压住界面的)}`;
+    全屏失败.value =
+      `承载界面的 iframe 铺满了视口，但${压住界面的.方位}被上层元素压住：${描述(压住界面的.元素)}`;
     还原();
     return false;
   }

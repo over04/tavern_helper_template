@@ -358,7 +358,7 @@ async function begin() {
   待发送.设开局(拼开局声明());
 
   // 全屏时酒馆的输入框与发送键都被界面遮挡，发送由界面自己触发；
-  // 聊天层里酒馆的发送键就在下面，交给玩家自己按
+  // 聊天层里酒馆的发送键就在下面，发送由玩家手动触发
   if (是否全屏.value && (await 结算前确认(store.data.事件))) {
     触发发送();
   }
@@ -371,8 +371,8 @@ async function begin() {
 .ls-opening {
   display: flex;
   flex-direction: column;
-  /* 楼层 iframe 的 html/body 被酒馆助手注入 overflow:hidden!important，整页滚不动，
-     面板要自己收下滚动：这里限住高度，正文那一块负责滚 */
+  /* 楼层 iframe 的 html/body 被酒馆助手注入 overflow:hidden!important，整页无法滚动，
+     面板需自行承担滚动：这里限住高度，正文那一块负责滚 */
   flex: 1;
   min-height: 0;
   width: 100%;
