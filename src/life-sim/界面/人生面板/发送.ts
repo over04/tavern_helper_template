@@ -34,10 +34,17 @@ export const 取输入框 = (): HTMLTextAreaElement | null => {
 
 const 上次写的键 = '__ls上次写的声明';
 
-const 记录箱 = (): Record<string, unknown> => {
-  const 宿主 = 取父文档()?.defaultView;
-  return (宿主 ?? window) as unknown as Record<string, unknown>;
+/** 取酒馆那一份 window：记录箱要挂在宿主上，楼层 iframe 重载时模块状态会清零 */
+const 取宿主窗口 = (): Window => {
+  try {
+    const 视图 = window.parent;
+    return 视图 && 视图 !== window ? 视图 : window;
+  } catch {
+    return window;
+  }
 };
+
+const 记录箱 = (): Record<string, unknown> => 取宿主窗口() as unknown as Record<string, unknown>;
 
 const 读上次写的 = (): string => String(记录箱()[上次写的键] ?? '');
 

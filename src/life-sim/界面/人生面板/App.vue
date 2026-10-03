@@ -153,37 +153,16 @@ const 一级 = ref<一级名称>('游戏');
   color: var(--ls-text);
 }
 
-/* 纯图标按钮：只有图标，说明文字作为悬停提示；悬停只改底色与颜色，不动位置 */
-.ls-panel-全屏 {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 30px;
-  height: 30px;
-  border: none;
-  border-radius: var(--ls-r-sm);
-  background: transparent;
+.ls-panel-读数 {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  text-align: right;
   color: var(--ls-text-muted);
-  font-size: 13px;
-  cursor: pointer;
-}
-
-/* 铺满失败时的自检说明：只在实际设备出问题时出现，正常使用时看不到 */
-.ls-panel-全屏失败 {
-  margin: 0 14px 10px;
-  padding: 8px 10px;
-  border: 1px solid var(--ls-warn, #b4472f);
-  border-radius: var(--ls-r-sm);
-  color: var(--ls-warn, #b4472f);
-  font-size: 12px;
-  line-height: 1.6;
-}
-
-@media (hover: hover) {
-  .ls-panel-全屏:hover {
-    background: var(--ls-surface-hover);
-    color: var(--ls-text);
-  }
+  font-size: 12.5px;
+  font-variant-numeric: tabular-nums;
 }
 
 .ls-变量异常 {

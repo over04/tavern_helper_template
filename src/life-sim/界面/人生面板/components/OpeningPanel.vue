@@ -113,9 +113,7 @@
 
 <script setup lang="ts">
 import { reactive, ref } from 'vue';
-import { 触发发送 } from '../发送';
 import { 结算前确认 } from '../结算提醒';
-import { 是否全屏 } from '../全屏';
 import { use待发送 } from '../待发送';
 import { useDataStore } from '../store';
 import ClaudeMark from './ClaudeMark.vue';
