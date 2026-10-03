@@ -1,14 +1,11 @@
 /**
  * 生成状态：模型正在生成时置真，供全屏壳里的生成浮层显示进度与停止。
  *
- * 生成事件挂在酒馆唯一的全局 eventSource 上，跨楼层、不按 iframe 分流，
+ * 生成事件挂在酒馆唯一的全局 eventSource 上，跨楼层、不按 iframe 区分，
  * 所以这里维护的是「整场聊天是否正在生成」，而不是「本楼层是否正在生成」。
  *
- * 结束判定必须同时监听 GENERATION_ENDED 与 GENERATION_STOPPED：酒馆的 hideStopButton()
- * 在正常结束与被停止时都会发 GENERATION_ENDED，只看它会把中断当成正常结束。
- *
- * 监听在 App 的 setup 里注册，界面不处于全屏时也在维护状态，
- * 这样「在楼层里点了发送再切全屏」也能立刻显示浮层。
+ * 结束判定必须同时监听 GENERATION_ENDED 与 GENERATION_STOPPED：
+ * 酒馆在正常结束与被停止时都会发出 GENERATION_ENDED，只看它会把中断当成正常结束。
  */
 
 import { onMounted, onUnmounted, ref } from 'vue';
@@ -36,20 +33,15 @@ const 结束生成 = () => {
   已生成字数.value = 0;
 };
 
-/**
- * 停止生成：停住酒馆自身的生成，已经流式写进楼层的内容保留。
- *
- * 不用 TavernHelper.stopAllGeneration()：那只停酒馆助手自己发起的请求，
- * 停不掉玩家点发送键发起的那一条。
- */
+/** 停止生成：停住酒馆自身的生成，已经流式写进楼层的内容保留 */
 export const 停止生成 = () => {
   SillyTavern.stopGeneration();
   结束生成();
 };
 
 /**
- * 酒馆在生成期间会给宿主文档的 body 挂 data-generating，
- * 用它给初值：界面挂载时如果生成已经在跑，浮层要立刻显示，而不是等下一个事件。
+ * 酒馆在生成期间会给宿主文档的 body 挂 data-generating。
+ * 用它给初值：如果生成正在进行，浮层要立刻显示，而不是等下一个事件。
  */
 const 读当前是否生成 = () => 取宿主文档().body?.dataset.generating === 'true';
 

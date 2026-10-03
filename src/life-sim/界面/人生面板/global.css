@@ -164,11 +164,9 @@
    ══════════════════════════════════════════ */
 
 /* 全屏时把整条高度链撑成宿主视口高，壳才有 100% 可用；滚动交给壳内的各列，文档本身不滚。
-   用宿主视口高而不是 100%：酒馆助手给每个楼层 iframe 注入了 adjust_iframe_height.js，
-   它持续按 body.scrollHeight 改写承载 iframe 的高度，而且是单属性赋值，
-   会把我们写在承载元素上的 height 连同 !important 一起抹掉。
-   高度链取 --TH-viewport-height 时 body.scrollHeight 就等于铺满高度，它写出的值与目标一致，冲突消失。
-   --TH-viewport-height 由酒馆助手的 adjust_viewport.js 写在 html 的行内样式上；取不到时退回 100%。 */
+   高度链必须取宿主视口高而不是 100%，原因是承载 iframe 的高度会被酒馆助手的高度自适应脚本
+   按 body.scrollHeight 改写，机制见 全屏.ts 的文件头。
+   --TH-viewport-height 由酒馆助手的视口脚本写在 html 的行内样式上；取不到时退回 100%。 */
 html.ls-全屏,
 html.ls-全屏 body,
 html.ls-全屏 #ls-app {

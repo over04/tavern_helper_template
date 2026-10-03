@@ -8,19 +8,19 @@
  * 还会常驻一条「Swipe down to exit」的系统横幅，网页侧没有 API 可以屏蔽。
  *
  * 宿主文档里的 transform、perspective、filter、will-change、contain 在取到会让元素成为包含块的值时，
- * 都会改变 position: fixed 的包含块，所以铺满时沿祖先链一律清成干净值，退出时写回。
+ * 都会改变 position: fixed 的包含块，所以铺满时沿祖先链一律清除为干净值，退出时写回。
  * 酒馆自己的样式写在 `html` 上、用的是 `-webkit-` 前缀；前缀属性与标准属性名不同，本就是两条声明，
- * 而引擎是否把前缀属性实现为标准属性的别名各不相同，所以两条都清，不依赖别名行为。
+ * 而引擎是否把前缀属性实现为标准属性的别名各不相同，所以两条都清除，不依赖别名行为。
  *
- * 清理属性挡不住所有情况——宿主文档里还可能有别的来源、真机上也可能有本地查不到的声明。
- * 所以自检失败时会退到「按实测矩形反推补偿量」：与其继续猜哪个属性会构成包含块，
- * 不如直接把偏差吸收掉；两次都不行才判失败，并把现场写进 `全屏失败`。
+ * 清理属性不足以覆盖所有情况——宿主文档里可能还有别的来源，真机上也可能有本地查不到的声明。
+ * 所以自检失败时会退到「按实测矩形反推补偿量」：与其继续推断哪个属性会构成包含块，
+ * 不如直接把偏差抵消；两次都不行才判失败，并把现场写进 `全屏失败`。
  *
  * 还有一层不是清理能解决的：酒馆助手给每个楼层 iframe 注入了 adjust_iframe_height.js，
  * 它持续把承载 iframe 的高度写成 `document.body.scrollHeight`，用的是 CSSOM 单属性赋值——
- * 会把我们写在承载元素上的 height 连同 !important 一起抹掉。挡不住就让它算出来的值与目标一致：
+ * 会把我们写在承载元素上的 height 连同 !important 一并移除。无法阻止它，就让它的结果与目标一致：
  * global.css 在全屏态把界面文档的高度链撑成宿主视口高，body.scrollHeight 就等于铺满高度，
- * 它写入的值与我们想要的相同，冲突自然消失。所以 `ls-全屏` 类必须在铺满之前挂上。
+ * 它写入的值与我们想要的相同，冲突自然消失。所以 `ls-全屏` 类必须在铺满之前添加。
  */
 
 import { onMounted, onUnmounted, ref } from 'vue';
@@ -28,7 +28,7 @@ import { onMounted, onUnmounted, ref } from 'vue';
 /** 会让该元素成为 position: fixed 包含块的属性，以及它在不构成包含块时的取值
  *  - `translate`、`rotate`、`scale` 是独立变换属性，与 `transform` 等价地构成包含块
  *  - `content-visibility` 取 `auto` 时带来 layout containment；它的干净值是 `visible`，
- *    写 `none` 是非法值会被引擎忽略，属性清不掉
+ *    写 `none` 是非法值会被引擎忽略，属性清除不掉
  *  - `view-transition-name` 非 `none` 时同样构成包含块 */
 const 包含块属性: Array<[属性: string, 干净值: string]> = [
   ['transform', 'none'],
@@ -69,9 +69,9 @@ export const 是否全屏 = ref(false);
 /* ── 快照 ──
    改过的样式与属性要按原样写回，快照必须活到退出全屏那一刻。
    放在模块级变量里不行：承载界面的 iframe 一旦被重渲染，本文档整体重载，
-   模块状态清零、还原() 永远不会执行，宿主的 overflow、被清成 auto 的 z-index、
+   模块状态清零、还原() 永远不会执行，宿主的 overflow、被清除为 auto 的 z-index、
    补上的 viewport-fit 就永久留在酒馆页面上（界面既看不见也退不出）。
-   所以快照写进宿主 window：宿主文档不随楼层 iframe 重载而变，新文档挂载时能把它回收掉。 */
+   所以快照写进宿主 window：宿主文档不随楼层 iframe 重载而变，新文档挂载时能把它回收。 */
 
 type 样式快照 = { 元素: HTMLElement; cssText: string };
 type 属性快照 = { 元素: HTMLElement; 属性名: string; 原值: string | null };
@@ -108,7 +108,7 @@ const 清快照 = () => {
   delete 快照箱()[快照键];
 };
 
-/** 把快照写回：元素已经不在文档里就跳过（旧承载 iframe 被重渲染时会被摘掉） */
+/** 把快照写回：元素已经不在文档里就跳过（旧承载 iframe 被重渲染时会被移除） */
 const 写回快照 = (快照: 全屏快照) => {
   for (const { 元素, cssText } of 快照.样式) {
     if (元素.isConnected) {
@@ -202,7 +202,7 @@ const 描述 = (元素: HTMLElement) => {
   return `${元素.tagName.toLowerCase()}${标识}${类}`;
 };
 
-/** 沿祖先链往上走一层，穿过 shadow 边界：parentElement 在 shadow 根处返回 null，链会断在那里 */
+/** 沿祖先链往上走一层，穿过 shadow 边界：parentElement 在 shadow 根处返回 null，链会在此中断 */
 const 上一层 = (节点: Node): HTMLElement | null => {
   if (节点.parentElement) {
     return 节点.parentElement;
@@ -221,9 +221,7 @@ const 读视口 = (承载: HTMLElement) => {
 };
 
 /* ── 现场快照 ──
-   自检失败时这几行字就是实际设备上的唯一线索，而它必须记在清理之前：
-   清理跑完再回头扫，扫到的全是刚刚被自己清成干净值的属性，结论必然是「未找到」。
-   这也是原来那行「未找到构成包含块的祖先」的来历——不是真的没有，是问得太晚。 */
+   自检失败时这几行字就是实际设备上的唯一线索，所以必须记在清理之前。 */
 
 type 现场项 = { 描述: string; 定位: string; 异常: string[] };
 
@@ -253,7 +251,7 @@ const 记祖先现场 = (起点: HTMLElement): 现场项[] => {
   return 现场;
 };
 
-/** 把现场压成一行能读完的话：只报前几个仍在构成包含块的祖先 */
+/** 把现场整理成一行可读完的文字：只报前几个仍在构成包含块的祖先 */
 const 现场摘要 = (现场: 现场项[]) => {
   const 有问题的 = 现场.filter(项 => 项.异常.length > 0);
   if (有问题的.length === 0) {
@@ -278,8 +276,8 @@ const 读视口现场 = (承载: HTMLElement) => {
   };
 };
 
-/** 把一个元素及其祖先链上构成层叠上下文的部分清成 auto，并记进快照
- *  只清 z-index 与 isolation：flex/grid 子项上的 z-index 同样构成层叠上下文，而它的 position 是 static，
+/** 把一个元素及其祖先链上构成层叠上下文的部分清除为 auto，并记进快照
+ *  只清除 z-index 与 isolation：flex/grid 子项上的 z-index 同样构成层叠上下文，而它的 position 是 static，
  *  只看 position 会漏掉酒馆的 #chat（display:flex 的子项、position:static、z-index:30）。 */
 const 清层叠 = (起点: HTMLElement | null) => {
   for (let 元素: HTMLElement | null = 起点; 元素; 元素 = 上一层(元素)) {
@@ -300,7 +298,7 @@ const 铺满 = (): boolean => {
     return false;
   }
 
-  // 现场要在清理之前记：清理之后再扫，扫到的全是自己刚清干净的属性
+  // 现场必须在清理之前记录：清理之后再扫，扫到的全是自己刚清除干净的属性
   const 现场 = 记祖先现场(承载);
 
   记下(承载);
@@ -323,7 +321,7 @@ const 铺满 = (): boolean => {
   承载.style.setProperty('z-index', '2147483000', 'important');
   承载.style.setProperty('background', 'var(--ls-bg)', 'important');
 
-  // 沿祖先链清掉包含块属性，承载元素本身也在内
+  // 沿祖先链清除包含块属性，承载元素本身也在内
   for (let 元素: HTMLElement | null = 承载; 元素; 元素 = 上一层(元素)) {
     if (元素 !== 承载) {
       记下(元素);
@@ -335,7 +333,7 @@ const 铺满 = (): boolean => {
 
   // 祖先里凡是构成层叠上下文的，会把承载元素的 z-index 限制在该上下文内部：2147483000 只在那层上下文内部有效，
   // 对上下文之外（酒馆的顶栏与底部输入区）只相当于该上下文自身的层级，于是尺寸铺满了却还被压住。
-  // 把这类祖先的 z-index 与 isolation 也清成 auto，承载元素就能在根层叠上下文里直接与它们比较层级高低。
+  // 把这类祖先的 z-index 与 isolation 也清除为 auto，承载元素就能在根层叠上下文里直接与它们比较层级高低。
   // 快照由 记下 在第一次调用时取，此处两个属性都在快照之后才改，还原时一并写回。
   清层叠(上一层(承载));
 
@@ -358,7 +356,7 @@ const 铺满 = (): boolean => {
     视口声明.content = `${视口声明.content}, viewport-fit=cover`;
   }
 
-  // 读回实际矩形做自检：实际设备上偶尔有祖先仍在构成包含块、或样式被别处盖掉，铺满会失败且不留任何提示
+  // 读回实际矩形做自检：实际设备上偶尔有祖先仍在构成包含块、或样式被其他规则覆盖，铺满会失败且不留任何提示
   const { 宽: 视口宽, 高: 视口高 } = 读视口(承载);
   const 盖住了 = () => {
     if (!视口宽 || !视口高) {
@@ -410,7 +408,7 @@ const 铺满 = (): boolean => {
     补过像素 = true;
   }
 
-  // 第二轮：像素尺寸仍盖不住，说明包含块不在视口上。继续猜属性不如直接把偏差吸收掉：
+  // 第二轮：像素尺寸仍盖不住，说明包含块不在视口上。继续推断属性不如直接把偏差抵消：
   // 四个偏移量同时给出会互相过度约束，补偿位置时只留 top/left，用实测矩形把它们反推出来。
   if (!盖住了()) {
     const 盒 = 承载.getBoundingClientRect();
@@ -433,7 +431,7 @@ const 铺满 = (): boolean => {
   }
 
   // 探到阻挡元素的浮层就地清除：它们多半是承载元素的兄弟分支（酒馆的底部输入区就不在祖先链上，
-  // 沿祖先链那一轮扫不到）。清掉它自己与它祖先链的 z-index 与 isolation 后再探，
+  // 沿祖先链那一轮扫不到）。清除掉它自己与它祖先链的 z-index 与 isolation 后再探，
   // 最多三轮；仍压不住才判失败并报出方位，不再让铺满却看不见的界面在无提示的情况下通过。
   let 压住界面的 = 挡住界面的();
   for (let 轮 = 0; 轮 < 3 && 压住界面的; 轮++) {
@@ -464,9 +462,9 @@ export const 切换全屏 = () => {
   }
 
   全屏失败.value = '';
-  // 类必须在铺满之前挂上：global.css 按这个类把 html、body 与 #ls-app 的高度链撑满，
+  // 类必须在铺满之前添加：global.css 按这个类把 html、body 与 #ls-app 的高度链撑满，
   // 而酒馆助手的高度自适应脚本会按 body.scrollHeight 改写承载 iframe 的高度。
-  // 高度链没撑满就铺满，脚本会把高度写成内容高度，全屏壳随即塌掉。
+  // 高度链没撑满就铺满，脚本会把高度写成内容高度，全屏壳随即塌回内容高度。
   document.documentElement.classList.add('ls-全屏');
   if (!铺满()) {
     document.documentElement.classList.remove('ls-全屏');
@@ -487,7 +485,7 @@ export const use全屏 = () => {
 
   onMounted(() => {
     // 承载界面的 iframe 被重渲染时本文档整体重载，模块状态清零、还原() 不会执行。
-    // 新文档挂载时先把上一次留下的改动收回来，宿主页面不会停在锁死状态。
+    // 新文档挂载时先还原上一次留下的改动，宿主页面不会停在锁死状态。
     还原();
 
     // 旋转或视口变化后安全区会变，铺满期间要重新读一次
