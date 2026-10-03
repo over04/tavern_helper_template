@@ -547,7 +547,7 @@ export const use全屏 = () => {
   onMounted(() => {
     // 恢复路径下 恢复全屏() 已经铺满，这里不能再还原，否则等于把刚恢复的全屏立刻撤销；
     // 其余情况（承载 iframe 被重渲染而本次不需要全屏）才回收上一次留下的改动，
-    // 免得宿主的 overflow 与被清除为 auto 的 z-index 永久留在酒馆页面上。
+    // 以免宿主的 overflow 与被清除为 auto 的 z-index 永久留在酒馆页面上。
     if (本次已恢复) {
       本次已恢复 = false;
     } else {
@@ -568,7 +568,7 @@ export const use全屏 = () => {
       document.documentElement.classList.remove('ls-全屏');
       是否全屏.value = false;
     }
-    // 标记一并清掉：卸载后没人再负责退出全屏，留着它会让下一个被重建的界面凭空铺满
+    // 标记一并清除：卸载后没有其他地方负责退出全屏，保留它会让下一个被重建的界面凭空铺满
     写全屏态(null);
   });
 
