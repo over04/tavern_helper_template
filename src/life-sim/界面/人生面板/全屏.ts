@@ -19,7 +19,7 @@
  * 还有一层不是清理能解决的：酒馆助手给每个楼层 iframe 注入了 adjust_iframe_height.js，
  * 它持续把承载 iframe 的高度写成 `document.body.scrollHeight`，用的是 CSSOM 单属性赋值——
  * 会把我们写在承载元素上的 height 连同 !important 一并移除。无法阻止它，就让它的结果与目标一致：
- * global.css 在全屏态把界面文档的高度链撑成宿主视口高，body.scrollHeight 就等于铺满高度，
+ * global.css 在全屏态把界面文档的高度链设为宿主视口高，body.scrollHeight 就等于铺满高度，
  * 它写入的值与我们想要的相同，冲突自然消失。所以 `ls-全屏` 类必须在铺满之前添加。
  */
 
