@@ -1,7 +1,7 @@
 import { computed } from 'vue';
 import VerdictBar from '../人生面板/components/判定条.vue';
 import { 读楼层, 楼层上下文键, 变量版本 } from '../人生面板/正文';
-import { 等变量就绪 } from '../人生面板/等待';
+import { 等到, 等变量就绪 } from '../人生面板/等待';
 import '../人生面板/global.css';
 
 // 正则只定位：加载器把捕获组拿到的序号写在 window.__ls判定序号 上，界面据此取对应的那一条。
@@ -15,7 +15,27 @@ if (挂载点) {
   const 位置 = Number.isFinite(序号) && 序号 >= 1 ? 序号 - 1 : 0;
 
   $(async () => {
-    await waitGlobalInitialized('Mvu');
+    // 与人生面板同理：楼层 iframe 可能先于 MVU 建好，那时事件已经发过，
+    // waitGlobalInitialized 会一直挂着，改从顶层窗口取那一份
+    const 取Mvu = () => {
+      const 自己 = (globalThis as { Mvu?: { getMvuData?: unknown } }).Mvu;
+      if (自己?.getMvuData) {
+        return 自己;
+      }
+      try {
+        const 顶层 = (window.top as unknown as { Mvu?: { getMvuData?: unknown } } | null)?.Mvu;
+        return 顶层?.getMvuData ? 顶层 : null;
+      } catch {
+        return null;
+      }
+    };
+    const Mvu就绪 = await 等到(() => Boolean(取Mvu()), 20000);
+    const Mvu = 取Mvu();
+    if (!Mvu就绪 || !Mvu) {
+      return;
+    }
+    (globalThis as { Mvu?: unknown }).Mvu = Mvu;
+
     await 等变量就绪();
 
     // 楼层内没有正文区的楼层条，判定条据此定位自己所在的那一层

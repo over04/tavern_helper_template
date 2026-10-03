@@ -25,18 +25,43 @@ function 就绪后(回调: () => void) {
   回调();
 }
 
+/**
+ * 取 MVU 全局。
+ *
+ * 酒馆助手只在 iframe 创建时注入它当时已有的全局，而 `waitGlobalInitialized` 只等
+ * `global_Mvu_initialized` 事件、不做轮询。重载页面时聊天先渲染、楼层 iframe 先建好，
+ * MVU 那时还没就绪，事件也已经发过，于是这个 iframe 里永远等不到 Mvu——顶层的 Mvu 却是好的。
+ * 所以两条路一起等：本窗口拿到就用，拿不到就从顶层窗口取过来。
+ */
+function 取Mvu(): { getMvuData?: unknown; events?: unknown } | null {
+  const 自己 = (window as { Mvu?: { getMvuData?: unknown } }).Mvu;
+  if (自己?.getMvuData) {
+    return 自己;
+  }
+  try {
+    const 顶层 = (window.top as unknown as { Mvu?: { getMvuData?: unknown } } | null)?.Mvu;
+    return 顶层?.getMvuData ? 顶层 : null;
+  } catch {
+    // 跨域时取不到顶层窗口，按没有处理
+    return null;
+  }
+}
+
 就绪后(async () => {
   const 宿主 = document.querySelector<HTMLElement>('#ls-app');
   if (!宿主) {
     return;
   }
 
-  // 等待 MVU 就绪，8 秒为上限：超时后给出明确的提示
-  const Mvu就绪 = await 等到(() => Boolean((window as any).Mvu?.getMvuData), 8000);
-  if (!Mvu就绪) {
-    报告失败('MVU 在 8 秒内没有就绪，请确认已安装酒馆助手与 MVU 脚本');
+  // 等待 MVU 就绪，20 秒为上限：超时后给出明确的提示
+  const Mvu就绪 = await 等到(() => Boolean(取Mvu()), 20000);
+  const Mvu = 取Mvu();
+  if (!Mvu就绪 || !Mvu) {
+    报告失败('MVU 在 20 秒内没有就绪，请确认已安装酒馆助手与 MVU 脚本');
     return;
   }
+  // 界面里各处按裸全局 Mvu 引用它，取到顶层那一份后写回本窗口
+  (window as { Mvu?: unknown }).Mvu = Mvu;
 
   const 变量就绪 = await 等变量就绪(8000);
   if (!变量就绪) {
