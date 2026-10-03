@@ -51,13 +51,16 @@ const 取Mvu = (): { getMvuData?: unknown } | null => {
 /**
  * 等 MVU 就绪，取到之后写回本窗口。
  *
- * `waitGlobalInitialized('Mvu')` 先看本窗口有没有 `Mvu`，没有就只等一次
- * `global_Mvu_initialized` 事件、不做轮询。页面重载时楼层 iframe 先建好、MVU 后初始化，
- * 事件早已发过，只等事件会永久挂起；而 MVU 与楼层 iframe 不在同一个窗口里，
- * 本窗口也拿不到它。所以两条路一起走：一条等事件，一条在两处窗口之间轮询，谁先成谁算数。
+ * 两处窗口已有 Mvu 时直接取用，不走 `waitGlobalInitialized`：它在本窗口没有 `Mvu` 时
+ * 会挂一个一次性监听器，而重载页面时 MVU 的初始化事件早已发过、`Mvu` 又在顶层窗口上，
+ * 这个监听器永远不会被触发，也就永远留在那里——每个楼层 iframe 各留一个。
+ *
+ * 两处都没有时才两条路一起走：一条等事件，一条在两个窗口之间轮询，谁先成谁算数。
  */
 export async function 等Mvu(时限 = 60000): Promise<void> {
-  await Promise.race([waitGlobalInitialized('Mvu'), 等到(() => Boolean(取Mvu()), 时限)]);
+  if (!取Mvu()) {
+    await Promise.race([waitGlobalInitialized('Mvu'), 等到(() => Boolean(取Mvu()), 时限)]);
+  }
 
   const Mvu = 取Mvu();
   if (!Mvu) {
