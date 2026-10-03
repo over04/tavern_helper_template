@@ -372,7 +372,7 @@ async function begin() {
   display: flex;
   flex-direction: column;
   /* 楼层 iframe 的 html/body 被酒馆助手注入 overflow:hidden!important，整页无法滚动，
-     面板需自行承担滚动：这里限住高度，正文那一块负责滚 */
+     面板需自行承担滚动：这里限住高度，正文区域负责滚动 */
   flex: 1;
   min-height: 0;
   width: 100%;

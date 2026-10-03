@@ -1,7 +1,7 @@
 <template>
   <div class="ls-focus">
     <div class="ls-focus-dial">
-      <svg class="ls-focus-svg" :viewBox="`0 0 ${SIZE} ${SIZE}`" role="img" aria-label="精力分配占比">
+      <svg class="ls-focus-svg" :viewBox="`0 0 ${SIZE} ${SIZE}`" role="img" aria-label="精力分配比例">
         <circle :cx="CENTER" :cy="CENTER" :r="RADIUS" class="ls-focus-track" />
         <circle
           v-for="segment in segments"

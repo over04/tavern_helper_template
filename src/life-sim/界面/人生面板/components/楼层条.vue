@@ -45,7 +45,7 @@
 <script setup lang="ts">
 // 组件标签名不能用中文（HTML 标签名的首字符必须是 ASCII 字母），导入时取英文名
 import VerdictBar from './判定条.vue';
-import { 切判定标签, 剔占位符, 转显示, 变量版本, 楼层上下文键 } from '../正文';
+import { 切判定标签, 去状态栏占位符, 转显示, 变量版本, 楼层上下文键 } from '../正文';
 import type { 楼层结构 } from '../正文';
 import { 取宿主文档 } from '../全屏';
 
@@ -61,7 +61,7 @@ const 是最后一层 = computed(() => props.楼层.楼层号 === getLastMessage
 
 // 正文原文先剔除状态栏占位符，再切出判定片段，其余文本片段才交给酒馆显示格式转换
 const 片段表 = computed(() =>
-  切判定标签(剔占位符(props.楼层.原文)).map(片段 =>
+  切判定标签(去状态栏占位符(props.楼层.原文)).map(片段 =>
     片段.类型 === '文本' ? { 类型: '文本' as const, 内容: 转显示(片段.内容, props.楼层.楼层号) } : 片段,
   ),
 );

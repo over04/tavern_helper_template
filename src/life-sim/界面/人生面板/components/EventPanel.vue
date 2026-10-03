@@ -207,7 +207,7 @@ function 切换其他(事件名: string) {
   }
 }
 
-// 参数类型走全局的 Event：本文件里的 Event 是事件条目，不是 DOM 事件
+// 参数类型取全局的 Event：本文件里的 Event 是事件条目，不是 DOM 事件
 function 写手写(事件名: string, event: globalThis.Event) {
   手写[事件名] = (event.target as HTMLTextAreaElement).value;
 }
@@ -405,7 +405,7 @@ onUnmounted(() => {
   text-align: right;
 }
 
-/* 选中态下把难度标签的底换成白，避免灰底色与橙底色相叠而显得浑浊 */
+/* 选中态下把难度标签的底换成白，避免灰底色与橙底色相叠后颜色发灰 */
 .ls-option.is-picked .ls-option-difficulty {
   background: var(--ls-surface);
 }

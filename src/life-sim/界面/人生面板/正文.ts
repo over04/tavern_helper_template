@@ -112,7 +112,7 @@ export function 切判定标签(文本: string): 正文片段[] {
   let 命中 = 匹配器.exec(文本);
   while (命中) {
     if (命中.index > 上次结尾) {
-      片段表.push({ 类型: '文本', 内容: 清收尾(文本.slice(上次结尾, 命中.index)) });
+      片段表.push({ 类型: '文本', 内容: 清判定结束标签(文本.slice(上次结尾, 命中.index)) });
     }
 
     const 序号 = Number(命中[1]);
@@ -122,13 +122,13 @@ export function 切判定标签(文本: string): 正文片段[] {
   }
 
   if (上次结尾 < 文本.length) {
-    片段表.push({ 类型: '文本', 内容: 清收尾(文本.slice(上次结尾)) });
+    片段表.push({ 类型: '文本', 内容: 清判定结束标签(文本.slice(上次结尾)) });
   }
   return 片段表;
 }
 
 /** 未配对的结束标签没有对应的开始标签，一并清除 */
-function 清收尾(内容: string): string {
+function 清判定结束标签(内容: string): string {
   return 内容.replace(/<\/判定>/g, '');
 }
 
@@ -138,7 +138,7 @@ function 清收尾(内容: string): string {
  * 全屏界面里的面板独立渲染，正文里不再重复显示状态栏，所以占位符本身与它被
  * 酒馆正则替换后留下的容器都要去掉。
  */
-export function 剔占位符(文本: string): string {
+export function 去状态栏占位符(文本: string): string {
   if (!文本) {
     return '';
   }

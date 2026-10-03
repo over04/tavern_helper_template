@@ -14,7 +14,7 @@
         <i class="fa-solid fa-expand" aria-hidden="true"></i>
       </button>
     </div>
-    <!-- 铺满失败时不切进全屏，把现场写在这里：真机上拿不到控制台，这行字就是线索 -->
+    <!-- 铺满失败时不切进全屏，把自检结果写在这里：实际设备上拿不到控制台，这行字就是线索 -->
     <p v-if="全屏失败" class="ls-panel-全屏失败">{{ 全屏失败 }}</p>
     <GamePanel />
   </div>
@@ -221,7 +221,7 @@ const 正文独占 = computed(() => 一级.value === '游戏' && 视图.value ==
   cursor: pointer;
 }
 
-/* 铺满失败时的现场说明：只在真机出问题时出现，正常游玩看不到 */
+/* 铺满失败时的自检说明：只在实际设备出问题时出现，正常使用时看不到 */
 .ls-panel-全屏失败 {
   margin: 0 14px 10px;
   padding: 8px 10px;

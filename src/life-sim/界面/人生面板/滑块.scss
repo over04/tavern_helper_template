@@ -1,4 +1,4 @@
-/* 滑块外观：开局面板与读数条两处需要完全一致，抽成一份，免得两处各自漂移。
+/* 滑块外观：开局面板与读数条两处需要完全一致，抽成一份，免得两处各自改动后逐渐不一致。
    两处都带 scoped 的 [data-v-*]，特异性高于 global.css 里的普通类选择器，
    所以这份外观只能随组件走，放进 global.css 会被组件自身的规则盖掉。 */
 @mixin 滑块外观 {
@@ -32,7 +32,7 @@
     width: 14px;
     height: 14px;
     /* 元素自身高度被压成 4px，缩略图 14px。Blink 给缩略图的默认居中偏移是按原生轨道高度算的，
-       这里不再成立，圆点会整体下坠；全局 box-sizing 是 border-box，故偏移取 (4 - 14) / 2。 */
+       这里不再成立，圆点会整体下移；全局 box-sizing 是 border-box，故偏移取 (4 - 14) / 2。 */
     margin-top: -5px;
     border-radius: 50%;
     background: var(--ls-accent);

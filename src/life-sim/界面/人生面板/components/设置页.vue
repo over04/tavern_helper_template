@@ -138,7 +138,7 @@ function 改数(键: '字号' | '行高' | '列宽上限', 事件: Event, 下限
 
         <div v-else-if="当前键 === '提醒'" class="ls-set-row">
           <span class="ls-set-label">
-            事件未选时先弹一次确认
+            事件未选择选项时先弹一次确认
             <span class="ls-set-hint">事件表里还有事件尚未选择选项时，点「结算本回合」先弹一次确认</span>
           </span>
           <div class="ls-set-input">

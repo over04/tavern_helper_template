@@ -223,7 +223,7 @@ let 流式待处理 = false;
  * 酒馆的流式事件给的是本次生成的当前全文，酒馆助手的增量事件给的是新增的一段，
  * 两种情况都按「以已有文本开头就是全文，否则就是增量」处理，界面表现为逐字追加。
  */
-function 收流式(文本: string) {
+function 接收流式(文本: string) {
   const 末层 = getLastMessageId();
   if (末层 < 0 || !文本) {
     return;
@@ -271,7 +271,7 @@ onMounted(async () => {
   await 载入首屏();
   await 补齐到满屏();
 
-  监听(tavern_events.STREAM_TOKEN_RECEIVED, (文本: string) => 收流式(文本));
+  监听(tavern_events.STREAM_TOKEN_RECEIVED, (文本: string) => 接收流式(文本));
   监听(tavern_events.GENERATION_STOPPED, () => 结束流式());
 
   监听(tavern_events.MESSAGE_RECEIVED, () => {
