@@ -155,6 +155,38 @@ const 记下属性 = (元素: HTMLElement, 属性名: string) => {
   快照.属性.push({ 元素, 属性名, 原值: 元素.getAttribute(属性名) });
 };
 
+/** 宿主 window 上存放视口声明原值的键 */
+const 视口声明键 = '__ls原视口声明';
+
+/**
+ * 给宿主文档的 viewport 声明补上 viewport-fit=cover。
+ *
+ * iOS 的 env(safe-area-inset-*) 只认顶层文档的 viewport 声明，iframe 自己的 meta 不生效，
+ * 而酒馆的声明里没有 viewport-fit，于是探针读到的安全区恒为 0，底部导航会被 Home 条压住。
+ * 必须在读探针之前补上。原值记在宿主 window 上，退出全屏时还原，免得酒馆自己的布局也跟着改。
+ */
+const 补视口声明 = () => {
+  const 文档 = 取宿主文档();
+  const 声明 = 文档.querySelector<HTMLMetaElement>('meta[name="viewport"]');
+  const 视图 = 文档.defaultView as (Window & Record<string, unknown>) | null;
+  if (!声明 || !视图 || /viewport-fit/.test(声明.content)) {
+    return;
+  }
+  视图[视口声明键] = 声明.content;
+  声明.content = `${声明.content}, viewport-fit=cover`;
+};
+
+const 还原视口声明 = () => {
+  const 文档 = 取宿主文档();
+  const 声明 = 文档.querySelector<HTMLMetaElement>('meta[name="viewport"]');
+  const 视图 = 文档.defaultView as (Window & Record<string, unknown>) | null;
+  const 原值 = 视图?.[视口声明键];
+  if (声明 && 视图 && typeof 原值 === 'string') {
+    声明.content = 原值;
+    delete 视图[视口声明键];
+  }
+};
+
 /** 读宿主文档的真实安全区：在宿主文档里挂一个探针元素，读它的计算值 */
 const 读安全区 = (): { 顶: number; 底: number } => {
   const 文档 = 取宿主文档();
@@ -187,6 +219,7 @@ const 应用安全区 = () => {
   if (!根) {
     return;
   }
+  补视口声明();
   const { 顶, 底 } = 读安全区();
   根.style.setProperty('--ls-safe-top', `${顶}px`);
   根.style.setProperty('--ls-safe-bottom', `${底}px`);
@@ -196,6 +229,7 @@ const 清安全区 = () => {
   const 根 = document.getElementById('ls-app');
   根?.style.removeProperty('--ls-safe-top');
   根?.style.removeProperty('--ls-safe-bottom');
+  还原视口声明();
 };
 
 /**
@@ -526,7 +560,9 @@ const 进全屏 = async () => {
 /** 切换全屏：常驻实例退出全屏，楼层实例进入全屏 */
 export const 切换全屏 = () => {
   if (是否常驻实例()) {
-    // 常驻实例就是全屏壳本身，退出全屏就是销毁自己所在的承载框
+    // 常驻实例就是全屏壳本身，退出全屏就是销毁自己所在的承载框。
+    // 销毁前先把宿主文档的视口声明还原，不然 viewport-fit=cover 会永久留在酒馆页面上。
+    清安全区();
     销毁常驻();
     return;
   }
