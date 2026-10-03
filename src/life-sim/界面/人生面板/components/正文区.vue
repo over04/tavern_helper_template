@@ -220,10 +220,17 @@ onMounted(async () => {
     监听(事件, () => 刷新()),
   );
 
-  // 变量表更新后重读，判定复核脚本写下的成败与复核说明才会显示出来
-  监听(tavern_events.MESSAGE_UPDATED, () => 刷新());
+  // 变量表更新后只推进变量版本，让回看快照与判定条重新读一次。
+  // 正文没有变，这里不能走 刷新()：那会重读正文并重设嵌套 iframe 的 srcdoc，
+  // 而酒馆的显示格式转换每次都会重跑宏，输出字符串并不完全相同，
+  // 于是整条正文连同正文里的界面被反复重建，表现就是正文区一直闪。
+  监听(tavern_events.MESSAGE_UPDATED, () => {
+    变量版本.value++;
+  });
   if (typeof Mvu !== 'undefined') {
-    监听(Mvu.events.VARIABLE_UPDATE_ENDED, () => 刷新());
+    监听(Mvu.events.VARIABLE_UPDATE_ENDED, () => {
+      变量版本.value++;
+    });
   }
 
   监听(tavern_events.CHAT_CHANGED, () => {
