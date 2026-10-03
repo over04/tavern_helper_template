@@ -205,6 +205,15 @@ const 铺满 = (): boolean => {
     元素.style.setProperty('overflow', 'hidden', 'important');
   }
 
+  // iOS 的 env(safe-area-inset-*) 只认顶层文档的 viewport 声明，iframe 自己的 meta 在 iOS 上不生效；
+  // 酒馆的 meta 又没有 viewport-fit=cover，于是顶栏与底部导航读到的安全区恒为 0，刘海与 Home 条会压住内容。
+  // 全屏时给宿主文档补上，退出时按快照还原。
+  const 视口声明 = 文档.querySelector<HTMLMetaElement>('meta[name="viewport"]');
+  if (视口声明 && !/viewport-fit/.test(视口声明.content)) {
+    记下(视口声明);
+    视口声明.content = `${视口声明.content}, viewport-fit=cover`;
+  }
+
   // 读回实际矩形做自检：真机上偶尔有祖先仍在构成包含块、或样式被别处盖掉，铺满会失败且不留任何提示
   const 视图 = 承载.ownerDocument.defaultView;
   const 视口宽 = 视图?.innerWidth ?? 0;

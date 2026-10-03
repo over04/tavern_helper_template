@@ -311,24 +311,28 @@ html.ls-全屏 {
       两种宽度都是点页签直接切页面 ──
    断点与 App.vue 的 useMediaQuery('(min-width: 1024px)') 互补，改动须同步 */
 @media (max-width: 1023px) {
-  /* 整块由主体滚，导航用 sticky 钉在底部，页面切换与滚动互不干扰 */
+  /* 整块由主体滚，导航用 sticky 钉在底部，页面切换与滚动互不干扰。
+     底部不留内边距：容器的 padding-bottom 不会因为最后一个子元素带负 margin 就消失，
+     留着它导航就会停在视口上方 12px 处，露出一条空隙。 */
   .ls-fs-主体 {
     display: flex;
     flex-direction: column;
     gap: 12px;
-    padding: 12px;
+    padding: 12px 12px 0;
     overflow-y: auto;
   }
 
-  /* 内容比视口短时靠 margin-top: auto 把导航推到底部，比视口长时 sticky 把它钉住 */
+  /* 内容比视口短时靠 margin-top: auto 把导航推到底部，比视口长时 sticky 把它钉住。
+     高度把安全区算进去、内边距另算：全局是 border-box，写在 height 里会从 56px 里扣，
+     iOS 安全区 34px 时三个页签只剩 22px 可用，会被压扁。 */
   .ls-fs-导航 {
     position: sticky;
     bottom: 0;
     order: 3;
-    margin: auto -12px -12px;
+    margin: auto -12px 0;
     align-self: stretch;
     flex: none;
-    height: var(--ls-fs-导航高);
+    height: calc(var(--ls-fs-导航高) + var(--ls-safe-bottom));
     padding-bottom: var(--ls-safe-bottom);
     border-top: 1px solid var(--ls-border);
     background: var(--ls-surface);
