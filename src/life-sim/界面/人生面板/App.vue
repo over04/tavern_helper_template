@@ -6,15 +6,24 @@
     <pre v-if="异常详情" class="ls-变量异常-详情">{{ 异常详情 }}</pre>
   </div>
 
-  <!-- 聊天层：面板就是聊天里的一块，点「全屏」由界面把承载它的 iframe 铺满视口 -->
+  <!-- 聊天层：面板就是聊天里的一块。点「全屏」由界面另建一个常驻 iframe 承载全屏壳，
+       承载方式见 全屏.ts 与 常驻.ts。嵌套实例（界面被套在正文区的嵌套 iframe 里）
+       只渲染这一块面板，不给全屏入口 -->
   <div v-else-if="!全屏" class="ls-panel" :class="{ 'ls-fs--动效': 设置.动效 }">
     <div class="ls-panel-头">
       <span class="ls-panel-标题">模拟人生</span>
-      <button class="ls-panel-全屏" type="button" title="全屏" aria-label="全屏" @click="切换全屏">
+      <button
+        v-if="!嵌套"
+        class="ls-panel-全屏"
+        type="button"
+        title="全屏"
+        aria-label="全屏"
+        @click="切换全屏"
+      >
         <i class="fa-solid fa-expand" aria-hidden="true"></i>
       </button>
     </div>
-    <!-- 铺满失败时不切进全屏，把自检结果写在这里：实际设备上拿不到控制台，这行字就是线索 -->
+    <!-- 全屏承载没能建立、或铺满自检失败时把原因写在这里：实际设备上拿不到控制台，这行字就是线索 -->
     <p v-if="全屏失败" class="ls-panel-全屏失败">{{ 全屏失败 }}</p>
     <GamePanel />
   </div>
@@ -85,7 +94,7 @@ import StoryPane from './components/正文区.vue';
 import VariableManager from './components/变量管理.vue';
 import { 设置状态 } from './设置';
 import { useDataStore } from './store';
-import { use全屏 } from './全屏';
+import { use全屏, 是否嵌套 } from './全屏';
 import { use生成状态 } from './生成状态';
 import { 声明仍在输入框 } from './发送';
 import { use待发送 } from './待发送';

@@ -1,8 +1,32 @@
 <template>
-  <article class="ls-floor" :class="{ 'ls-is-user': 楼层.角色 === 'user' }" :data-楼层="楼层.楼层号">
+  <article class="ls-floor" :class="{ 'ls-is-user': 楼层.角色 === 'user' }">
     <header class="ls-floor-head">
       <span class="ls-floor-name">{{ 楼层.名称 }}</span>
-      <span class="ls-floor-id">第 {{ 楼层.楼层号 }} 层</span>
+
+      <!-- 一次只显示一条楼层，翻页按钮与楼层号放在头部 -->
+      <div class="ls-floor-pager">
+        <button
+          class="ls-floor-tool"
+          type="button"
+          title="上一层"
+          aria-label="上一层"
+          :disabled="楼层.楼层号 <= 0"
+          @click="翻页(-1)"
+        >
+          <i class="fa-solid fa-chevron-up" aria-hidden="true"></i>
+        </button>
+        <span class="ls-floor-id">第 {{ 楼层.楼层号 }} 层</span>
+        <button
+          class="ls-floor-tool"
+          type="button"
+          title="下一层"
+          aria-label="下一层"
+          :disabled="楼层.楼层号 >= 末层"
+          @click="翻页(1)"
+        >
+          <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>
+        </button>
+      </div>
 
       <!-- 工具行常驻：只有图标，说明文字作为 title 属性 -->
       <div class="ls-floor-tools">
@@ -31,40 +55,38 @@
       </div>
     </header>
 
-    <div class="ls-floor-body">
-      <template v-for="(片段, 下标) in 片段表" :key="下标">
-        <VerdictBar v-if="片段.类型 === '判定'" :序号="片段.序号" />
-        <!-- 正文按酒馆的显示格式渲染，内容本身就是 HTML -->
-        <!-- eslint-disable-next-line vue/no-v-html -->
-        <div v-else-if="片段.内容" class="ls-floor-text" v-html="片段.内容"></div>
-      </template>
-    </div>
+    <!-- 整条楼层交给嵌套 iframe 渲染：正文里的脚本只有在真 iframe 里才会执行。
+         这个 iframe 必须由模板创建，写在 v-html 的字符串里会被酒馆的清洗剥掉。
+         高度不在这里设，由嵌套文档自己按内容高度回写。 -->
+    <iframe
+      class="ls-floor-frame"
+      :title="`第 ${楼层.楼层号} 层正文`"
+      frameborder="0"
+      :srcdoc="嵌套文档"
+    ></iframe>
   </article>
 </template>
 
 <script setup lang="ts">
-// 组件标签名不能用中文（HTML 标签名的首字符必须是 ASCII 字母），导入时取英文名
-import VerdictBar from './判定条.vue';
-import { 切判定标签, 去状态栏占位符, 转显示, 变量版本, 楼层上下文键 } from '../正文';
+import { 转未清洗显示 } from '../正文';
 import type { 楼层结构 } from '../正文';
+import { 拼嵌套文档 } from '../嵌套楼层';
+import { 设置状态 } from '../设置';
 import { 取宿主文档 } from '../全屏';
 
-const props = defineProps<{ 楼层: 楼层结构 }>();
-
-// 判定条按注入的楼层取自己那一条判定，并跟着变量版本刷新
-provide(楼层上下文键, {
-  楼层: computed(() => props.楼层),
-  变量版本,
-});
+const props = defineProps<{ 楼层: 楼层结构; 末层: number }>();
+const 发出 = defineEmits<{ 切换楼层: [方向: number] }>();
 
 const 是最后一层 = computed(() => props.楼层.楼层号 === getLastMessageId());
 
-// 正文原文先剔除状态栏占位符，再切出判定片段，其余文本片段才交给酒馆显示格式转换
-const 片段表 = computed(() =>
-  切判定标签(去状态栏占位符(props.楼层.原文)).map(片段 =>
-    片段.类型 === '文本' ? { 类型: '文本' as const, 内容: 转显示(片段.内容, props.楼层.楼层号) } : 片段,
-  ),
+// 正文先转成酒馆的显示格式（保留脚本），再连同排版一起拼成嵌套文档
+const 嵌套文档 = computed(() =>
+  拼嵌套文档(转未清洗显示(props.楼层), 设置状态.value.字号, 设置状态.value.行高),
 );
+
+function 翻页(方向: number) {
+  发出('切换楼层', 方向);
+}
 
 /** 确认框用宿主窗口那一份：界面在楼层 iframe 里，弹窗要出现在酒馆那一层 */
 function 确认(文本: string): boolean {
@@ -157,6 +179,15 @@ async function 创建分支() {
   color: var(--ls-text);
 }
 
+/* 翻页组靠左紧跟在名称之后：两个按钮夹住楼层号，一眼看出当前在哪一层 */
+.ls-floor-pager {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 2px;
+  margin-left: auto;
+}
+
 .ls-floor-id {
   flex: none;
   white-space: nowrap;
@@ -171,7 +202,6 @@ async function 创建分支() {
   flex: none;
   align-items: center;
   gap: 2px;
-  margin-left: auto;
 }
 
 .ls-floor-tool {
@@ -189,10 +219,15 @@ async function 创建分支() {
 }
 
 @media (hover: hover) {
-  .ls-floor-tool:hover {
+  .ls-floor-tool:hover:not(:disabled) {
     background: var(--ls-bg-alt);
     color: var(--ls-text);
   }
+}
+
+.ls-floor-tool:disabled {
+  cursor: default;
+  color: var(--ls-border-strong);
 }
 
 .ls-floor-swipe {
@@ -204,51 +239,12 @@ async function 创建分支() {
   font-variant-numeric: tabular-nums;
 }
 
-.ls-floor-body {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-/* 叙事正文走衬线，字号与行高取设置里的阅读区样式 */
-.ls-floor-text {
-  font-family: var(--ls-f-serif);
-  font-size: var(--ls-read-size, 16px);
-  line-height: var(--ls-read-leading, 1.8);
-  color: var(--ls-text-body);
-  overflow-wrap: anywhere;
-}
-
-.ls-floor-text :deep(p) {
-  margin: 0 0 0.7em;
-}
-
-.ls-floor-text :deep(p:last-child) {
-  margin-bottom: 0;
-}
-
-.ls-floor-text :deep(em) {
-  font-style: italic;
-}
-
-.ls-floor-text :deep(strong) {
-  font-weight: 600;
-  color: var(--ls-text);
-}
-
-.ls-floor-text :deep(code) {
-  padding: 1px 5px;
-  border-radius: var(--ls-r-xs);
-  background: var(--ls-bg-alt);
-  font-family: var(--ls-f-mono);
-  font-size: 0.9em;
-}
-
-.ls-floor-text :deep(blockquote) {
-  margin: 0 0 0.7em;
-  padding-left: 10px;
-  border-left: 2px solid var(--ls-border-strong);
-  color: var(--ls-text-muted);
+/* 高度不设：嵌套文档按内容高度回写内联样式，写在这里的高度会把它盖掉 */
+.ls-floor-frame {
+  display: block;
+  width: 100%;
+  border: 0;
+  background: transparent;
 }
 
 @media (max-width: 480px) {

@@ -1,5 +1,5 @@
 /**
- * 正文区的数据层：楼层读取、显示格式转换、判定标签切分与状态栏占位符剔除。
+ * 正文区的数据层：楼层读取与显示格式转换。
  *
  * 这份代码在全屏界面与楼层界面里共用，只做数据整理，不持有界面状态。
  */
@@ -25,9 +25,6 @@ export type 楼层结构 = {
   消息页数: number;
 };
 
-/** 正文片段：文本片段走酒馆显示格式，判定片段交给判定条组件渲染 */
-export type 正文片段 = { 类型: '文本'; 内容: string } | { 类型: '判定'; 序号: number };
-
 /** 楼层上下文：楼层条向判定条传递所在楼层与变量版本 */
 export type 楼层上下文结构 = {
   /** 所在楼层，随正文区的数据刷新而变化 */
@@ -41,9 +38,6 @@ export const 楼层上下文键: InjectionKey<楼层上下文结构> = Symbol('�
 
 /** 变量版本：变量表或楼层内容变化时自增，判定条据此重新读取 `$参数.本次判定` */
 export const 变量版本 = ref(0);
-
-/** 判定标签：`<判定:2/>`，同时兼容 `<判定:2>` 与 `</判定>` 结尾的写法 */
-const 判定标签源 = '<判定\\s*[:：]\\s*(\\d+)\\s*\\/?>(?:\\s*<\\/判定>)?';
 
 /**
  * 读取一段楼层。
@@ -79,77 +73,94 @@ export function 读楼层(起始: number, 条数: number): 楼层结构[] {
 }
 
 /**
- * 把正文原文转成酒馆的显示格式，即替换酒馆宏、应用酒馆正则、转成 HTML。
+ * 脚本占位标记。
  *
- * 楼层号超出已有范围时酒馆助手会抛错，这里退回原文，避免整段正文渲染不出来。
+ * 酒馆的显示格式转换里有一段把成对引号包成 `<q>` 标签的处理，插进脚本内容后整段脚本
+ * 会被随后的清洗丢掉。所以转换之前先把裸脚本换成这个标记，转换之后再换回来。
+ * 标记只用字母与 `@`，不参与 Markdown 解析，也不会被引号处理碰到。
  */
-export function 转显示(文本: string, 楼层号: number): string {
-  if (!文本) {
-    return '';
-  }
-  try {
-    return formatAsDisplayedMessage(文本, { message_id: 楼层号 });
-  } catch (错误) {
-    console.error('人生面板：转换正文显示格式失败', 错误);
+const 脚本标记前缀 = '@@LSSCRIPT';
+const 脚本标记后缀 = '@@';
+
+/**
+ * 把围栏代码块之外的裸脚本抽出来，换成占位标记。
+ *
+ * 围栏代码块里的内容会被酒馆转成代码文本，不受引号处理影响，所以不动它；
+ * 若一并抽出，代码块的原文会被改掉，酒馆助手识别「前端代码块」的那一步就失效了。
+ */
+function 抽脚本(文本: string): { 文本: string; 脚本表: string[] } {
+  const 脚本表: string[] = [];
+  const 结果 = 文本
+    .split(/(```[\s\S]*?```|~~~[\s\S]*?~~~)/g)
+    .map(段 => {
+      if (段.startsWith('```') || 段.startsWith('~~~')) {
+        return 段;
+      }
+      return 段.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, 命中 => {
+        const 序号 = 脚本表.length;
+        脚本表.push(命中);
+        return `${脚本标记前缀}${序号}${脚本标记后缀}`;
+      });
+    })
+    .join('');
+
+  return { 文本: 结果, 脚本表 };
+}
+
+/** 把占位标记换回脚本原文 */
+function 还脚本(文本: string, 脚本表: string[]): string {
+  if (脚本表.length === 0) {
     return 文本;
   }
+
+  const 匹配器 = new RegExp(`${脚本标记前缀}(\\d+)${脚本标记后缀}`, 'g');
+  return 文本.replace(匹配器, (_命中, 序号: string) => 脚本表[Number(序号)] ?? '');
 }
 
 /**
- * 按 `<判定:N/>` 把正文切成片段，供正文区自行渲染判定条。
+ * 把楼层原文转成酒馆的显示格式，但保留脚本与 iframe。
  *
- * 全屏界面里的判定条不由楼层里的那条正则渲染，所以在调用 `转显示` 之前先切分，
- * 让判定标签留在界面这一侧处理。
- */
-export function 切判定标签(文本: string): 正文片段[] {
-  const 片段表: 正文片段[] = [];
-  if (!文本) {
-    return 片段表;
-  }
-
-  const 匹配器 = new RegExp(判定标签源, 'g');
-  let 上次结尾 = 0;
-  let 命中 = 匹配器.exec(文本);
-  while (命中) {
-    if (命中.index > 上次结尾) {
-      片段表.push({ 类型: '文本', 内容: 清判定结束标签(文本.slice(上次结尾, 命中.index)) });
-    }
-
-    const 序号 = Number(命中[1]);
-    片段表.push({ 类型: '判定', 序号: Number.isFinite(序号) && 序号 >= 1 ? 序号 : 1 });
-    上次结尾 = 命中.index + 命中[0].length;
-    命中 = 匹配器.exec(文本);
-  }
-
-  if (上次结尾 < 文本.length) {
-    片段表.push({ 类型: '文本', 内容: 清判定结束标签(文本.slice(上次结尾)) });
-  }
-  return 片段表;
-}
-
-/** 未配对的结束标签没有对应的开始标签，一并清除 */
-function 清判定结束标签(内容: string): string {
-  return 内容.replace(/<\/判定>/g, '');
-}
-
-/**
- * 剔除状态栏占位符对应的内容。
+ * 正文区的楼层整条交给嵌套 iframe 渲染，正文里的脚本必须保住，所以不能走
+ * `formatAsDisplayedMessage`：它不接受清洗参数，`<script>` 与 `<iframe>` 会被整段剥除。
+ * 这里直接调用酒馆原生的 `messageFormatting`，把这两类标签加入允许清单。
+ * 正则替换、宏替换、Markdown 转换与样式作用域都由这一个函数完成，与酒馆楼层是同一份实现。
  *
- * 全屏界面里的面板独立渲染，正文里不再重复显示状态栏，所以占位符本身与它被
- * 酒馆正则替换后留下的容器都要去掉。
+ * 裸脚本还要额外保护：酒馆在转换过程中会把成对引号包成 `<q>`，插进脚本后整段脚本会被丢掉。
+ *
+ * 转换后样式选择器会带上 `.mes_text ` 前缀，嵌套文档里用同名容器包住正文即可命中。
+ * 楼层号越界等情况下酒馆会抛错，这里退回原文，避免整段正文渲染不出来。
+ *
+ * @param 楼层 要转换的楼层
+ * @returns 转换后的正文 HTML；转换不可用时返回原文
  */
-export function 去状态栏占位符(文本: string): string {
-  if (!文本) {
+export function 转未清洗显示(楼层: 楼层结构): string {
+  const 原文 = 楼层.原文;
+  if (!原文) {
     return '';
   }
 
-  return 文本
-    .replace(/<StatusPlaceHolderImpl\s*\/?>/gi, '')
-    .replace(/<div\s+id=["']ls-app["'][^>]*>[\s\S]*?<\/div>/gi, '')
-    .replace(/<div\s+class=["']ls-judge-root["'][^>]*>[\s\S]*?<\/div>/gi, '')
-    .replace(/<head>[\s\S]*?<\/head>/gi, '')
-    .replace(/<\/?body[^>]*>/gi, '')
-    .replace(/\n{3,}/g, '\n\n');
+  const { 文本: 待转文本, 脚本表 } = 抽脚本(原文);
+
+  try {
+    const 格式化 = SillyTavern.messageFormatting;
+    if (typeof 格式化 !== 'function') {
+      return 原文;
+    }
+
+    const 转换后 = 格式化(
+      待转文本,
+      楼层.名称,
+      楼层.角色 === 'system',
+      楼层.角色 === 'user',
+      楼层.楼层号,
+      { ADD_TAGS: ['script', 'iframe', 'custom-style'] },
+    );
+
+    return 还脚本(转换后, 脚本表);
+  } catch (错误) {
+    console.error('人生面板：转换正文显示格式失败', 错误);
+    return 原文;
+  }
 }
 
 /**
