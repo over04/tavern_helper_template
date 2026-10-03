@@ -178,28 +178,17 @@ const 读安全区 = (): { 顶: number; 底: number } => {
 };
 
 /**
- * 读酒馆顶栏占掉的高度。
+ * 把安全区写回界面根容器：界面壳的顶栏与底部导航都从它取值。
  *
- * 常驻承载的层级低于酒馆顶栏，顶栏会盖在界面壳之上，所以壳的顶部要让出它的高度。
- * 顶栏从视口顶部算起，它的下沿就是让位高度；顶栏隐藏时退回 0。
+ * 不再让出酒馆顶栏的高度：承载层级已经盖住顶栏，全屏时顶部只需要让开刘海那一段。
  */
-const 读顶栏占位 = (): number => {
-  const 顶栏 = 取宿主文档().getElementById('top-bar');
-  if (!顶栏) {
-    return 0;
-  }
-  const 盒 = 顶栏.getBoundingClientRect();
-  return 盒.height > 0 ? Math.max(0, 盒.bottom) : 0;
-};
-
-/** 把安全区与顶栏占位写回界面根容器：界面壳的顶栏与底部导航都从它取值 */
 const 应用安全区 = () => {
   const 根 = document.getElementById('ls-app');
   if (!根) {
     return;
   }
   const { 顶, 底 } = 读安全区();
-  根.style.setProperty('--ls-safe-top', `${Math.max(顶, 读顶栏占位())}px`);
+  根.style.setProperty('--ls-safe-top', `${顶}px`);
   根.style.setProperty('--ls-safe-bottom', `${底}px`);
 };
 
@@ -207,6 +196,21 @@ const 清安全区 = () => {
   const 根 = document.getElementById('ls-app');
   根?.style.removeProperty('--ls-safe-top');
   根?.style.removeProperty('--ls-safe-bottom');
+};
+
+/**
+ * 只写底部安全区，紧凑面板态用这一条。
+ *
+ * iOS 的 env(safe-area-inset-*) 只认顶层文档的 viewport 声明，界面跑在楼层 iframe 里时读到的恒为 0，
+ * 底部导航会被 Home 条压住，所以紧凑面板态也要从宿主文档读一次写回。
+ * 顶部不写：紧凑面板在楼层里，刘海那一段酒馆已经让开，再让一次会多出一块空白。
+ */
+const 应用底部安全区 = () => {
+  const 根 = document.getElementById('ls-app');
+  if (!根) {
+    return;
+  }
+  根.style.setProperty('--ls-safe-bottom', `${读安全区().底}px`);
 };
 
 /** 上一次全屏失败的原因，空串表示没有失败；界面把它显示出来，实际设备上出问题时有据可查 */
@@ -474,6 +478,8 @@ const 退出铺满 = () => {
   document.documentElement.classList.remove('ls-全屏');
   是否全屏.value = false;
   全屏失败.value = '';
+  // 清安全区把底部那条也清掉了，回到紧凑面板要立刻补回来，否则底部导航会被 Home 条压住
+  应用底部安全区();
 };
 
 /**
@@ -536,9 +542,14 @@ export const 切换全屏 = () => {
 /** 接入全屏状态与安全区监听；在组件 setup 里调用 */
 export const use全屏 = () => {
   const 同步安全区 = () => {
+    if (是否嵌套) {
+      return;
+    }
     if (是否全屏.value) {
       应用安全区();
+      return;
     }
+    应用底部安全区();
   };
 
   let 停切聊天: (() => void) | null = null;
@@ -562,8 +573,9 @@ export const use全屏 = () => {
 
       // 常驻承载的生命周期绑定会话。退出全屏那条路在 切换全屏 里，
       // 切聊天那条路在这里接上：直接挂宿主事件源，理由见 常驻.ts 的 挂宿主事件。
-      // 嵌套实例不建承载，也就不必接。
+      // 嵌套实例不建承载，也就不必接；它的底部不是屏幕底，也不必让安全区。
       if (!是否嵌套) {
+        应用底部安全区();
         停切聊天 = 挂宿主事件(tavern_events.CHAT_CHANGED, 销毁常驻);
       }
     }
