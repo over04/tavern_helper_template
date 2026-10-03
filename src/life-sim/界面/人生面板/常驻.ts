@@ -7,7 +7,7 @@
  * 改成由界面在酒馆主文档里自建一个常驻 iframe、把全屏壳交给它渲染之后，
  * 常驻 iframe 是酒馆主文档的子元素，楼层 iframe 重建与它无关。
  *
- * 落地要满足三个条件（依据见 `handoff/探索/常驻全屏可行性.md`）：
+ * 实施要满足三个条件（依据见 `handoff/探索/常驻全屏可行性.md`）：
  *
  * 一、不能用 `src` 直指 CDN 产物。jsdelivr 对 `.html` 返回 `text/plain` 并带 `nosniff`，
  * 浏览器不把它当文档解析，脚本一行都不执行；跨域之下常驻实例也读不到宿主状态。
@@ -344,7 +344,7 @@ export const 建常驻 = async (楼层号: number): Promise<string> => {
     const 挂出 = await 等到(() => 已挂出(框), 挂载时限);
     if (!挂出) {
       框.remove();
-      return '全屏承载没能加载出来：产物脚本没有在承载 iframe 里跑起来，多为 CDN 不通';
+      return '全屏承载没能加载出来：产物脚本没有在承载 iframe 里执行，多为 CDN 不通';
     }
     return '';
   } finally {

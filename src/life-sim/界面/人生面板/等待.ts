@@ -28,11 +28,6 @@ export function 等到(条件: () => boolean, 时限 = 0): Promise<boolean> {
   });
 }
 
-/** 等本楼变量就绪。时限为 0 时不限时 */
-export function 等变量就绪(时限 = 0): Promise<boolean> {
-  return 等到(() => _.has(getVariables({ type: 'message' }), 'stat_data'), 时限);
-}
-
 /** 本窗口或顶层窗口里的 MVU；两处都没有时返回 null */
 const 取Mvu = (): { getMvuData?: unknown } | null => {
   const 本窗口 = (globalThis as { Mvu?: { getMvuData?: unknown } }).Mvu;

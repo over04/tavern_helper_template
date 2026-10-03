@@ -41,7 +41,7 @@ const 脚本结束 = 合('script');
 const 基础样式 = `*,*::before,*::after{box-sizing:border-box;}
 html,body{margin:0!important;padding:0;overflow:hidden!important;max-width:100%!important;}`;
 
-/** 预定义注入：酒馆助手 `src/iframe/predefine.js` 的源码，逐字内联 */
+/** 预定义注入：按酒馆助手 `src/iframe/predefine.js` 的做法，把父窗口那套对象合并进本窗口 */
 const 预定义源码 = `window._ = window.parent._;
 const iframeId = window.frameElement?.id || window.name;
 if (iframeId) {
@@ -126,7 +126,7 @@ function tailwind地址(): string {
 }
 
 /**
- * 第三方库：与酒馆助手注入的一套对齐。
+ * 第三方库：与酒馆助手注入的那一套相同。
  *
  * 基础库（jQuery、lodash、Vue、vue-router）不在这里加载，而是由 `公共段` 从承载界面的
  * 那一层搬过来——宿主已经加载过一份，重复加载既慢，版本也可能不一致。
@@ -333,7 +333,7 @@ ${公共段}
  *
  * 运行时外壳放在 `<head>`：正文里的脚本要用到它搬运来的 jQuery 等库，必须排在它之后。
  * 扫描启动段、高度回写与第三方标签放在正文之后：`<head>` 里的外链样式会阻塞后续脚本的执行，
- * 字体图标库走 CDN，一旦慢或不可达，正文里的脚本就一直不跑，正文区会停在半成品状态。
+ * 字体图标库走 CDN，一旦慢或不可达，正文里的脚本就一直不执行，正文区会停在未完成的状态。
  */
 function 拼文档(内容: string, 额外样式: string): string {
   return [
