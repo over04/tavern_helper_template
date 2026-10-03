@@ -322,14 +322,15 @@ html.ls-全屏 {
     overflow-y: auto;
   }
 
+  /* 内容比视口短时靠 margin-top: auto 把导航推到底部，比视口长时 sticky 把它钉住 */
   .ls-fs-导航 {
     position: sticky;
-    bottom: calc(-12px + var(--ls-safe-bottom) * -1);
+    bottom: 0;
     order: 3;
+    margin: auto -12px -12px;
     align-self: stretch;
     flex: none;
     height: var(--ls-fs-导航高);
-    margin: 0 -12px calc(-12px + var(--ls-safe-bottom) * -1);
     padding-bottom: var(--ls-safe-bottom);
     border-top: 1px solid var(--ls-border);
     background: var(--ls-surface);
